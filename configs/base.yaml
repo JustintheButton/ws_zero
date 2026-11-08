@@ -1,0 +1,45 @@
+# Shared configuration for every arm. Arm files may override only `init` (load_config rejects unknown keys).
+# DRAFT: values set to null are decided in docs/protocol.md. Nothing here is final until the protocol is approved.
+
+seed: 0
+
+init:
+  method: random            # random | wsp | distill
+  weights: null             # path to the written (wsp) or pretrained (distill) weights
+
+game:
+  max_plies: 512            # draw adjudicated at 512 plies
+
+net:
+  input_planes: 119         # 8 history x 14 + 7 constant
+  policy_size: 4672         # 8 x 8 x 73
+  blocks: 6
+  filters: 64
+  batch_norm: false         # removed in all arms
+
+mcts:
+  simulations: 200
+  c_base: 19652             # c(s) = log((N + c_base + 1) / c_base) + c_init
+  c_init: 1.25
+  dirichlet_alpha: 0.3
+  dirichlet_epsilon: 0.25
+  sampling_plies: 30        # sample moves for the first 30 plies, then argmax
+
+train:
+  optimizer: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-4
+  lr_values: [0.2, 0.02, 0.002, 0.0002]
+  lr_boundaries: null       # training steps at which the LR drops
+  warmup_steps: null        # short low-LR warmup, identical in every arm
+  batch_size: null          # sized to the GPU
+  replay_window_games: null
+  selfplay_games: null      # self-play game budget per run
+
+eval:
+  every_games: null         # K: evaluate against the fixed anchors every K self-play games
+
+logging:
+  root: runs
+  wandb_mode: online        # online | offline | disabled; local logs are always written
+  wandb_project: ws_zero

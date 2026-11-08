@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Run outputs (large; archived selectively, not committed)
+runs/
+wandb/
+checkpoints/
+*.pt
+
+# External data (Syzygy tablebases, engines)
+data/external/
+
+# Secrets
+.env
+.netrc
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
