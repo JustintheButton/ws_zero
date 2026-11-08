@@ -377,6 +377,12 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
         <p class="hint">One training run per GPU, 200 searches per move; the range runs from games averaging 340 moves to games hitting the 512-move cap. The search's own bookkeeping is added in Phase 4. For comparison, the Mac manages about 350–520 games an hour.</p>
       </div>
     </div>
+    <div class="panel" style="margin-top: 2rem">
+      <h3>The rare runaway step, and a cap on step size</h3>
+      <p class="hint" style="margin-top: 0">Every so often one training step is far larger than the rest and pins the "who is winning" answer at "certain win" or "certain loss" for every position, where it gets stuck. Overnight, 3,000 steps per run, three random starts each, with and without a cap on how large one step may be.</p>
+      <div style="overflow-x: auto"><table class="cov" id="stability"></table></div>
+      <p class="hint">"Who is winning" error: 0 is perfect, about 1.6 is stuck. Move error: lower is better. The memorization test is the Phase 3 gate (move error under 0.05, "who is winning" error at most 0.01). A cap of 5 stops the runaway everywhere but slows move learning in real-style training; whether to add one is Justin's call.</p>
+    </div>
   </section>
 
   <section class="block" id="plan" aria-labelledby="plan-h">
@@ -821,6 +827,18 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
 
   // ---------- Phase 3 charts ----------
   document.getElementById("p3-kicker").innerHTML = P3.gatePassed ? "Phase 3 · <b>gate passed</b> 8 Nov 2026" : "Phase 3 · in progress";
+  (function renderStability() {
+    const rows = P3.stability || [];
+    const test = { check: "Real-style training (16,384 positions)", gate: "Memorization test (256 positions)" };
+    const fmt = (v) => (v >= 0.05 ? v.toFixed(2) : v.toFixed(4).replace(/0+$/, ""));
+    const head = `<tr><th>Test</th><th>Step cap</th><th>Runs stuck for good</th><th class="num">"Who is winning" error</th><th class="num">Move error</th><th>Gate</th></tr>`;
+    document.getElementById("stability").innerHTML = head + rows.map((r) => {
+      const stuck = `${r.broke} of ${r.runs}` + (r.wobbled ? ` <span class="hint">(${r.wobbled} more stuck briefly)</span>` : "");
+      const gate = r.gate === null ? "" : r.gate === r.runs ? "<b>pass</b>" : `fail ${r.runs - r.gate} of ${r.runs}`;
+      return `<tr><td>${test[r.mode]}</td><td>${r.cap ? r.cap : "none"}</td><td>${stuck}</td>` +
+        `<td class="num">${r.mse.map(fmt).join(" / ")}</td><td class="num">${r.kl.map((v) => v.toFixed(r.kl[1] < 0.1 ? 3 : 2)).join("–")}</td><td>${gate}</td></tr>`;
+    }).join("");
+  })();
   function renderValueChart() {
     const W = 440, H = 230, L = 40, R = 118, T = 12, B = 30;
     const x = (s) => L + (s / 900) * (W - L - R), y = (v) => T + (1 - v / 0.6) * (H - T - B);

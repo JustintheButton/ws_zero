@@ -123,7 +123,35 @@ def phase3_data(gates: Path) -> dict:
             for s in range(3) if (gates / f"phase-3-overfit-realistic-seed{s}.json").exists()]
     return {"valueOriginal": curves("phase-3-value-check-original-head.json"),
             "valueFixed": curves("phase-3-value-check.json"), "gpus": sorted(gpus, key=lambda g: g["cost"][1]),
-            "gatePassed": bool(gate) and all(gate)}
+            "gatePassed": bool(gate) and all(gate), "stability": stability_rows(gates)}
+
+
+def stability_rows(gates: Path) -> list:
+    """One row per (test, step cap): runs that broke for good or briefly, final value error, move KL, gate verdict."""
+    runs = []  # (mode, cap, ever_saturated, final_saturated, value_mse, kl)
+    for s in range(3):
+        path = gates / f"phase-3-overfit-realistic-seed{s}.json"
+        if path.exists():
+            curve = json.loads(path.read_text())["curve"]
+            runs.append(("gate", 0.0, any(c["saturated"] >= 0.5 for c in curve), curve[-1]["saturated"],
+                         curve[-1]["value_mse"], curve[-1]["policy_kl"]))
+    path = gates / "phase-3-stability.json"
+    if path.exists():
+        for r in json.loads(path.read_text())["results"]:
+            runs.append((r["mode"], r["clip"], r["first_saturated_step"] is not None, r["final_saturated"],
+                         r["final_value_mse"], r["final_move_kl"]))
+    rows = []
+    for mode, cap in [("check", 0.0), ("check", 5.0), ("gate", 0.0), ("gate", 5.0), ("gate", 2.0)]:
+        group = [r for r in runs if r[0] == mode and r[1] == cap]
+        if not group:
+            continue
+        broke = sum(r[3] >= 0.5 for r in group)
+        rows.append({"mode": mode, "cap": cap, "runs": len(group), "broke": broke,
+                     "wobbled": sum(r[2] for r in group) - broke, "mse": [round(r[4], 4) for r in group],
+                     "kl": [round(min(r[5] for r in group), 3), round(max(r[5] for r in group), 3)],
+                     "gate": None if mode == "check" else sum(r[5] < 0.05 and r[4] <= 0.01 and r[3] < 0.5
+                                                              for r in group)})
+    return rows
 
 
 def commit_label() -> str:

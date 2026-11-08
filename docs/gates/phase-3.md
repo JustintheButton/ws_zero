@@ -2,9 +2,11 @@
 
 **Date:** 2026-11-08. **Status: NOT PASSED.** The network is built and tested, throughput is measured on the Mac and
 on six Modal GPU types, and the value head was amended. The overfit check still fails: when one small batch is
-trained on over and over, a single training step eventually blows up and pins the value output at ±1. Under
-realistic training (many positions, minibatches) the amended network learns; longer runs and a gradient cap are
-being tested before Justin decides how to proceed.
+trained on over and over, a single training step eventually blows up and pins the value output at ±1. The
+overnight runs showed that the same thing happens under realistic training (one seed of three died for good, one
+saturated and recovered), and that a cap on the size of each training step (gradient norm 5) prevents it in both
+tests, at the cost of slower move learning in the realistic one. Whether to add a cap, and at what size, is
+Justin's decision.
 
 ## What was built
 
@@ -68,8 +70,36 @@ Moves end up fitted (KL < 0.01). Gradient norms in this run: median 0.9, 90th pe
 
 **Reading.** The underlying problem is an occasional explosive training step, which batch norm normally prevents.
 The original head died from it; the amended head saturates. Repeating one small batch thousands of times provokes
-it; the realistic check did not hit it within 900 steps. Running overnight: the realistic check for 3,000 steps,
-and both checks with a gradient cap at norm 5 or 2 (above most steps, so only the rare large ones are cut).
+it; the realistic check did not hit it within 900 steps, but it does over longer training (below).
+
+## Overnight: longer training and a step cap
+
+`stability_phase3.py` (`phase-3-stability.json`): both checks for 3,000 steps, LR 0.003, evaluated every 50
+steps, with no cap (the protocol) or with gradient-norm clipping at 5 or 2. "Saturated" means at least half the
+values pinned at ±1. Value error and move KL are on the 256 training positions (overfit) or the 2,048 held-out
+positions (realistic).
+
+| Test | Cap | Saturated | Value error (seeds 0 / 1 / 2) | Move KL | Overfit gate |
+|---|---|---|---|---|---|
+| Realistic | none | seed 0 from step 250, **never recovered**; seed 2 at step 250, recovered | 1.57 / 0.12 / 0.09 | 0.20–0.27 | |
+| Realistic | 5 | never | 0.12 / 0.09 / 0.09 | 0.33–0.37 | |
+| Overfit | 5 | never | 0.0001 / 0.0002 / 0.0002 | 0.009–0.010 | **pass 3/3** |
+| Overfit | 2 | never | 0.014 / 0.002 / 0.0004 | 0.052–0.077 | fail 3/3 (moves too slow) |
+| Overfit | none (earlier) | every seed, steps 400–550 | 1.56–1.63 | 0.008–0.009 | fail 3/3 |
+
+1. **The problem is real, not an artifact of the overfit test.** Under realistic training without a cap, one seed
+   in three died for good. Seed 0 had passed the 900-step check with the same starting weights and the same
+   batches; the overnight script also measures each step's size, which most likely changes floating-point rounding
+   slightly, and that was enough to send it the other way. Whether a run dies is a matter of chance, so the earlier
+   3/3 did not establish that training is safe.
+2. **A cap of 5 prevents it in both tests** and passes the overfit gate on every seed. The value is learned as well
+   as by the healthy uncapped seeds.
+3. **But a cap of 5 slows move learning in realistic training** (held-out KL 0.33–0.37 against 0.20–0.27). There
+   the typical step is larger (median gradient norm 7–9 in the capped runs), so the cap trims most steps rather
+   than only the rare huge ones. A cap of 2 is too tight even for the overfit gate.
+4. These runs use LR 0.003, the smallest of the four D1 pilot values (0.2, 0.05, 0.0125, 0.003); the larger ones
+   can only be less stable. D1's fallback, a cap of 1.0 only if every pilot setting diverges, is tighter than the
+   cap of 2 that already slows learning.
 
 ## Throughput
 
@@ -97,7 +127,8 @@ are decisions for when the game budget is fixed.
 
 ## Open issues
 
-1. **The explosive-step instability** (above): Justin's decision, informed by the overnight runs.
+1. **The explosive-step instability** (above): whether to add an always-on step cap for every arm, replacing D1's
+   last-resort cap of 1.0, and how to choose its size. Justin's decision.
 2. The game budget: the protocol fixes it from the cost per game measured in Phase 3; real self-play can first be
    measured in Phase 4. Justin's call. Compute available was raised to 11 Modal workspaces of $30 each (2026-11-08);
    a $30 hard limit per workspace is set by Justin in Modal, and the run launcher (to be built) will enforce it again.
