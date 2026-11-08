@@ -10,14 +10,15 @@ dependencies = [
     "jax==0.12.0.1; sys_platform == 'darwin'",
     "jax[cuda13]==0.12.0.1; sys_platform == 'linux'",
     "numpy==2.5.4",
+    "optax==0.2.8",
     "pgx==2.6.0",
     "pyyaml==6.0.3",
-    "torch==2.15.0",
     "wandb==0.31.0",
 ]
 
 [dependency-groups]
 dev = [
+    "modal==1.6.3",
     "pytest==9.2.0",
 ]
 
@@ -31,16 +32,6 @@ packages = ["src/ws_zero"]
 # Supported platforms: macOS (development) and Linux (WSL2 on the training PC). Native Windows is not supported.
 [tool.uv]
 environments = ["sys_platform == 'darwin'", "sys_platform == 'linux'"]
-
-# PyTorch: the same version everywhere. On Linux, the CUDA 13.2 build (the RTX 5070 Ti needs CUDA >= 12.8, and
-# the cu128 index stops at torch 2.11); needs a recent NVIDIA Windows driver. On macOS, the standard PyPI build.
-[tool.uv.sources]
-torch = [{ index = "pytorch-cu132", marker = "sys_platform == 'linux'" }]
-
-[[tool.uv.index]]
-name = "pytorch-cu132"
-url = "https://download.pytorch.org/whl/cu132"
-explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

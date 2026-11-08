@@ -19,8 +19,9 @@ def test_meta_records_provenance(tmp_path):
         meta = json.loads((run.run_dir / "meta.json").read_text())
     assert meta["seed"] == 42
     assert meta["name"] == "smoke"
-    for key in ("git_commit", "git_dirty", "started_at", "host", "python", "torch", "numpy"):
+    for key in ("git_commit", "git_dirty", "started_at", "host", "python", "jax", "jaxlib", "pgx", "numpy", "devices"):
         assert key in meta
+    assert "torch" not in meta
     assert meta["git_commit"] is None or re.fullmatch(r"[0-9a-f]{40}", meta["git_commit"])
 
 

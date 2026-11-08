@@ -1,0 +1,743 @@
+{
+ "cpu_cores": 4,
+ "memory_gib": 16,
+ "gpu_price_per_hour": {
+  "T4": 0.59,
+  "L4": 0.799,
+  "A10": 1.102,
+  "L40S": 1.951,
+  "A100-40GB": 2.099,
+  "A100-80GB": 2.498,
+  "H100": 3.949,
+  "H200": 4.54,
+  "B200": 6.25
+ },
+ "results": {
+  "T4": {
+   "label": "T4",
+   "device": "cuda:0",
+   "device_kind": "Tesla T4",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.002334895000000614,
+     "env_s": 0.0011419100000011895,
+     "simulation_s": 0.0032473280000004934,
+     "evals_per_s": 42828.47836839502,
+     "env_steps_per_s": 87572.57577207997,
+     "simulations_per_s": 30794.548625819385
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.005508035999998384,
+     "env_s": 0.003470794000001831,
+     "simulation_s": 0.01318013900000281,
+     "evals_per_s": 72621.16660096582,
+     "env_steps_per_s": 115247.40448433095,
+     "simulations_per_s": 30348.69359116127
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.022478814999999486,
+     "env_s": 0.0126990429999978,
+     "simulation_s": 0.042892331999997424,
+     "evals_per_s": 71178.12927416488,
+     "env_steps_per_s": 125993.74614293984,
+     "simulations_per_s": 37302.704828455026
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.08751732899999354,
+     "env_s": 0.05020241800000491,
+     "simulation_s": 0.13154304700000097,
+     "evals_per_s": 73128.37438172357,
+     "env_steps_per_s": 127483.89928149225,
+     "simulations_per_s": 48653.27469569678
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.04599948100000262,
+    "positions_per_s": 22261.120728730435
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 1063.0893528183976,
+     "training_share": 0.018040939545717758,
+     "usd_per_1000_games": 0.8529856851599041
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 1586.4089869381776,
+     "training_share": 0.026921827927500728,
+     "usd_per_1000_games": 0.5716054355883058
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 1047.971279866862,
+     "training_share": 0.01778438139334484,
+     "usd_per_1000_games": 0.8652908886159582
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 1564.0500043033205,
+     "training_share": 0.026542389404341976,
+     "usd_per_1000_games": 0.5797768597583417
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 1282.872581508185,
+     "training_share": 0.021770725693460745,
+     "usd_per_1000_games": 0.7068511815366243
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 1910.8106104238234,
+     "training_share": 0.032427019059667946,
+     "usd_per_1000_games": 0.4745629917759715
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 1662.2173013387658,
+     "training_share": 0.028208317359022114,
+     "usd_per_1000_games": 0.5455363743775585
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 2467.886735122963,
+     "training_share": 0.04188076503258686,
+     "usd_per_1000_games": 0.36743987764690444
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "Tesla T4, 15360 MiB, 610.57.04",
+   "usd_per_hour": 0.9067999999999999
+  },
+  "L4": {
+   "label": "L4",
+   "device": "cuda:0",
+   "device_kind": "NVIDIA L4",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.0009591829999990864,
+     "env_s": 0.0005174229999997948,
+     "simulation_s": 0.001229174999998861,
+     "evals_per_s": 104255.3923496301,
+     "env_steps_per_s": 193265.47138422463,
+     "simulations_per_s": 81355.38064156256
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.002322434999999956,
+     "env_s": 0.0009310929999983841,
+     "simulation_s": 0.0029324430000023938,
+     "evals_per_s": 172233.02266802196,
+     "env_steps_per_s": 429602.62830962555,
+     "simulations_per_s": 136405.03839279176
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.009223264999999259,
+     "env_s": 0.00540287400000139,
+     "simulation_s": 0.014657691000000028,
+     "evals_per_s": 173474.36076054722,
+     "env_steps_per_s": 296138.6847073592,
+     "simulations_per_s": 109157.71112926291
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.04567058800000012,
+     "env_s": 0.02149363899999912,
+     "simulation_s": 0.0644675449999994,
+     "evals_per_s": 140133.9522933224,
+     "env_steps_per_s": 297762.5147607747,
+     "simulations_per_s": 99274.75910553224
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.020965744999998037,
+    "positions_per_s": 48841.57467335866
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 2798.2457143018155,
+     "training_share": 0.021643754418134046,
+     "usd_per_1000_games": 0.3987498289721856
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 4168.190516222174,
+     "training_share": 0.032239946420722934,
+     "usd_per_1000_games": 0.26769409787230697
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 4623.977280760585,
+     "training_share": 0.03576534690585032,
+     "usd_per_1000_games": 0.24130741399673689
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 6839.419769963915,
+     "training_share": 0.052901259209313094,
+     "usd_per_1000_games": 0.16314249417767307
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3726.949770397672,
+     "training_share": 0.028827055875375436,
+     "usd_per_1000_games": 0.29938691657788086
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5531.67886975054,
+     "training_share": 0.04278619935516802,
+     "usd_per_1000_games": 0.20171091386046403
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3398.3877573973505,
+     "training_share": 0.02628570810017441,
+     "usd_per_1000_games": 0.3283321620880996
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5050.414388884493,
+     "training_share": 0.039063734890808256,
+     "usd_per_1000_games": 0.22093236595709365
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "NVIDIA L4, 23034 MiB, 610.57.04",
+   "usd_per_hour": 1.1158000000000001
+  },
+  "A10": {
+   "label": "A10",
+   "device": "cuda:0",
+   "device_kind": "NVIDIA A10",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.0009487309999993698,
+     "env_s": 0.0004900079999998752,
+     "simulation_s": 0.0012549090000000263,
+     "evals_per_s": 105403.95538889994,
+     "env_steps_per_s": 204078.3007624885,
+     "simulations_per_s": 79687.05300543539
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.002634241999999176,
+     "env_s": 0.0014820100000001446,
+     "simulation_s": 0.003912120999999047,
+     "evals_per_s": 151846.3375802698,
+     "env_steps_per_s": 269903.71185077087,
+     "simulations_per_s": 102246.32622561968
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.009755480999999122,
+     "env_s": 0.005240072999999512,
+     "simulation_s": 0.015060952999998989,
+     "evals_per_s": 164010.3650450597,
+     "env_steps_per_s": 305339.2576783089,
+     "simulations_per_s": 106234.97729526859
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.040211031000001896,
+     "env_s": 0.020200647999999433,
+     "simulation_s": 0.05762386399999997,
+     "evals_per_s": 159160.3060364132,
+     "env_steps_per_s": 316821.51978491875,
+     "simulations_per_s": 111065.09622471695
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.021386978999998973,
+    "positions_per_s": 47879.600012701616
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 2740.912092473986,
+     "training_share": 0.021626239131161774,
+     "usd_per_1000_games": 0.5176379074307965
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 4082.8237012220134,
+     "training_share": 0.03221413847435907,
+     "usd_per_1000_games": 0.34750459579612625
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3495.4593485983564,
+     "training_share": 0.027579738859049335,
+     "usd_per_1000_games": 0.40589801182180085
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5191.320706303672,
+     "training_share": 0.04096035889269965,
+     "usd_per_1000_games": 0.2733023213682776
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3627.9147232431883,
+     "training_share": 0.02862483315964444,
+     "usd_per_1000_games": 0.3910786521276493
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5385.230327414618,
+     "training_share": 0.04249033712421351,
+     "usd_per_1000_games": 0.26346134032138013
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3787.9329704481906,
+     "training_share": 0.029887402976789195,
+     "usd_per_1000_games": 0.3745578422503413
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5619.221539517293,
+     "training_share": 0.04433656558276845,
+     "usd_per_1000_games": 0.2524904900122302
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "NVIDIA A10, 23028 MiB, 610.57.04",
+   "usd_per_hour": 1.4188
+  },
+  "L40S": {
+   "label": "L40S",
+   "device": "cuda:0",
+   "device_kind": "NVIDIA L40S",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.0007432149999999638,
+     "env_s": 0.0004589890000001873,
+     "simulation_s": 0.0009645300000009627,
+     "evals_per_s": 134550.56746702484,
+     "env_steps_per_s": 217870.14503606665,
+     "simulations_per_s": 103677.43875244958
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.001146252000001624,
+     "env_s": 0.0005725410000003706,
+     "simulation_s": 0.0013686170000006825,
+     "evals_per_s": 348963.4042073063,
+     "env_steps_per_s": 698639.9227299724,
+     "simulations_per_s": 292265.8420871584
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.0032007140000018808,
+     "env_s": 0.002014549999998394,
+     "simulation_s": 0.004780234999998356,
+     "evals_per_s": 499888.4623865362,
+     "env_steps_per_s": 794222.0346982083,
+     "simulations_per_s": 334711.57798738976
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.013818844999999413,
+     "env_s": 0.009430507999997673,
+     "simulation_s": 0.022678921000000685,
+     "evals_per_s": 463135.6672717779,
+     "env_steps_per_s": 678648.4885015292,
+     "simulations_per_s": 282200.3745239823
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.00669841300000229,
+    "positions_per_s": 152872.03103177572
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3612.3721949923165,
+     "training_share": 0.008926903967454792,
+     "usd_per_1000_games": 0.6277869160724242
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5415.352010389505,
+     "training_share": 0.013382432578161615,
+     "usd_per_1000_games": 0.4187724077122156
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 10020.534252317591,
+     "training_share": 0.024762771426774532,
+     "usd_per_1000_games": 0.22631527849680208
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 14903.054403728913,
+     "training_share": 0.03682846846962989,
+     "usd_per_1000_games": 0.152170148384654
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 11434.692809300339,
+     "training_share": 0.02825744388894209,
+     "usd_per_1000_games": 0.19832627232062575
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 16976.622278560648,
+     "training_share": 0.04195267502682867,
+     "usd_per_1000_games": 0.13358369897078692
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 9683.691217013871,
+     "training_share": 0.02393036400418648,
+     "usd_per_1000_games": 0.23418755815092113
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 14408.076280565094,
+     "training_share": 0.03560527718895295,
+     "usd_per_1000_games": 0.15739783409246746
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "NVIDIA L40S, 46068 MiB, 610.57.04",
+   "usd_per_hour": 2.2678000000000003
+  },
+  "A100-40GB": {
+   "label": "A100-40GB",
+   "device": "cuda:0",
+   "device_kind": "NVIDIA A100-SXM4-40GB",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.0010820010000003322,
+     "env_s": 0.0006705789999994494,
+     "simulation_s": 0.0013711999999994617,
+     "evals_per_s": 92421.35635731326,
+     "env_steps_per_s": 149124.86075478373,
+     "simulations_per_s": 72928.82147027367
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.0016554579999983332,
+     "env_s": 0.0010125189999996564,
+     "simulation_s": 0.002155623000000162,
+     "evals_per_s": 241624.9762907925,
+     "env_steps_per_s": 395054.31503027177,
+     "simulations_per_s": 185561.20434787063
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.003069559000000055,
+     "env_s": 0.002570935000001384,
+     "simulation_s": 0.0057313969999981396,
+     "evals_per_s": 521247.5147081295,
+     "env_steps_per_s": 622341.6772493814,
+     "simulations_per_s": 279164.0502307761
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.009661641999997528,
+     "env_s": 0.00862576199999765,
+     "simulation_s": 0.019387196000000273,
+     "evals_per_s": 662413.283373741,
+     "env_steps_per_s": 741963.4346509611,
+     "simulations_per_s": 330114.7829732525
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.008121817000002807,
+    "positions_per_s": 126080.16161896361
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 2544.35735754416,
+     "training_share": 0.007623734424694758,
+     "usd_per_1000_games": 0.9494735449943852
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 3816.782610301295,
+     "training_share": 0.011436340454084688,
+     "usd_per_1000_games": 0.6329414710389539
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 6398.563579885136,
+     "training_share": 0.019172208372353918,
+     "usd_per_1000_games": 0.37755348834767183
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 9542.928245257366,
+     "training_share": 0.028593762727568355,
+     "usd_per_1000_games": 0.25315080842199583
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 9533.994346872358,
+     "training_share": 0.028566993819316315,
+     "usd_per_1000_games": 0.25338802521867526
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 14152.547757576196,
+     "training_share": 0.04240570422101079,
+     "usd_per_1000_games": 0.1706971805628965
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 11215.58483063284,
+     "training_share": 0.03360559392840551,
+     "usd_per_1000_games": 0.21539670346942472
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 16607.02394690456,
+     "training_share": 0.049760124999874,
+     "usd_per_1000_games": 0.14546856846378484
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "NVIDIA A100-SXM4-40GB, 40960 MiB, 610.57.04",
+   "usd_per_hour": 2.4158000000000004
+  },
+  "H100": {
+   "label": "H100",
+   "device": "cuda:0",
+   "device_kind": "NVIDIA H100 80GB HBM3",
+   "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+   "jax": "0.12.0.1",
+   "pgx": "2.6.0",
+   "simulations_per_move": 200,
+   "rows": [
+    {
+     "batch": 100,
+     "forward_s": 0.0007463840000010435,
+     "env_s": 0.0005195170000007465,
+     "simulation_s": 0.0009631030000001317,
+     "evals_per_s": 133979.29216041634,
+     "env_steps_per_s": 192486.48263648024,
+     "simulations_per_s": 103831.05441472649
+    },
+    {
+     "batch": 400,
+     "forward_s": 0.0006470470000010664,
+     "env_s": 0.0007324699999990969,
+     "simulation_s": 0.001107317000002439,
+     "evals_per_s": 618193.114254978,
+     "env_steps_per_s": 546097.4510908204,
+     "simulations_per_s": 361233.5040454711
+    },
+    {
+     "batch": 1600,
+     "forward_s": 0.001377047000001852,
+     "env_s": 0.00155235100000084,
+     "simulation_s": 0.0025984179999980483,
+     "evals_per_s": 1161906.6015886518,
+     "env_steps_per_s": 1030694.7333426102,
+     "simulations_per_s": 615759.2812246535
+    },
+    {
+     "batch": 6400,
+     "forward_s": 0.003594933999998773,
+     "env_s": 0.004698246000000239,
+     "simulation_s": 0.007894772000000216,
+     "evals_per_s": 1780283.0316223288,
+     "env_steps_per_s": 1362210.4930222202,
+     "simulations_per_s": 810663.0565138328
+    }
+   ],
+   "train": {
+    "batch": 1024,
+    "step_s": 0.0034576959999981227,
+    "positions_per_s": 296150.9629535263
+   },
+   "estimates": [
+    {
+     "batch": 100,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 3633.391872305467,
+     "training_share": 0.004634848030295945,
+     "usd_per_1000_games": 1.1740544785479623
+    },
+    {
+     "batch": 100,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 5458.66184384723,
+     "training_share": 0.006963209305291233,
+     "usd_per_1000_games": 0.7814735775963529
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 12497.161907521693,
+     "training_share": 0.015941700836858363,
+     "usd_per_1000_games": 0.3413415006996535
+    },
+    {
+     "batch": 400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 18668.699515145643,
+     "training_share": 0.02381427278336939,
+     "usd_per_1000_games": 0.22850011574396054
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 21066.059097351048,
+     "training_share": 0.026872406265251548,
+     "usd_per_1000_games": 0.20249634638765457
+    },
+    {
+     "batch": 1600,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 31297.539250560636,
+     "training_share": 0.039923945240876994,
+     "usd_per_1000_games": 0.13629825545864874
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 512,
+     "average_plies": 340,
+     "games_per_hour": 27500.10218006696,
+     "training_share": 0.03507983694072205,
+     "usd_per_1000_games": 0.15511942363225112
+    },
+    {
+     "batch": 6400,
+     "chunk_plies": 340,
+     "average_plies": 340,
+     "games_per_hour": 40689.82592157802,
+     "training_share": 0.05190498744800834,
+     "usd_per_1000_games": 0.10483701769138865
+    }
+   ],
+   "note": "estimates exclude search bookkeeping (measured in Phase 4)",
+   "nvidia_smi": "NVIDIA H100 80GB HBM3, 81559 MiB, 610.57.04",
+   "usd_per_hour": 4.2658
+  }
+ }
+}

@@ -31,7 +31,7 @@ useful weights is itself untested; Phase 6 measures it before any training.
 | Stem | 3×3 conv, 119 → 64 filters, bias, ReLU |
 | Body | 6 residual blocks: 3×3 conv (64) → ReLU → 3×3 conv (64) → add skip → ReLU; all convs with bias |
 | Policy head | 3×3 conv (64) → ReLU → 1×1 conv (73) → 4,672 logits; illegal moves masked before softmax |
-| Value head | 1×1 conv (1) → ReLU → linear 64 → 256 → ReLU → linear 256 → 1 → tanh |
+| Value head | 1×1 conv (1) → linear 64 → 256 → ReLU → linear 256 → 1 → tanh *(amended 2026-11-08: no ReLU after the 1×1 conv; see §10)* |
 | Normalization | none (no batch norm in any arm) |
 | Size | 570,379 parameters |
 
@@ -255,6 +255,17 @@ that channel's activation and the feature on a fixed probe set of positions.
 - **Pre-experiment parameters fixed by rule after Phase 3:** game budget, replay window, K, and LR drop steps
   (from §4, §7, §8.1); and, after the D1 pilot and calibration run, the base LR, warmup and primary threshold
   (§4, §8.4). All are recorded in [decisions.md](decisions.md) before any WSP or distillation training run.
+- **Value head (amended 2026-11-08, Justin, before any results).** AlphaZero's value head is 1×1 conv → batch norm
+  → ReLU → … With batch norm removed (in every arm), that single ReLU channel died: in a realistic training check
+  (16,384 positions, soft move targets, a material-based result target, batch 1,024, LR 0.003) the value head of
+  all three seeds died within 300 steps and learned nothing, while the move head learned normally. With the ReLU
+  removed, all three seeds learned (held-out value error 0.52 → 0.20–0.25). The 1×1 value conv is therefore
+  linear; the parameter count is unchanged (570,379) and nothing else changes. Details: Phase 3 gate report.
+- **Value-head health (added 2026-11-08, Justin).** Without batch norm the value head can still fail by saturating
+  (tanh pinned at ±1), as seen when memorizing random labels on very small batches. Every training run logs
+  `ws_zero.net.value_head_health` (value layer activity, saturated fraction, spread of values), and the
+  **Phase 7 gate** also requires a healthy value head throughout the smoke run. If it fails there, the issue is
+  revisited with Justin before any experiment.
 
 ## 11. Deviations
 

@@ -4,16 +4,15 @@ import subprocess
 import sys
 
 import numpy as np
-import torch
 
 from ws_zero.seeding import derive_seed, seed_everything
 
 
 def _draw():
-    return (random.random(), float(np.random.rand()), float(torch.rand(1).item()))
+    return (random.random(), float(np.random.rand()))
 
 
-def test_same_seed_reproduces_python_numpy_and_torch_draws():
+def test_same_seed_reproduces_python_and_numpy_draws():
     seed_everything(123)
     first = _draw()
     seed_everything(123)
@@ -39,11 +38,19 @@ def test_derive_seed_gives_distinct_seeds_per_worker_and_base():
     assert derive_seed(7, "selfplay", 0) != derive_seed(7, "eval", 0)
 
 
-def test_derive_seed_is_valid_for_numpy_and_torch():
+def test_derive_seed_is_valid_for_numpy_and_jax():
+    import jax
+
     s = derive_seed(7, "x")
     assert 0 <= s < 2**32
     np.random.seed(s)
-    torch.manual_seed(s)
+    jax.random.key(s)
+
+
+def test_seeding_does_not_import_torch():
+    code = "import sys, ws_zero.seeding, ws_zero.runlog; print('torch' in sys.modules)"
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)
+    assert out.stdout.strip() == "False"
 
 
 def test_derive_seed_is_stable_across_processes():

@@ -10,11 +10,13 @@ import subprocess
 from pathlib import Path
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 
 from ws_zero.game.env import ChessEnv, initial_state, state_from_fen
 from ws_zero.game.moves import move_to_action
 from ws_zero.game.reference import SCALAR_PLANES, ReferenceGame, observations_match
+from ws_zero.net import PARAM_SHAPES, apply, masked_log_softmax
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,6 +29,18 @@ SCENES = [  # (name, starting FEN or None for the start position, moves in SAN)
     ("enpassant", None, ["e4", "Nf6", "e5", "d5", "exd6"]),
     ("promotion", "r1n1k3/1P6/8/8/8/8/6p1/4K2R w K - 0 1", ["bxc8=N", "gxh1=Q+"]),
 ]
+
+
+def hand_written_network():
+    """Three nonzero weights: copy "my pawns" through the stem and policy conv, then score "two squares forward"."""
+    params = {name: jnp.zeros(shape) for name, shape in PARAM_SHAPES.items()}
+    params["stem/w"] = params["stem/w"].at[1, 1, 0, 0].set(1.0)
+    params["policy/conv/w"] = params["policy/conv/w"].at[1, 1, 0, 0].set(1.0)
+    params["policy/out/w"] = params["policy/out/w"].at[0, 0, 0, 17].set(1.0)
+    return params
+
+
+HAND = hand_written_network()
 
 
 def plane_description(plane: int) -> str:
@@ -73,14 +87,43 @@ def build_scene(env: ChessEnv, name: str, fen: str | None, sans: list[str]) -> d
         moves = sorted(([m.uci(), board.san(m), move_to_action(board, m)] for m in board.legal_moves),
                        key=lambda m: m[2])
         terminal, value = ref.outcome()
+        logp = np.asarray(masked_log_softmax(apply(HAND, jnp.asarray(obs)[None])[0], jnp.asarray(mask)[None]))[0]
+        hand = [round(float(np.exp(logp[m[2]])), 4) for m in moves]
         positions.append({"fen": board.fen(), "ply": ref.plies, "last": last, "obs": encode_observation(obs),
-                          "moves": moves, "check": board.is_check(), "terminal": terminal, "value": value})
+                          "moves": moves, "hand": hand, "check": board.is_check(), "terminal": terminal,
+                          "value": value})
         if ply < len(sans):
             move = board.parse_san(sans[ply])
             last = {"san": sans[ply], "uci": move.uci(), "action": move_to_action(board, move)}
             state = env.step(state, [last["action"]])
             ref.push(move)
     return {"name": name, "fen": fen, "positions": positions}
+
+
+def phase3_data(gates: Path) -> dict:
+    """Value-head check curves (original and amended head) and Modal cost per 1,000 games."""
+    def curves(name):
+        path = gates / name
+        if not path.exists():
+            return []
+        return [[{"step": c["step"], "mse": round(c["value_mse"], 4)} for c in r["curve"]]
+                for r in json.loads(path.read_text())["results"]]
+
+    gpus = []
+    bench = gates / "phase-3-bench-modal.json"
+    if bench.exists():
+        for gpu, r in json.loads(bench.read_text())["results"].items():
+            if "error" in r:
+                continue
+            one = {e["chunk_plies"]: e for e in r["estimates"] if e["batch"] == 100}
+            gpus.append({"gpu": gpu, "perHour": round(r["usd_per_hour"], 2),
+                         "cost": [round(one[340]["usd_per_1000_games"], 2), round(one[512]["usd_per_1000_games"], 2)],
+                         "gamesPerHour": [round(one[512]["games_per_hour"]), round(one[340]["games_per_hour"])]})
+    gate = [json.loads((gates / f"phase-3-overfit-realistic-seed{s}.json").read_text())["passed"]
+            for s in range(3) if (gates / f"phase-3-overfit-realistic-seed{s}.json").exists()]
+    return {"valueOriginal": curves("phase-3-value-check-original-head.json"),
+            "valueFixed": curves("phase-3-value-check.json"), "gpus": sorted(gpus, key=lambda g: g["cost"][1]),
+            "gatePassed": bool(gate) and all(gate)}
 
 
 def commit_label() -> str:
@@ -97,7 +140,8 @@ def main():
 
     env = ChessEnv()
     data = {"planes": [plane_description(p) for p in range(73)],
-            "scenes": [build_scene(env, *scene) for scene in SCENES]}
+            "scenes": [build_scene(env, *scene) for scene in SCENES],
+            "phase3": phase3_data(ROOT / "docs" / "gates")}
     page = (ROOT / "lab" / "template.html").read_text()
     page = page.replace("__COMMIT__", commit_label()).replace("__DATA__", json.dumps(data, separators=(",", ":")))
     args.out.parent.mkdir(parents=True, exist_ok=True)

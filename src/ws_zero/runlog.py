@@ -5,10 +5,11 @@ import socket
 import subprocess
 import sys
 import time
+from importlib.metadata import version
 from pathlib import Path
 
+import jax
 import numpy as np
-import torch
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -83,7 +84,9 @@ def _meta(name: str, config: dict) -> dict:
         "host": socket.gethostname(),
         "platform": platform.platform(),
         "python": sys.version.split()[0],
-        "torch": torch.__version__,
+        "jax": jax.__version__,
+        "jaxlib": version("jaxlib"),
+        "pgx": version("pgx"),
         "numpy": np.__version__,
-        "cuda": torch.version.cuda,
+        "devices": [str(d) for d in jax.devices()],
     }

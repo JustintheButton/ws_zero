@@ -1,16 +1,17 @@
-"""Seed control: one base seed per run, with stable derived seeds for workers and sub-tasks."""
+"""Seed control: one base seed per run, with stable derived seeds for workers and sub-tasks.
+
+JAX has no global generator: JAX code takes explicit keys, e.g. `jax.random.key(derive_seed(seed, "init"))`.
+"""
 import hashlib
 import random
 
 import numpy as np
-import torch
 
 
 def seed_everything(seed: int) -> None:
-    """Seed Python's `random`, NumPy's global generator, and PyTorch (CPU and all GPUs)."""
+    """Seed Python's `random` and NumPy's global generator."""
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)  # also seeds every CUDA device
 
 
 def derive_seed(base: int, *keys) -> int:

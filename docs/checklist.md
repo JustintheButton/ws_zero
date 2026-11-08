@@ -74,8 +74,9 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 
 ## Phase 3: Network
 
-- [ ] Small ResNet with masked-softmax policy head and tanh value head.
-- [ ] Benchmark throughput: network evaluations per second and estimated self-play games per hour.
+- [x] Small ResNet with masked-softmax policy head and tanh value head. `src/ws_zero/net.py`
+- [x] Benchmark throughput: network evaluations per second and estimated self-play games per hour. Mac and six
+  Modal GPU types. [Report](gates/phase-3.md)
 
 > **GATE:** the network overfits a small batch of positions; throughput numbers are reported so the experiment
 > timeline can be checked.
@@ -119,7 +120,8 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 
 - [ ] Replay buffer (window of recent games), loss, checkpointing, continuous training without gating.
 
-> **GATE:** a short random-init smoke run shows falling loss and beats the random mover.
+> **GATE:** a short random-init smoke run shows falling loss and beats the random mover. *Amended 2026-11-08:*
+> and the value head stays alive throughout (see the Phase 3 report).
 
 ## Phase 8: Controls
 

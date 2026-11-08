@@ -235,6 +235,15 @@ table.cov td.num, table.cov th.num { text-align: right; }
 .pill.next { border-color: var(--signal); color: var(--signal); }
 @media (max-width: 560px) { .road td:nth-child(2) { width: auto; } .road td:nth-child(3) { width: auto; } }
 
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.chart text.lbl { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+.chart .ln-orig { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.chart .ln-fix { stroke: var(--signal); stroke-width: 2; fill: none; }
+.chart .bar-hi { fill: var(--sq-dark); opacity: 0.4; }
+.chart .bar-lo { fill: var(--sq-dark); }
+.chart .bar-best { fill: var(--signal); }
 footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.3rem; }
 @media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.6s ease; } }
 </style>
@@ -303,8 +312,9 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       <div class="panel">
         <div class="panel-head">
           <h3>Output: 4,672 move slots</h3>
-          <p>One row per from-square (0–63, counted from the mover's side) and one column per move type (0–72). Dark cells are the legal moves; every other slot is masked off. The selected move is in blue. From Phase 3 on, the network puts a probability in each dark cell.</p>
+          <p>One row per from-square (0–63, counted from the mover's side) and one column per move type (0–72). Dark cells are the legal moves; every other slot is masked off. The selected move is in blue. The network puts a probability in each dark cell; tick the box to see the choices of a network written by hand.</p>
         </div>
+        <label class="toggle" for="show-hand"><input type="checkbox" id="show-hand"> Show the hand-written network: 3 nonzero weights out of 570,379, meaning "push a pawn two squares"</label>
         <p class="caption" id="pol-cap">Point at a cell to decode it.</p>
         <canvas class="policy" id="policy" aria-label="Grid of 4,672 move slots with legal moves marked"></canvas>
         <div class="policy-axis"><span>under-promotions 0–8</span><span>queen-style moves 9–64 (direction × distance)</span><span>knight 65–72</span></div>
@@ -345,6 +355,26 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
           <li><span class="tag">fixed</span><span>Repeating the starting position was never detected, because pgx hard-codes a value computed under an older version of JAX.</span></li>
           <li><span class="tag">fixed</span><span>A position loaded from FEN remembered the standard starting position as its previous move. Found while building this page.</span></li>
         </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="network" aria-labelledby="net-h">
+    <div class="block-head">
+      <p class="kicker" id="p3-kicker">Phase 3</p>
+      <h2 id="net-h">Teaching the network who is winning</h2>
+      <p>For every position the network gives two answers: how promising each move looks, and who is winning. Moves were easy. Judging the position nearly failed: AlphaZero's design relies on batch norm, which this experiment removes in every arm, and without it one on/off switch in the "who is winning" part shut off for good. The test that caught it trained on 16,384 positions from games and was scored on 2,048 it never saw.</p>
+    </div>
+    <div class="gate-grid">
+      <div class="panel">
+        <h3>Error of the "who is winning" answer</h3>
+        <div class="chart" id="value-chart"></div>
+        <p class="hint">Original design: all three random starts stopped learning within 300 steps. With the switch removed (approved 8 Nov), all three learned. Lower is better; 0.52 is a network that always says "equal".</p>
+      </div>
+      <div class="panel">
+        <h3>What 1,000 self-play games cost on Modal</h3>
+        <div class="chart" id="cost-chart"></div>
+        <p class="hint">One training run per GPU, 200 searches per move; the range runs from games averaging 340 moves to games hitting the 512-move cap. The search's own bookkeeping is added in Phase 4. For comparison, the Mac manages about 350–520 games an hour.</p>
       </div>
     </div>
   </section>
@@ -393,12 +423,13 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   const FILLED = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
   const OUTLINE = { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" };
   const fmt = (n) => n.toLocaleString("en-US");
+  const P3 = DATA.phase3;
 
   const PHASES = [
     ["Protocol", "done", "The frozen plan, below."],
     ["Chess rules", "done", "This board explorer and the agreement check with python-chess."],
-    ["Network", "next", "The untrained network's move probabilities painted on these same positions, and how many positions per second it evaluates on a GPU."],
-    ["Search", "", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
+    ["Network", P3.gatePassed ? "done" : "next", "The value-head fix, GPU costs per game, and a network written by hand, shown on the board explorer."],
+    ["Search", P3.gatePassed ? "next" : "", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
     ["Evaluation", "", "The Stockfish ladder from 1 to 10,000 nodes, and test positions labelled with Stockfish's best move."],
     ["WSP pilot", "", "Claude's hand-written networks: what they play on these positions, their games against practice bots, and the go / no-go result."],
     ["Training loop", "", "A short training run: the loss falling and a first win over the random mover."],
@@ -415,7 +446,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   };
   const scenes = Object.fromEntries(DATA.scenes.map((s) => [s.name, s]));
 
-  const state = { scene: "opera", ply: 0, move: null, showIdx: false, hotPlane: null };
+  const state = { scene: "opera", ply: 0, move: null, showIdx: false, showHand: false, hotPlane: null };
 
   // ---------- helpers ----------
   function parseFen(fen) {
@@ -639,7 +670,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       </dl>
       <div class="chips" role="group" aria-label="Moves from ${from}">${siblings.map((m) =>
         `<button type="button" data-uci="${m[0]}" aria-pressed="${m[0] === uci}">${m[1]} <span style="color:var(--muted)">${m[2]}</span></button>`).join("")}</div>
-      <p class="hint">${p.moves.length} of 4,672 slots are legal in this position.</p>`;
+      <p class="hint">${p.moves.length} of 4,672 slots are legal in this position.${state.showHand && p.hand ? ` The hand-written network gives ${san} <b>${(100 * p.hand[p.moves.indexOf(sel)]).toFixed(1)}%</b>; its favourite here is ${p.moves[p.hand.indexOf(Math.max(...p.hand))][1]}.` : ""}</p>`;
   }
   document.getElementById("inspector").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-uci]");
@@ -752,8 +783,14 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     ctx.fillStyle = T.rule;
     for (const c of [9, 65]) ctx.fillRect(c * CELL - 0.5, 0, 1, 64 * CELL);
     for (let r = 8; r < 64; r += 8) { ctx.globalAlpha = 0.6; ctx.fillRect(0, r * CELL - 0.5, 73 * CELL, 1); ctx.globalAlpha = 1; }
-    ctx.fillStyle = T.ink;
-    for (const m of P.moves) { const r = Math.floor(m[2] / 73), c = m[2] % 73; ctx.fillRect(c * CELL + 0.5, r * CELL + 0.5, CELL - 1, CELL - 1); }
+    const maxp = state.showHand && P.hand ? Math.max(...P.hand) : 0;
+    P.moves.forEach((m, k) => {
+      const r = Math.floor(m[2] / 73), c = m[2] % 73;
+      if (maxp > 0) { ctx.fillStyle = T.signal; ctx.globalAlpha = 0.12 + 0.88 * (P.hand[k] / maxp); }
+      else { ctx.fillStyle = T.ink; ctx.globalAlpha = 1; }
+      ctx.fillRect(c * CELL + 0.5, r * CELL + 0.5, CELL - 1, CELL - 1);
+    });
+    ctx.globalAlpha = 1;
     if (sel) {
       const r = Math.floor(sel[2] / 73), c = sel[2] % 73;
       ctx.fillStyle = T.signal; ctx.fillRect(c * CELL - 1.5, r * CELL - 1.5, CELL + 3, CELL + 3);
@@ -770,7 +807,8 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     if (!h) return;
     const P = pos(), white = parseFen(P.fen).white;
     const m = P.moves.find((x) => x[2] === h.action);
-    cap.textContent = `action ${fmt(h.action)} = square ${h.r} (${indexSquare(h.r, white)}) × 73 + plane ${h.c} (${PLANE_DESC[h.c]}) · ${m ? "legal: " + m[1] : "masked"}`;
+    const hp = m && state.showHand && P.hand ? ` · hand-written network ${(100 * P.hand[P.moves.indexOf(m)]).toFixed(1)}%` : "";
+    cap.textContent = `action ${fmt(h.action)} = square ${h.r} (${indexSquare(h.r, white)}) × 73 + plane ${h.c} (${PLANE_DESC[h.c]}) · ${m ? "legal: " + m[1] : "masked"}${hp}`;
   });
   pol.addEventListener("pointerleave", () => { document.getElementById("pol-cap").textContent = "Point at a cell to decode it."; });
   pol.addEventListener("click", (e) => {
@@ -778,6 +816,45 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     const m = pos().moves.find((x) => x[2] === h.action);
     if (m) { state.move = m[0]; renderSelection(); }
   });
+
+  document.getElementById("show-hand").addEventListener("change", (e) => { state.showHand = e.target.checked; renderInspector(); renderPolicy(); });
+
+  // ---------- Phase 3 charts ----------
+  document.getElementById("p3-kicker").innerHTML = P3.gatePassed ? "Phase 3 · <b>gate passed</b> 8 Nov 2026" : "Phase 3 · in progress";
+  function renderValueChart() {
+    const W = 440, H = 230, L = 40, R = 118, T = 12, B = 30;
+    const x = (s) => L + (s / 900) * (W - L - R), y = (v) => T + (1 - v / 0.6) * (H - T - B);
+    let g = "";
+    for (const v of [0, 0.2, 0.4, 0.6]) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`;
+    for (const s of [0, 300, 600, 900]) g += `<text x="${x(s)}" y="${H - 14}" text-anchor="middle">${s}</text>`;
+    g += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">training steps</text>`;
+    const upto = (c) => c.filter((p) => p.step <= 900);
+    const path = (c) => upto(c).map((p, i) => `${i ? "L" : "M"}${x(p.step).toFixed(1)},${y(Math.min(p.mse, 0.6)).toFixed(1)}`).join("");
+    P3.valueOriginal.forEach((c) => { g += `<path class="ln-orig" d="${path(c)}"/>`; });
+    P3.valueFixed.forEach((c) => { g += `<path class="ln-fix" d="${path(c)}"/>`; });
+    const endY = (cs) => y(cs.map((c) => upto(c).at(-1).mse).reduce((a, b) => a + b, 0) / cs.length);
+    if (P3.valueOriginal.length) g += `<text class="lbl" x="${W - R + 8}" y="${endY(P3.valueOriginal) + 4}">original design</text>`;
+    if (P3.valueFixed.length) g += `<text class="lbl" x="${W - R + 8}" y="${endY(P3.valueFixed) + 4}" style="fill: var(--signal)">switch removed</text>`;
+    document.getElementById("value-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Value error during training: flat for the original design, falling after the amendment">${g}</svg>`;
+  }
+  function renderCostChart() {
+    const rows = P3.gpus, W = 440, row = 30, L = 78, R = 92, T = 6, H = T + rows.length * row + 24;
+    if (!rows.length) { document.getElementById("cost-chart").innerHTML = `<p class="hint">Benchmark not run yet.</p>`; return; }
+    const max = Math.max(1.2, ...rows.map((r) => r.cost[1]));
+    const x = (v) => L + (v / max) * (W - L - R);
+    let g = "";
+    for (const v of [0, 0.5, 1.0]) g += `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H - 22}"/><text x="${x(v)}" y="${H - 6}" text-anchor="middle">$${v.toFixed(2)}</text>`;
+    rows.forEach((r, i) => {
+      const yy = T + i * row + 6;
+      g += `<text class="lbl" x="${L - 8}" y="${yy + 13}" text-anchor="end">${r.gpu}</text>`;
+      g += `<rect class="bar-hi" x="${L}" y="${yy}" width="${(x(r.cost[1]) - L).toFixed(1)}" height="18" rx="2"/>`;
+      g += `<rect class="${i === 0 ? "bar-best" : "bar-lo"}" x="${L}" y="${yy}" width="${(x(r.cost[0]) - L).toFixed(1)}" height="18" rx="2"/>`;
+      g += `<text x="${(x(r.cost[1]) + 6).toFixed(1)}" y="${yy + 13}">$${r.cost[0].toFixed(2)}–${r.cost[1].toFixed(2)}</text>`;
+    });
+    document.getElementById("cost-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cost per 1,000 self-play games by GPU type, cheapest first">${g}</svg>`;
+  }
+  renderValueChart();
+  renderCostChart();
 
   // ---------- orchestration ----------
   function renderSelection() { renderBoard(); renderNet(); renderInspector(); renderPolicy(); }

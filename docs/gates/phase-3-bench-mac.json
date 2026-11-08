@@ -1,0 +1,111 @@
+{
+ "label": "Mac M4 Pro (CPU)",
+ "device": "cpu:0",
+ "device_kind": "cpu",
+ "platform": "macOS-26.5.2-arm64-arm-64bit",
+ "jax": "0.12.0.1",
+ "pgx": "2.6.0",
+ "simulations_per_move": 200,
+ "rows": [
+  {
+   "batch": 100,
+   "forward_s": 0.00529841601382941,
+   "env_s": 0.004727333027403802,
+   "simulation_s": 0.009637999988626689,
+   "evals_per_s": 18873.56518230915,
+   "env_steps_per_s": 21153.57632312164,
+   "simulations_per_s": 10375.596609048027
+  },
+  {
+   "batch": 400,
+   "forward_s": 0.018957292020786554,
+   "env_s": 0.01790670899208635,
+   "simulation_s": 0.03577962500276044,
+   "evals_per_s": 21100.06004873494,
+   "env_steps_per_s": 22337.996344095114,
+   "simulations_per_s": 11179.54701786672
+  },
+  {
+   "batch": 1600,
+   "forward_s": 0.07372749998467043,
+   "env_s": 0.07135379099054262,
+   "simulation_s": 0.1375065419706516,
+   "evals_per_s": 21701.536066361605,
+   "env_steps_per_s": 22423.47572271342,
+   "simulations_per_s": 11635.810028162095
+  },
+  {
+   "batch": 6400,
+   "forward_s": 0.2923744589788839,
+   "env_s": 0.14101312501588836,
+   "simulation_s": 0.4072170000290498,
+   "evals_per_s": 21889.73695702409,
+   "env_steps_per_s": 45385.84617055252,
+   "simulations_per_s": 15716.436198742784
+  }
+ ],
+ "train": {
+  "batch": 1024,
+  "step_s": 0.3139655410195701,
+  "positions_per_s": 3261.504420754799
+ },
+ "estimates": [
+  {
+   "batch": 100,
+   "chunk_plies": 512,
+   "average_plies": 340,
+   "games_per_hour": 349.9801565740573,
+   "training_share": 0.0405379569549282
+  },
+  {
+   "batch": 100,
+   "chunk_plies": 340,
+   "average_plies": 340,
+   "games_per_hour": 516.4381194409498,
+   "training_share": 0.05981866646588372
+  },
+  {
+   "batch": 400,
+   "chunk_plies": 512,
+   "average_plies": 340,
+   "games_per_hour": 375.91749380468605,
+   "training_share": 0.043542260600235576
+  },
+  {
+   "batch": 400,
+   "chunk_plies": 340,
+   "average_plies": 340,
+   "games_per_hour": 553.8869084498376,
+   "training_share": 0.06415633352597387
+  },
+  {
+   "batch": 1600,
+   "chunk_plies": 512,
+   "average_plies": 340,
+   "games_per_hour": 390.56549257158076,
+   "training_share": 0.045238928060759354
+  },
+  {
+   "batch": 1600,
+   "chunk_plies": 340,
+   "average_plies": 340,
+   "games_per_hour": 574.9867796478372,
+   "training_share": 0.06660031686134918
+  },
+  {
+   "batch": 6400,
+   "chunk_plies": 512,
+   "average_plies": 340,
+   "games_per_hour": 519.2963689976968,
+   "training_share": 0.06014973551457516
+  },
+  {
+   "batch": 6400,
+   "chunk_plies": 340,
+   "average_plies": 340,
+   "games_per_hour": 758.9067014664362,
+   "training_share": 0.08790363287451994
+  }
+ ],
+ "note": "estimates exclude search bookkeeping (measured in Phase 4)"
+}
