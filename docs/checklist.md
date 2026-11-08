@@ -44,7 +44,8 @@ sample efficiency in early training, not final superhuman strength.
 - [x] Read the MIT team's released logs (github.com/RikiyaT/lm_understand-logs) for their harness and prompts.
   Notes in [decisions.md](decisions.md#notes-from-the-wsp-logs).
 - [x] Create the repo: config files, experiment tracking (e.g. Weights & Biases), seed control, pinned dependencies.
-- [ ] Write the protocol document and get it approved before any experiment: **[HUMAN]**
+- [x] Write the protocol document and get it approved before any experiment: **[HUMAN]** Approved 2026-11-08:
+  [protocol.md](protocol.md) v1.0.
   - architecture, simulations per move, LR schedule with warmup
   - self-play game budget per run, number of seeds per arm
   - evaluation schedule, metrics and anchor opponents

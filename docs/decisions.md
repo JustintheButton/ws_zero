@@ -14,6 +14,19 @@ recorded here as **deviations**, with Justin's approval.
 | 2026-11-08 | Experiment tracking: Weights & Biases (project `ws_zero`), mirrored from complete local run logs, which stay the source of truth. | Justin |
 | 2026-11-08 | Environment: Python 3.12 via uv, exact pins in `pyproject.toml` and `uv.lock`. PyTorch 2.15.0 on both machines; on Linux the CUDA 13.2 build, since the RTX 5070 Ti needs CUDA ≥ 12.8 and the cu128 index stops at torch 2.11. The PC needs a recent NVIDIA driver. | Claude (default; no objection) |
 | 2026-11-08 | The PC runs Linux code under WSL2 (Ubuntu), not native Windows. | Claude (recommended; no objection) |
+| 2026-11-08 | Protocol D1: base LR and warmup chosen by a pilot on the random arm only (4 LRs × 2 warmups, 20% budget each); gradient clipping only if every pilot setting diverges. | Justin |
+| 2026-11-08 | Protocol D2: synchronous chunks (100 games, then train), no gating, batch 1,024, each position sampled about 4 times on average. | Justin |
+| 2026-11-08 | Protocol D3: one written network per WSP seed (seed k ← budget-50 attempt k, by run order). Option C (every network × 3 seeds) kept as a follow-up idea. | Justin |
+| 2026-11-08 | Protocol D4: distillation = same session as budget-50 WSP but writing a non-searching heuristic; imitation on 1M positions for 2 epochs (not counted as self-play games); one heuristic per seed; imitation fidelity reported. | Justin |
+| 2026-11-08 | Protocol D5: 3 WSP attempts at 0 passes and 3 at 50 passes, effort `xhigh`; budgets 10 and 25 skipped (possible follow-up). | Justin |
+| 2026-11-08 | Protocol D6: GO if ≥ 2 of 3 budget-50 networks (full agent, 200 sims) score ≥ 60% vs the random-init agent over 200 games, 95% CI above 50%; Justin approves before Phase 7 either way. | Justin |
+| 2026-11-08 | Protocol D7: 5 seeds per arm; all runs on Modal (one container type, low-cost GPU); game budget fixed after Phase 3 so the main experiment costs ≤ $120 of the $150 Modal cap; if that gives < 15,000 games per run, the PC runs seeds 4–5 of every arm. Modal academic credits (modal.com/academics) noted as a way to raise the cap. | Justin |
+| 2026-11-08 | D7 revised before approval: Modal cap raised from $150 to $240 (plan ≤ $192 with 20% slack). | Justin |
+| 2026-11-08 | Protocol D8: primary threshold = 50% vs the strongest Stockfish rung a random-arm calibration run (D1 winner continued to full budget, pilot seed) reaches within 60% of its budget; fallback greedy material-grabber. Finer Stockfish ladder (nodes 1, 3, 10 … 10,000). Extra early evaluations at games 250, 500, 1,000, 2,000. | Justin |
+| 2026-11-08 | Protocol D9: exact one-sided Mann–Whitney test on time to threshold (5 vs 5); positive / negative at p < 0.05, else inconclusive; median difference with bootstrap CI always reported; post-hoc analyses allowed but labeled exploratory. | Justin |
+| 2026-11-08 | Consistency fix (option A): with 5 seeds (D7) and one network or heuristic per seed (D3, D4), D5 becomes 5 WSP attempts at 50 passes (plus 3 at 0) and D4 five heuristics; D6 becomes GO if ≥ 3 of 5 networks pass. LLM usage: 10 long + 3 short sessions, spread over as many weeks as needed. | Justin |
+| 2026-11-08 | Technical fix: LR drops and warmup defined as fractions of the game budget rather than of training steps (steps aren't known in advance under D2); pilot runs follow the full-budget schedule and stop at 20%. | Claude (no objection) |
+| 2026-11-08 | **Protocol v1.0 approved** and committed as the pre-registration. | Justin |
 
 ## Open questions for the protocol
 
@@ -41,6 +54,16 @@ Raised while reading the brief and the WSP logs; each needs a decision in `proto
     (or in Docker on the Mac).
 11. **Model difference.** The WSP results were obtained with GPT-6 Astra. Whether Claude Opus 5.5 can write useful
     weights is untested; the protocol and writeup should say so.
+
+## Follow-up ideas
+
+Not part of the pre-registered protocol; candidates once the main experiment is done.
+
+- **Every written network × 3 seeds** (from D3, 2026-11-08). Train each budget-50 WSP network with 3 seeds of its
+  own (9 WSP runs instead of 3). This separates two sources of variation: how much the written networks differ from
+  each other, and how much training luck matters for any one network. Costs 6 extra full runs.
+- **Pass budgets 10 and 25** (from D5, 2026-11-08). As in the WSP Go experiment, would show how a written network's
+  strength grows with the number of passes.
 
 ## Notes from the WSP logs
 
