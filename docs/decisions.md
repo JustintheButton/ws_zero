@@ -31,6 +31,8 @@ recorded here as **deviations**, with Justin's approval.
 | 2026-11-08 | Phase 2: fixed a pgx 2.6 bug under JAX ≥ 0.5 (start-position repetitions never detected: hard-coded hash from JAX's old random generator); `env.initial_state` stores the correct hash. | Claude (bug fix, reported) |
 | 2026-11-08 | Repetition identity: **accept pgx's convention** (an en passant square counts after every two-square pawn move, even with no capture possible) rather than patching pgx to FIDE. Measured: 0.007% of positions get different repetition planes; no game outcome differed in 2,000 games; identical across arms. Documented in docs/encoding.md. | Justin |
 | 2026-11-08 | **Phase 2 gate passed** (docs/gates/phase-2.md). | Justin |
+| 2026-11-08 | Fixed a second pgx 2.6 bug: `from_fen` keeps the default move history, so a position set up from FEN showed the standard start position one ply back. `env.state_from_fen` clears the history. Self-play (always from the start position) was unaffected; FEN-based evaluation positions would have been. Regression test added. | Claude (bug fix, approved for commit) |
+| 2026-11-08 | Lab notebook page: `lab/template.html`, built by `scripts/build_lab.py` from pgx positions checked against the reference; one section added per phase. | Justin |
 
 ## Open questions for the protocol
 

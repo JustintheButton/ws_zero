@@ -1,10 +1,11 @@
 import chess
+import jax
 import numpy as np
 import pytest
 
 from ws_zero.game.env import ChessEnv, state_from_fen, state_to_fen
 from ws_zero.game.moves import NUM_ACTIONS, move_to_action
-from ws_zero.game.reference import ReferenceGame
+from ws_zero.game.reference import ReferenceGame, observations_match
 
 ENV = ChessEnv()
 FOOLS_MATE = ["f2f3", "e7e5", "g2g4", "d8h4"]
@@ -58,3 +59,18 @@ def test_finished_games_are_not_changed_by_further_steps():
 ])
 def test_fen_round_trip(fen):
     assert state_to_fen(state_from_fen(fen)) == fen
+
+
+@pytest.mark.parametrize("fen, ucis", [
+    ("r3k2r/pppq1ppp/2npbn2/2b1p3/2B1P3/2NPBN2/PPPQ1PPP/R3K2R w KQkq - 0 8", ["e1g1", "e8c8"]),
+    ("r1n1k3/1P6/8/8/8/8/6p1/4K2R b K - 3 1", ["g2h1q", "e1d2"]),
+])
+def test_game_from_fen_has_no_history_before_its_start(fen, ucis):
+    # Regression: pgx's from_fen keeps the default history, so the standard start position appeared one ply back.
+    state, ref = jax.tree.map(lambda x: x[None], state_from_fen(fen)), ReferenceGame(fen, repetition_key="pgx")
+    for uci in [None] + ucis:
+        if uci:
+            move = chess.Move.from_uci(uci)
+            state = ENV.step(state, np.array([move_to_action(ref.board, move)]))
+            ref.push(move)
+        assert observations_match(np.asarray(ENV.observe(state))[0], ref.observation())

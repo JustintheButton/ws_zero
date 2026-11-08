@@ -12,6 +12,7 @@ needs to reach a fixed strength. Final superhuman strength is not a goal.
 - Pre-registered protocol: [`docs/protocol.md`](docs/protocol.md)
 - Decisions and deviations: [`docs/decisions.md`](docs/decisions.md)
 - Gate reports: [`docs/gates/`](docs/gates)
+- Lab notebook (visual progress page): `uv run python scripts/build_lab.py` writes `lab/build/lab.html`
 
 ## Setup
 
@@ -30,7 +31,7 @@ driver; do not install a CUDA toolkit inside WSL. Then, inside WSL:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 git clone https://github.com/JustintheButton/ws_zero.git && cd ws_zero
-uv sync            # installs the CUDA 12.8 build of PyTorch (required by the RTX 5070 Ti)
+uv sync            # installs JAX with CUDA 13 and the CUDA 13.2 build of PyTorch
 uv run pytest
 uv run python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```

@@ -1,0 +1,795 @@
+<title>ws_zero Lab Notebook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..700&family=JetBrains+Mono:wght@400;600&family=Libre+Franklin:wght@400;500;600&family=Noto+Sans+Symbols+2&display=swap">
+<style>
+/* Layout: a scoresheet column, the board, and the network's view side by side, like a game being annotated;
+   the wall of 119 input planes and the 4,672-slot output grid run full width beneath. */
+:root {
+  --paper: #f1f3f0;
+  --sheet: #fafbf9;
+  --ink: #17201d;
+  --muted: #586661;
+  --rule: #d2d9d5;
+  --sq-light: #e9e4d4;
+  --sq-dark: #8da69d;
+  --signal: #2244c0;
+  --signal-soft: rgba(34, 68, 192, 0.13);
+  --lastmove: rgba(212, 176, 52, 0.42);
+  --good: #1d7548;
+  --off-a: #e6eae7;
+  --off-b: #dbe1dd;
+  --piece-white: #fdfcf7;
+  --piece-edge: #121715;
+  --piece-black: #161b1a;
+  --coord-on-light: #5d7a70;
+  --coord-on-dark: #eef2e8;
+
+  --font-display: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+  --font-body: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-chess: "Noto Sans Symbols 2", "Segoe UI Symbol", "DejaVu Sans", sans-serif;
+
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.9rem, 1.3rem + 2.4vw, 3rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
+    --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
+    --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --off-a: #1c2523; --off-b: #222c29;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
+  --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
+  --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --off-a: #1c2523; --off-b: #222c29;
+  color-scheme: dark;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.55; }
+.page {
+  max-width: 1180px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 2rem 4rem;
+  display: grid; gap: 3.5rem;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.12; margin: 0; text-wrap: balance; }
+h1 { font-size: var(--step-3); letter-spacing: -0.01em; max-width: 22ch; }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+p { margin: 0; }
+.eyebrow, .kicker { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.kicker b { color: var(--good); font-weight: 600; }
+.lede { max-width: 64ch; font-size: var(--step-1); color: var(--ink); }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+a { color: var(--signal); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+/* masthead */
+.masthead { display: grid; gap: 1.1rem; }
+.phases { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.phases li { display: grid; gap: 0.35rem; min-width: 0; }
+.phases .bar { height: 6px; border-radius: 3px; background: var(--rule); }
+.phases .done .bar { background: var(--good); }
+.phases .next .bar { background: repeating-linear-gradient(90deg, var(--signal) 0 6px, transparent 6px 10px); }
+.phases .label { font-size: var(--step--1); line-height: 1.25; color: var(--muted); }
+.phases .label .num { display: block; color: var(--ink); }
+.phases .done .label, .phases .next .label { color: var(--ink); }
+@media (max-width: 640px) { .phases { grid-template-columns: repeat(5, minmax(0, 1fr)); row-gap: 0.8rem; } }
+
+.block { display: grid; gap: 1.4rem; }
+.block-head { display: grid; gap: 0.5rem; max-width: 70ch; }
+.block-head p:not(.kicker) { color: var(--muted); }
+
+/* scene tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tabs button {
+  border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 0.35rem 0.9rem; cursor: pointer;
+  font-size: var(--step--1); font-weight: 500;
+}
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* explorer */
+.explorer { display: grid; grid-template-columns: 210px minmax(260px, 430px) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media (max-width: 1060px) { .explorer { grid-template-columns: minmax(260px, 430px) minmax(0, 1fr); } .sheet { grid-column: 1 / -1; order: 3; } }
+@media (max-width: 720px) { .explorer { grid-template-columns: minmax(0, 1fr); } .sheet { order: 1; grid-column: auto; } .view-col { order: 2; } .score { max-height: 190px; } }
+
+.sheet { display: grid; gap: 0.8rem; min-width: 0; }
+.scene-note { font-size: var(--step--1); color: var(--muted); }
+.score { max-height: 330px; overflow: auto; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.score table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+.score td { padding: 0.18rem 0.3rem; }
+.score td:first-child { color: var(--muted); width: 2.4rem; text-align: right; }
+.score button { border: 0; background: none; padding: 0.05rem 0.3rem; border-radius: 3px; cursor: pointer; text-align: left; width: 100%; }
+.score button:hover { background: var(--signal-soft); }
+.score button[aria-current="true"] { background: var(--ink); color: var(--paper); }
+.nav { display: flex; gap: 0.35rem; }
+.nav button { flex: 1; border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px; padding: 0.35rem 0; cursor: pointer; font-family: var(--font-mono); }
+.nav button:disabled { opacity: 0.4; cursor: default; }
+
+.board-col { display: grid; gap: 0.6rem; min-width: 0; }
+.board { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); aspect-ratio: 1; max-width: 100%; container-type: inline-size; border-radius: 4px; overflow: hidden; box-shadow: 0 0 0 1px var(--rule); user-select: none; }
+.sq { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; overflow: hidden; }
+.sq.l { background: var(--sq-light); } .sq.d { background: var(--sq-dark); }
+.sq.last::after { content: ""; position: absolute; inset: 0; background: var(--lastmove); }
+.sq.from::after { content: ""; position: absolute; inset: 0; background: var(--signal-soft); box-shadow: inset 0 0 0 3px var(--signal); }
+.sq.target::before { content: ""; position: absolute; width: 26%; height: 26%; border-radius: 50%; background: var(--signal); opacity: 0.45; z-index: 2; }
+.sq.target.occ::before { width: 84%; height: 84%; background: none; box-shadow: inset 0 0 0 4px var(--signal); opacity: 0.5; }
+.sq.chosen::before { opacity: 1 !important; }
+.sq.mover { cursor: pointer; }
+.sq .coord { position: absolute; font-family: var(--font-mono); font-size: max(9px, 2.3cqi); line-height: 1; z-index: 3; opacity: 0.75; }
+.sq .coord.f { right: 3%; bottom: 3%; } .sq .coord.r { left: 4%; top: 4%; }
+.sq.l .coord { color: var(--coord-on-light); } .sq.d .coord { color: var(--coord-on-dark); }
+.pc { position: relative; z-index: 1; display: grid; place-items: center; font-family: var(--font-chess); font-size: 9.6cqi; line-height: 1; font-variant-emoji: text; pointer-events: none; }
+.pc > span { grid-area: 1 / 1; }
+.pc .fill { color: var(--piece-white); }
+.pc .edge { color: var(--piece-edge); }
+.pc.b { color: var(--piece-black); }
+.status { font-size: var(--step--1); color: var(--muted); }
+.status b { color: var(--ink); font-weight: 600; }
+
+.view-col { display: grid; gap: 1.1rem; min-width: 0; align-content: start; }
+.netview-wrap { display: grid; grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 460px) { .netview-wrap { grid-template-columns: minmax(0, 1fr); } .netview-wrap .net { max-width: 240px; } }
+.net { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); aspect-ratio: 1; container-type: inline-size; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--rule); }
+.net .cell { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; overflow: hidden; }
+.net .cell.a { background: var(--off-a); } .net .cell.b { background: var(--off-b); }
+.net .cell.from { box-shadow: inset 0 0 0 2px var(--signal); }
+.net .gl { font-family: var(--font-chess); font-size: 9.6cqi; line-height: 1; font-variant-emoji: text; }
+.net .gl.mine { color: var(--signal); } .net .gl.theirs { color: var(--ink); }
+.net .idx { position: absolute; inset: auto 3% 3% auto; font-family: var(--font-mono); font-size: max(8px, 3.2cqi); color: var(--muted); }
+.net .rk { position: absolute; left: 4%; top: 4%; font-family: var(--font-mono); font-size: max(8px, 3cqi); color: var(--muted); }
+.netcap { display: grid; gap: 0.5rem; font-size: var(--step--1); color: var(--muted); }
+.netcap strong { color: var(--ink); font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.legend span { display: inline-flex; gap: 0.3rem; align-items: center; }
+.legend .gl { font-family: var(--font-chess); font-size: 1.1rem; line-height: 1; }
+.toggle { display: inline-flex; gap: 0.4rem; align-items: center; cursor: pointer; }
+
+.inspector { border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.7rem; }
+.inspector .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; }
+.inspector .san { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; }
+.inspector .act { font-family: var(--font-mono); font-size: var(--step-1); color: var(--signal); font-variant-numeric: tabular-nums; }
+.calc { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.25rem 0.8rem; font-size: var(--step--1); }
+.calc dt { color: var(--muted); }
+.calc dd { margin: 0; }
+.calc .eq { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.chips button { border: 1px solid var(--rule); background: var(--sheet); border-radius: 5px; padding: 0.15rem 0.5rem; cursor: pointer; font-family: var(--font-mono); font-size: var(--step--1); }
+.chips button[aria-pressed="true"] { border-color: var(--signal); background: var(--signal-soft); color: var(--ink); }
+.hint { font-size: var(--step--1); color: var(--muted); }
+
+/* lower panels: input wall and output grid */
+.io { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+@media (max-width: 960px) { .io { grid-template-columns: minmax(0, 1fr); } }
+.panel { display: grid; gap: 0.8rem; min-width: 0; }
+.panel-head { display: grid; gap: 0.3rem; }
+.panel-head p { font-size: var(--step--1); color: var(--muted); max-width: 62ch; }
+.caption { min-height: 2.6em; font-size: var(--step--1); font-family: var(--font-mono); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 5px; padding: 0.35rem 0.6rem; }
+.wall-scroll { overflow-x: auto; }
+.wall { display: grid; grid-template-columns: 3rem repeat(14, minmax(16px, 1fr)); gap: 3px; min-width: 320px; }
+.wall .ch, .wall .rh { font-size: 0.7rem; color: var(--muted); display: grid; place-items: center; line-height: 1.1; text-align: center; }
+.wall .rh { justify-items: end; padding-right: 0.3rem; font-family: var(--font-mono); }
+.wall .ch .gl { font-family: var(--font-chess); font-size: 1rem; font-variant-emoji: text; }
+.wall .ch .gl.mine { color: var(--signal); } .wall .ch .gl.theirs { color: var(--ink); }
+.wall .gap { grid-column: 1 / -1; height: 0.4rem; }
+.tile { aspect-ratio: 1; width: 100%; display: block; image-rendering: pixelated; border-radius: 2px; cursor: crosshair; }
+.tile.hot { outline: 2px solid var(--signal); outline-offset: 1px; }
+.consts { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 0.4rem; }
+.const { display: grid; gap: 0.25rem; font-size: 0.7rem; color: var(--muted); line-height: 1.2; min-width: 0; }
+.const .val { font-family: var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .consts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.policy { width: 100%; max-width: 420px; aspect-ratio: 73 / 64; display: block; cursor: crosshair; border-radius: 3px; box-shadow: 0 0 0 1px var(--rule); }
+.policy-axis { display: grid; grid-template-columns: 9fr 56fr 8fr; max-width: 420px; font-size: 0.7rem; color: var(--muted); line-height: 1.2; }
+.policy-axis span { border-top: 1px solid var(--rule); padding-top: 0.2rem; padding-right: 0.3rem; }
+
+/* gate */
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 640px) { .figures { grid-template-columns: minmax(0, 1fr); } }
+.figure { border-top: 2px solid var(--ink); padding-top: 0.6rem; display: grid; gap: 0.2rem; }
+.figure .big { font-family: var(--font-display); font-size: clamp(2rem, 1.5rem + 2vw, 2.8rem); font-weight: 600; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.figure.zero .big { color: var(--good); }
+.figure p { font-size: var(--step--1); color: var(--muted); }
+.gate-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+@media (max-width: 860px) { .gate-grid { grid-template-columns: minmax(0, 1fr); } }
+.bars { display: grid; gap: 0.45rem; }
+.bar-row { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) 3.4rem; gap: 0.6rem; align-items: center; font-size: var(--step--1); }
+.bar-track { height: 14px; background: var(--off-a); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--sq-dark); }
+.bar-row .num { text-align: right; }
+table.cov { width: 100%; border-collapse: collapse; font-size: var(--step--1); }
+table.cov th, table.cov td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--rule); }
+table.cov th { font-weight: 600; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+table.cov td.num, table.cov th.num { text-align: right; }
+.fixes { display: grid; gap: 0.6rem; padding: 0; margin: 0; list-style: none; }
+.fixes li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.6rem; font-size: var(--step--1); }
+.fixes .tag { font-family: var(--font-mono); font-size: 0.7rem; color: var(--good); border: 1px solid currentColor; border-radius: 3px; padding: 0 0.3rem; height: fit-content; }
+
+/* plan */
+.arms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 760px) { .arms { grid-template-columns: minmax(0, 1fr); } }
+.arm { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; display: grid; gap: 0.4rem; align-content: start; }
+.arm p { font-size: var(--step--1); color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem 1.5rem; margin: 0; }
+.facts div { display: grid; gap: 0.15rem; }
+.facts dt { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.facts dd { margin: 0; font-size: var(--step--1); }
+
+/* roadmap */
+.road { width: 100%; border-collapse: collapse; font-size: var(--step--1); }
+.road td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.road td:first-child { font-family: var(--font-mono); color: var(--muted); width: 2rem; }
+.road td:nth-child(2) { font-weight: 600; width: 9.5rem; }
+.road td:nth-child(3) { width: 5.5rem; }
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; padding: 0.05rem 0.45rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); white-space: nowrap; }
+.pill.done { background: var(--good); border-color: var(--good); color: var(--paper); }
+.pill.next { border-color: var(--signal); color: var(--signal); }
+@media (max-width: 560px) { .road td:nth-child(2) { width: auto; } .road td:nth-child(3) { width: auto; } }
+
+footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.3rem; }
+@media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.6s ease; } }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <p class="eyebrow">ws_zero · lab notebook · updated 8 Nov 2026</p>
+    <h1>Can Claude write a chess network's first weights?</h1>
+    <p class="lede">We are building a small AlphaZero for chess from scratch. Then we test whether starting it from weights that Claude writes by hand, instead of random numbers, makes it learn faster. This page gains a section each time a phase passes its gate.</p>
+    <ol class="phases" id="phases" aria-label="Project phases"></ol>
+  </header>
+
+  <section class="block" id="sees" aria-labelledby="sees-h">
+    <div class="block-head">
+      <p class="kicker">Phase 2 · <b>gate passed</b></p>
+      <h2 id="sees-h">What the network sees, and how a move becomes a number</h2>
+      <p>The network never sees a chessboard. It gets 119 stacked 8×8 grids of 0s and 1s, always from the side to move's seat, and answers with a score for each of 4,672 possible moves. Pick a position, click a piece, and follow one move from the board to its number. Everything here was produced by our chess engine (pgx) and checked against python-chess when this page was built.</p>
+    </div>
+
+    <div class="tabs" id="tabs" role="group" aria-label="Positions"></div>
+
+    <div class="explorer">
+      <aside class="sheet">
+        <p class="scene-note" id="scene-note"></p>
+        <div class="score" id="score"></div>
+        <div class="nav">
+          <button type="button" id="nav-first" aria-label="First position">|◀</button>
+          <button type="button" id="nav-prev" aria-label="Previous move">◀</button>
+          <button type="button" id="nav-next" aria-label="Next move">▶</button>
+          <button type="button" id="nav-last" aria-label="Last position">▶|</button>
+        </div>
+        <p class="hint">Arrow keys step through the game.</p>
+      </aside>
+
+      <div class="board-col">
+        <div class="board" id="board" aria-label="Chessboard"></div>
+        <p class="status" id="status"></p>
+      </div>
+
+      <div class="view-col">
+        <div class="netview-wrap">
+          <div class="net" id="net" aria-label="The network's view of the position"></div>
+          <div class="netcap">
+            <p><strong>The network's seat.</strong> <span id="net-orient"></span></p>
+            <div class="legend">
+              <span><span class="gl" style="color: var(--signal)">♚&#xFE0E;</span> mine</span>
+              <span><span class="gl">♔&#xFE0E;</span> theirs</span>
+            </div>
+            <label class="toggle" for="show-idx"><input type="checkbox" id="show-idx"> Show square numbers (0–63)</label>
+          </div>
+        </div>
+        <div class="inspector" id="inspector" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="io">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Input: 119 planes</h3>
+          <p>Rows are time: the current position and the seven before it, each as 14 planes (where my pieces and their pieces stand, plus two repetition flags). The seven planes underneath are the same value on every square. Step through the game and watch the past slide down a row.</p>
+        </div>
+        <p class="caption" id="wall-cap">Point at any plane to read it.</p>
+        <div class="wall-scroll"><div class="wall" id="wall"></div></div>
+        <div class="consts" id="consts"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Output: 4,672 move slots</h3>
+          <p>One row per from-square (0–63, counted from the mover's side) and one column per move type (0–72). Dark cells are the legal moves; every other slot is masked off. The selected move is in blue. From Phase 3 on, the network puts a probability in each dark cell.</p>
+        </div>
+        <p class="caption" id="pol-cap">Point at a cell to decode it.</p>
+        <canvas class="policy" id="policy" aria-label="Grid of 4,672 move slots with legal moves marked"></canvas>
+        <div class="policy-axis"><span>under-promotions 0–8</span><span>queen-style moves 9–64 (direction × distance)</span><span>knight 65–72</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="gate" aria-labelledby="gate-h">
+    <div class="block-head">
+      <p class="kicker">Phase 2 · <b>gate passed</b> 8 Nov 2026</p>
+      <h2 id="gate-h">Does our chess agree with python-chess?</h2>
+      <p>Two thousand games of random moves, played in step by pgx and by an independent version written on python-chess. At every position both had to agree on the legal moves, all 119 input planes, the move numbers in both directions, and whether the game was over.</p>
+    </div>
+    <div class="figures">
+      <div class="figure"><span class="big num">2,000</span><p>random games, seed 0</p></div>
+      <div class="figure"><span class="big num">680,319</span><p>positions checked, every legal move round-tripped</p></div>
+      <div class="figure zero"><span class="big num">0</span><p>disagreements, using pgx's rule for repeated positions (accepted 8 Nov)</p></div>
+    </div>
+    <div class="gate-grid">
+      <div class="panel">
+        <h3>How the random games ended</h3>
+        <p class="hint">Random players rarely deliver mate. Most games end when too little material is left to mate at all.</p>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel">
+        <h3>Special moves seen and checked</h3>
+        <table class="cov">
+          <thead><tr><th>Move</th><th class="num">White</th><th class="num">Black</th></tr></thead>
+          <tbody>
+            <tr><td>Castle king-side</td><td class="num">2,046</td><td class="num">1,961</td></tr>
+            <tr><td>Castle queen-side</td><td class="num">943</td><td class="num">882</td></tr>
+            <tr><td>En passant</td><td class="num">500</td><td class="num">488</td></tr>
+            <tr><td>Promote to each of Q, R, B, N</td><td class="num">13,501</td><td class="num">13,676</td></tr>
+          </tbody>
+        </table>
+        <h3 style="margin-top: 0.6rem">Bugs found in pgx and fixed</h3>
+        <ul class="fixes">
+          <li><span class="tag">fixed</span><span>Repeating the starting position was never detected, because pgx hard-codes a value computed under an older version of JAX.</span></li>
+          <li><span class="tag">fixed</span><span>A position loaded from FEN remembered the standard starting position as its previous move. Found while building this page.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="plan" aria-labelledby="plan-h">
+    <div class="block-head">
+      <p class="kicker">Phase 1 · <b>approved</b> 8 Nov 2026</p>
+      <h2 id="plan-h">The plan, frozen before any results</h2>
+      <p>Three ways to start the same network. Same code, same settings, same evaluation; only the starting weights differ. Each is trained five times with different seeds.</p>
+    </div>
+    <div class="arms">
+      <div class="arm"><h3>Random start</h3><p>Standard random weights. The baseline that AlphaZero itself used.</p></div>
+      <div class="arm"><h3>Claude writes the weights</h3><p>Claude sets all 570,379 numbers directly, with no training. It may test its network up to 50 times against practice bots or on positions it picks.</p></div>
+      <div class="arm"><h3>Claude writes a heuristic</h3><p>The control. Claude writes its chess knowledge as a Python evaluator instead, and the network is trained to copy it before self-play begins.</p></div>
+    </div>
+    <dl class="facts">
+      <div><dt>Network</dt><dd>6 residual blocks × 64 filters, no batch norm, 570,379 weights</dd></div>
+      <div><dt>Search</dt><dd>About 200 simulations per move, AlphaZero's exploration formula</dd></div>
+      <div><dt>Headline measure</dt><dd>Self-play games needed to reach the finish line</dd></div>
+      <div><dt>Finish line</dt><dd>Score 50% against a fixed Stockfish level, set by a calibration run</dd></div>
+      <div><dt>Verdict</dt><dd>One-sided Mann–Whitney test, 5 runs against 5, at p &lt; 0.05</dd></div>
+      <div><dt>Compute</dt><dd>Modal GPUs, planned at $192 or less of a $240 cap</dd></div>
+    </dl>
+  </section>
+
+  <section class="block" id="roadmap" aria-labelledby="road-h">
+    <div class="block-head">
+      <p class="kicker">Roadmap</p>
+      <h2 id="road-h">What each phase will add to this page</h2>
+    </div>
+    <div style="overflow-x: auto"><table class="road" id="road"></table></div>
+  </section>
+
+  <footer>
+    <p>Repository: <a href="https://github.com/JustintheButton/ws_zero" target="_blank" rel="noopener">github.com/JustintheButton/ws_zero</a>. Built from commit __COMMIT__. Positions, input planes and legal moves come from pgx 2.6.0 and were checked against the python-chess reference at build time.</p>
+  </footer>
+</div>
+
+<script type="application/json" id="lab-data">__DATA__</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById("lab-data").textContent);
+  const PLANE_DESC = DATA.planes;
+  const FILES = "abcdefgh";
+  const VS = "︎";
+  const FILLED = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+  const OUTLINE = { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" };
+  const fmt = (n) => n.toLocaleString("en-US");
+
+  const PHASES = [
+    ["Protocol", "done", "The frozen plan, below."],
+    ["Chess rules", "done", "This board explorer and the agreement check with python-chess."],
+    ["Network", "next", "The untrained network's move probabilities painted on these same positions, and how many positions per second it evaluates on a GPU."],
+    ["Search", "", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
+    ["Evaluation", "", "The Stockfish ladder from 1 to 10,000 nodes, and test positions labelled with Stockfish's best move."],
+    ["WSP pilot", "", "Claude's hand-written networks: what they play on these positions, their games against practice bots, and the go / no-go result."],
+    ["Training loop", "", "A short training run: the loss falling and a first win over the random mover."],
+    ["Controls", "", "Claude's Python heuristic, and how closely the network learns to copy it."],
+    ["Main runs", "", "Learning curves for all 15 runs, with games to replay at checkpoints, from random moves to real openings."],
+    ["Analysis", "", "Games to the finish line for each starting point, and whether Claude's hand-written features survive training."],
+  ];
+
+  const SCENES = {
+    opera: { tab: "Opera Game, 1858", note: "Paul Morphy against the Duke of Brunswick and Count Isouard, Paris 1858. Step through it and watch the history rows in the input wall: each move pushes the past down one row." },
+    castling: { tab: "Castling", note: "Castling is encoded as the king moving two squares. King-side is action 2,367 and queen-side 2,364 for both colors, because Black's ranks are counted from Black's own side." },
+    enpassant: { tab: "En passant", note: "After 2…d5, White may capture en passant. In the move numbering it is an ordinary one-step diagonal pawn move; pgx knows it is legal and leaves it unmasked." },
+    promotion: { tab: "Promotion", note: "From b7 White has 12 promotion moves. A queen promotion uses the ordinary move types; rook, bishop and knight get 9 special types of their own (3 pieces × 3 directions). Black then promotes on h1, numbered from Black's side." },
+  };
+  const scenes = Object.fromEntries(DATA.scenes.map((s) => [s.name, s]));
+
+  const state = { scene: "opera", ply: 0, move: null, showIdx: false, hotPlane: null };
+
+  // ---------- helpers ----------
+  function parseFen(fen) {
+    const [place, turn, , , , full] = fen.split(" ");
+    const board = {};
+    let rank = 7, file = 0;
+    for (const ch of place) {
+      if (ch === "/") { rank--; file = 0; continue; }
+      if (/\d/.test(ch)) { file += Number(ch); continue; }
+      board[FILES[file] + (rank + 1)] = ch;
+      file++;
+    }
+    return { board, white: turn === "w", fullmove: Number(full) };
+  }
+  function bits(hex) {
+    const out = new Uint8Array(64);
+    for (let k = 0; k < 16; k++) {
+      const v = parseInt(hex[k], 16);
+      out[4 * k] = (v >> 3) & 1; out[4 * k + 1] = (v >> 2) & 1; out[4 * k + 2] = (v >> 1) & 1; out[4 * k + 3] = v & 1;
+    }
+    return out;
+  }
+  function pieceHTML(ch) {
+    const t = ch.toLowerCase();
+    if (ch === t) return `<span class="pc b">${FILLED[t]}${VS}</span>`;
+    return `<span class="pc w"><span class="fill">${FILLED[t]}${VS}</span><span class="edge">${OUTLINE[t]}${VS}</span></span>`;
+  }
+  const scene = () => scenes[state.scene];
+  const pos = () => scene().positions[state.ply];
+  const nextMove = () => scene().positions[state.ply + 1]?.last?.uci ?? null;
+  const findMove = (uci) => pos().moves.find((m) => m[0] === uci) || null;
+  function squareIndex(sq, white) {
+    const f = FILES.indexOf(sq[0]), r = Number(sq[1]) - 1;
+    return { f, rel: white ? r : 7 - r, idx: f * 8 + (white ? r : 7 - r) };
+  }
+  function indexSquare(idx, white) {
+    const f = idx >> 3, rel = idx & 7;
+    return FILES[f] + ((white ? rel : 7 - rel) + 1);
+  }
+  function tokens() {
+    const cs = getComputedStyle(document.documentElement);
+    const g = (n) => cs.getPropertyValue(n).trim();
+    return { ink: g("--ink"), signal: g("--signal"), offA: g("--off-a"), offB: g("--off-b"), muted: g("--muted"), sheet: g("--sheet"), rule: g("--rule"), soft: g("--signal-soft") };
+  }
+
+  // ---------- phases + roadmap ----------
+  document.getElementById("phases").innerHTML = PHASES.map(([name, st], i) =>
+    `<li class="${st}"><span class="bar"></span><span class="label"><span class="num">${i + 1}</span>${name}</span></li>`).join("");
+  document.getElementById("road").innerHTML = PHASES.map(([name, st, what], i) =>
+    `<tr><td>${i + 1}</td><td>${name}</td><td><span class="pill ${st}">${st === "done" ? "done" : st === "next" ? "next" : "later"}</span></td><td>${what}</td></tr>`).join("");
+
+  // ---------- gate bars ----------
+  const ENDINGS = [["Insufficient material", 1036], ["Fifty-move rule", 390], ["Checkmate", 298], ["Stalemate", 135], ["512-ply cap", 84], ["Threefold repetition", 57]];
+  document.getElementById("bars").innerHTML = ENDINGS.map(([k, v]) =>
+    `<div class="bar-row"><span>${k}</span><span class="bar-track"><span class="bar-fill" style="display:block;width:${(v / 1036 * 100).toFixed(1)}%"></span></span><span class="num">${fmt(v)}</span></div>`).join("");
+
+  // ---------- tabs ----------
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = Object.entries(SCENES).map(([k, s]) =>
+    `<button type="button" data-scene="${k}" aria-pressed="${k === state.scene}">${s.tab}</button>`).join("");
+  tabs.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-scene]");
+    if (!b) return;
+    state.scene = b.dataset.scene; state.ply = 0; state.move = null;
+    renderAll(true);
+  });
+
+  // ---------- scoresheet ----------
+  function renderScore() {
+    const ps = scene().positions;
+    const rows = [];
+    let row = null;
+    for (let i = 1; i < ps.length; i++) {
+      const before = parseFen(ps[i - 1].fen);
+      const btn = `<button type="button" data-ply="${i}" aria-current="${i === state.ply}">${ps[i].last.san}</button>`;
+      if (before.white) { row = { n: before.fullmove, w: btn, b: "" }; rows.push(row); }
+      else if (row && row.n === before.fullmove) { row.b = btn; }
+      else { row = { n: before.fullmove + "…", w: "", b: btn }; rows.push(row); }
+    }
+    const start = `<tr><td></td><td colspan="2"><button type="button" data-ply="0" aria-current="${state.ply === 0}">start</button></td></tr>`;
+    document.getElementById("score").innerHTML = `<table>${start}${rows.map((r) =>
+      `<tr><td>${typeof r.n === "number" ? r.n + "." : r.n}</td><td>${r.w}</td><td>${r.b}</td></tr>`).join("")}</table>`;
+    const cur = document.querySelector('#score button[aria-current="true"]');
+    if (cur) cur.scrollIntoView({ block: "nearest" });
+    document.getElementById("scene-note").textContent = SCENES[state.scene].note;
+    const n = ps.length - 1;
+    document.getElementById("nav-first").disabled = document.getElementById("nav-prev").disabled = state.ply === 0;
+    document.getElementById("nav-next").disabled = document.getElementById("nav-last").disabled = state.ply === n;
+  }
+  document.getElementById("score").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-ply]");
+    if (b) goTo(Number(b.dataset.ply));
+  });
+  function goTo(ply) {
+    const n = scene().positions.length - 1;
+    state.ply = Math.max(0, Math.min(n, ply)); state.move = null;
+    renderAll();
+  }
+  document.getElementById("nav-first").onclick = () => goTo(0);
+  document.getElementById("nav-prev").onclick = () => goTo(state.ply - 1);
+  document.getElementById("nav-next").onclick = () => goTo(state.ply + 1);
+  document.getElementById("nav-last").onclick = () => goTo(1e9);
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest("input, textarea, select")) return;
+    if (e.key === "ArrowLeft") { goTo(state.ply - 1); e.preventDefault(); }
+    if (e.key === "ArrowRight") { goTo(state.ply + 1); e.preventDefault(); }
+  });
+
+  // ---------- board ----------
+  function selected() { return state.move ? findMove(state.move) : null; }
+  function renderBoard() {
+    const p = pos(), { board, white } = parseFen(p.fen);
+    const movers = new Set(p.moves.map((m) => m[0].slice(0, 2)));
+    const sel = selected();
+    const from = sel ? sel[0].slice(0, 2) : null;
+    const targets = from ? new Set(p.moves.filter((m) => m[0].startsWith(from)).map((m) => m[0].slice(2, 4))) : new Set();
+    const chosen = sel ? sel[0].slice(2, 4) : null;
+    const last = p.last ? [p.last.uci.slice(0, 2), p.last.uci.slice(2, 4)] : [];
+    let html = "";
+    for (let r = 7; r >= 0; r--) {
+      for (let f = 0; f < 8; f++) {
+        const sq = FILES[f] + (r + 1);
+        const cls = ["sq", (f + r) % 2 ? "l" : "d"];
+        if (last.includes(sq)) cls.push("last");
+        if (sq === from) cls.push("from");
+        if (targets.has(sq)) { cls.push("target"); if (board[sq]) cls.push("occ"); }
+        if (sq === chosen) cls.push("chosen");
+        const isMover = movers.has(sq);
+        if (isMover) cls.push("mover");
+        const n = isMover ? p.moves.filter((m) => m[0].startsWith(sq)).length : 0;
+        const attrs = isMover ? ` tabindex="0" role="button" aria-label="${sq}, ${n} legal move${n > 1 ? "s" : ""}"` : "";
+        html += `<div class="${cls.join(" ")}" data-sq="${sq}"${attrs}>${board[sq] ? pieceHTML(board[sq]) : ""}` +
+          (r === 0 ? `<span class="coord f">${FILES[f]}</span>` : "") + (f === 0 ? `<span class="coord r">${r + 1}</span>` : "") + `</div>`;
+      }
+    }
+    const el = document.getElementById("board");
+    el.innerHTML = html;
+    const side = white ? "White" : "Black";
+    let status;
+    if (p.terminal) status = p.value === -1 ? `<b>Checkmate.</b> ${side} is mated: the game's value for the side to move is −1.` : `<b>Draw.</b>`;
+    else status = `<b>${side} to move</b> · ${p.moves.length} legal moves${p.check ? " · in check" : ""}. Click a ${side.toLowerCase()} piece.`;
+    document.getElementById("status").innerHTML = status;
+  }
+  function onBoardPick(sq) {
+    const p = pos();
+    const fromHere = p.moves.filter((m) => m[0].startsWith(sq));
+    const sel = selected();
+    if (fromHere.length) {
+      const nm = nextMove();
+      if (sel && sel[0].startsWith(sq)) return; // already this piece
+      state.move = (nm && nm.startsWith(sq) ? nm : fromHere[0][0]);
+    } else if (sel) {
+      const from = sel[0].slice(0, 2);
+      const opts = p.moves.filter((m) => m[0].startsWith(from) && m[0].slice(2, 4) === sq);
+      if (!opts.length) return;
+      state.move = (opts.find((m) => m[0].length === 4 || m[0][4] === "q") || opts[0])[0];
+    } else return;
+    renderSelection();
+  }
+  const boardEl = document.getElementById("board");
+  boardEl.addEventListener("click", (e) => { const s = e.target.closest("[data-sq]"); if (s) onBoardPick(s.dataset.sq); });
+  boardEl.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const s = e.target.closest("[data-sq]"); if (s) { onBoardPick(s.dataset.sq); e.preventDefault(); }
+  });
+
+  // ---------- network view ----------
+  function renderNet() {
+    const p = pos(), white = parseFen(p.fen).white;
+    const grid = Array(64).fill(null);
+    for (let off = 0; off < 12; off++) {
+      const b = bits(p.obs[off]);
+      for (let i = 0; i < 64; i++) if (b[i]) grid[i] = { t: "pnbrqk"[off % 6], mine: off < 6 };
+    }
+    const sel = selected();
+    const fromIdx = sel ? Math.floor(sel[2] / 73) : -1;
+    let html = "";
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const i = row * 8 + col, g = grid[i];
+        const idx = col * 8 + (7 - row);
+        const cls = ["cell", (row + col) % 2 ? "b" : "a"];
+        if (idx === fromIdx) cls.push("from");
+        const glyph = g ? `<span class="gl ${g.mine ? "mine" : "theirs"}">${(g.mine ? FILLED : OUTLINE)[g.t]}${VS}</span>` : "";
+        const rk = col === 0 ? `<span class="rk">${white ? 8 - row : row + 1}</span>` : "";
+        html += `<div class="${cls.join(" ")}">${glyph}${rk}${state.showIdx ? `<span class="idx">${idx}</span>` : ""}</div>`;
+      }
+    }
+    document.getElementById("net").innerHTML = html;
+    document.getElementById("net-orient").textContent = white
+      ? "White to move, so it looks like the board you see. The mover's pieces are always at the bottom; colour is only a flag (plane 112)."
+      : "Black to move, so the board is flipped top to bottom (files stay a to h, left to right). Black's pieces are now \"mine\" and sit at the bottom.";
+  }
+  document.getElementById("show-idx").addEventListener("change", (e) => { state.showIdx = e.target.checked; renderNet(); });
+
+  // ---------- inspector ----------
+  function renderInspector() {
+    const p = pos(), white = parseFen(p.fen).white, el = document.getElementById("inspector");
+    const sel = selected();
+    if (p.terminal) {
+      el.innerHTML = `<p class="hint">No legal moves, so all 4,672 output slots are masked. Training uses the result instead: −1 for the side that was mated.</p>`;
+      return;
+    }
+    if (!sel) {
+      el.innerHTML = `<p class="hint">Click a ${white ? "white" : "black"} piece on the board to see how its moves are numbered. ${p.moves.length} of the 4,672 slots are legal here.</p>`;
+      return;
+    }
+    const [uci, san, action] = sel;
+    const from = uci.slice(0, 2), to = uci.slice(2, 4);
+    const { f, rel, idx } = squareIndex(from, white);
+    const plane = action % 73;
+    const sideRank = white ? "White's" : "Black's";
+    const played = nextMove() === uci ? `<span class="pill next">played in the game</span>` : "";
+    const siblings = p.moves.filter((m) => m[0].startsWith(from));
+    el.innerHTML = `
+      <div class="head"><span class="san">${san}</span><span class="act">action ${fmt(action)}</span>${played}</div>
+      <dl class="calc">
+        <dt>From</dt><dd>${from}: file ${from[0]} = ${f}, rank ${from[1]} counted from ${sideRank} side = ${rel}, so square <span class="eq">${f} × 8 + ${rel} = ${idx}</span></dd>
+        <dt>Move type</dt><dd>${from} → ${to}: plane ${plane}, ${PLANE_DESC[plane]}${plane >= 9 && uci.length === 5 ? " (promotes to a queen)" : ""}</dd>
+        <dt>Number</dt><dd class="eq">${idx} × 73 + ${plane} = ${fmt(action)}</dd>
+      </dl>
+      <div class="chips" role="group" aria-label="Moves from ${from}">${siblings.map((m) =>
+        `<button type="button" data-uci="${m[0]}" aria-pressed="${m[0] === uci}">${m[1]} <span style="color:var(--muted)">${m[2]}</span></button>`).join("")}</div>
+      <p class="hint">${p.moves.length} of 4,672 slots are legal in this position.</p>`;
+  }
+  document.getElementById("inspector").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-uci]");
+    if (b) { state.move = b.dataset.uci; renderSelection(); }
+  });
+
+  // ---------- input wall ----------
+  const OFFSET_NAMES = ["my pawns", "my knights", "my bishops", "my rooks", "my queens", "my king",
+    "their pawns", "their knights", "their bishops", "their rooks", "their queens", "their king",
+    "1 if this position has not occurred before", "1 if this position occurred before"];
+  const CONSTS = [
+    [112, "Black to move", "1 if Black is to move"],
+    [113, "Plies ÷ 512", "plies played ÷ 512"],
+    [114, "My O-O-O", "1 if I may still castle queen-side"],
+    [115, "My O-O", "1 if I may still castle king-side"],
+    [116, "Their O-O-O", "1 if they may still castle queen-side"],
+    [117, "Their O-O", "1 if they may still castle king-side"],
+    [118, "Quiet plies ÷ 100", "plies since the last capture or pawn move ÷ 100"],
+  ];
+  const stepLabel = (t) => (t === 0 ? "now" : t === 1 ? "1 ply ago" : `${t} plies ago`);
+  const wall = document.getElementById("wall");
+  const tiles = [];
+  (function buildWall() {
+    let html = `<span></span>`;
+    for (let o = 0; o < 14; o++) {
+      if (o < 12) {
+        const t = "pnbrqk"[o % 6], mine = o < 6;
+        html += `<span class="ch"><span class="gl ${mine ? "mine" : "theirs"}">${(mine ? FILLED : OUTLINE)[t]}${VS}</span></span>`;
+      } else html += `<span class="ch">${o === 12 ? "new" : "seen"}</span>`;
+    }
+    for (let t = 0; t < 8; t++) {
+      html += `<span class="rh">${t === 0 ? "now" : "−" + t}</span>`;
+      for (let o = 0; o < 14; o++) html += `<canvas class="tile" width="8" height="8" data-plane="${t * 14 + o}"></canvas>`;
+    }
+    wall.innerHTML = html;
+    document.getElementById("consts").innerHTML = CONSTS.map(([p, short]) =>
+      `<div class="const"><canvas class="tile" width="8" height="8" data-plane="${p}"></canvas><span>${short}</span><span class="val" data-val="${p}"></span></div>`).join("");
+    document.querySelectorAll("canvas.tile").forEach((c) => { tiles[Number(c.dataset.plane)] = c; });
+  })();
+  function planeCaption(p) {
+    const P = pos();
+    if (p >= 112) {
+      const c = CONSTS.find((x) => x[0] === p), v = P.obs[p];
+      const val = typeof v === "number" ? v : bits(v)[0];
+      let extra = "";
+      if (p === 113) extra = ` (${P.ply} plies)`;
+      if (p === 118) extra = ` (${Math.round(val * 100)} plies)`;
+      return `Plane ${p} · ${c[2]} = ${typeof v === "number" ? v.toFixed(4) : val}${extra}`;
+    }
+    const t = Math.floor(p / 14), o = p % 14;
+    const empty = state.ply - t < 0 && scene().fen === null ? " · before the game began: empty" : (state.ply - t < 0 ? " · before this position was set up: empty" : "");
+    return `Plane ${p} · ${stepLabel(t)} · ${OFFSET_NAMES[o]}${empty}`;
+  }
+  function setCaption(p) {
+    document.getElementById("wall-cap").textContent = p == null ? "Point at any plane to read it." : planeCaption(p);
+    tiles.forEach((c, i) => c && c.classList.toggle("hot", i === p));
+  }
+  function wallPointer(e) {
+    const c = e.target.closest("canvas.tile");
+    state.hotPlane = c ? Number(c.dataset.plane) : null;
+    setCaption(state.hotPlane);
+  }
+  for (const id of ["wall", "consts"]) {
+    const el = document.getElementById(id);
+    el.addEventListener("pointerover", wallPointer);
+    el.addEventListener("pointerdown", wallPointer);
+    el.addEventListener("pointerleave", () => { state.hotPlane = null; setCaption(null); });
+  }
+  function renderWall() {
+    const P = pos(), T = tokens();
+    for (let p = 0; p < 119; p++) {
+      const c = tiles[p], ctx = c.getContext("2d"), v = P.obs[p];
+      const t = Math.floor(p / 14), o = p % 14;
+      const on = p < 112 ? (o < 6 ? T.signal : o < 12 ? T.ink : T.muted) : T.ink;
+      if (typeof v === "number") {
+        for (let i = 0; i < 64; i++) { ctx.fillStyle = ((i >> 3) + (i & 7)) % 2 ? T.offB : T.offA; ctx.fillRect(i & 7, i >> 3, 1, 1); }
+        // scalar planes: filled from the bottom in proportion to the value
+        const h = Math.min(8, v * 8);
+        ctx.fillStyle = on; ctx.globalAlpha = 0.85; ctx.fillRect(0, 8 - h, 8, h); ctx.globalAlpha = 1;
+      } else {
+        const b = bits(v);
+        for (let i = 0; i < 64; i++) {
+          ctx.fillStyle = b[i] ? on : ((i >> 3) + (i & 7)) % 2 ? T.offB : T.offA;
+          ctx.fillRect(i & 7, i >> 3, 1, 1);
+        }
+      }
+      if (p >= 112) {
+        const el = document.querySelector(`[data-val="${p}"]`);
+        el.textContent = typeof v === "number" ? v.toFixed(3) : String(bits(v)[0]);
+      }
+      c.setAttribute("aria-label", planeCaption(p));
+    }
+    if (state.hotPlane != null) setCaption(state.hotPlane);
+  }
+
+  // ---------- policy grid ----------
+  const pol = document.getElementById("policy");
+  const CELL = 6;
+  function renderPolicy() {
+    const P = pos(), T = tokens(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    pol.width = 73 * CELL * dpr; pol.height = 64 * CELL * dpr;
+    const ctx = pol.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = T.offA; ctx.fillRect(0, 0, 73 * CELL, 64 * CELL);
+    const sel = selected();
+    if (sel) {
+      const r = Math.floor(sel[2] / 73), c = sel[2] % 73;
+      ctx.fillStyle = T.soft; ctx.fillRect(0, r * CELL, 73 * CELL, CELL); ctx.fillRect(c * CELL, 0, CELL, 64 * CELL);
+    }
+    ctx.fillStyle = T.rule;
+    for (const c of [9, 65]) ctx.fillRect(c * CELL - 0.5, 0, 1, 64 * CELL);
+    for (let r = 8; r < 64; r += 8) { ctx.globalAlpha = 0.6; ctx.fillRect(0, r * CELL - 0.5, 73 * CELL, 1); ctx.globalAlpha = 1; }
+    ctx.fillStyle = T.ink;
+    for (const m of P.moves) { const r = Math.floor(m[2] / 73), c = m[2] % 73; ctx.fillRect(c * CELL + 0.5, r * CELL + 0.5, CELL - 1, CELL - 1); }
+    if (sel) {
+      const r = Math.floor(sel[2] / 73), c = sel[2] % 73;
+      ctx.fillStyle = T.signal; ctx.fillRect(c * CELL - 1.5, r * CELL - 1.5, CELL + 3, CELL + 3);
+    }
+  }
+  function polCell(e) {
+    const rect = pol.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left) / rect.width * 73), r = Math.floor((e.clientY - rect.top) / rect.height * 64);
+    if (c < 0 || c > 72 || r < 0 || r > 63) return null;
+    return { r, c, action: r * 73 + c };
+  }
+  pol.addEventListener("pointermove", (e) => {
+    const h = polCell(e), cap = document.getElementById("pol-cap");
+    if (!h) return;
+    const P = pos(), white = parseFen(P.fen).white;
+    const m = P.moves.find((x) => x[2] === h.action);
+    cap.textContent = `action ${fmt(h.action)} = square ${h.r} (${indexSquare(h.r, white)}) × 73 + plane ${h.c} (${PLANE_DESC[h.c]}) · ${m ? "legal: " + m[1] : "masked"}`;
+  });
+  pol.addEventListener("pointerleave", () => { document.getElementById("pol-cap").textContent = "Point at a cell to decode it."; });
+  pol.addEventListener("click", (e) => {
+    const h = polCell(e); if (!h) return;
+    const m = pos().moves.find((x) => x[2] === h.action);
+    if (m) { state.move = m[0]; renderSelection(); }
+  });
+
+  // ---------- orchestration ----------
+  function renderSelection() { renderBoard(); renderNet(); renderInspector(); renderPolicy(); }
+  function renderAll(sceneChanged) {
+    if (state.move == null) state.move = nextMove();
+    if (sceneChanged) tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.scene === state.scene)));
+    renderScore(); renderSelection(); renderWall();
+  }
+  const rerenderColors = () => { renderWall(); renderPolicy(); };
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rerenderColors);
+  new MutationObserver(rerenderColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderSelection());
+  renderAll(true);
+})();
+</script>

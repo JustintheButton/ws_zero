@@ -17,7 +17,7 @@
 
 ## Tests
 
-65 unit tests pass (`uv run pytest`), including exact action numbers for castling, en passant and every
+65 unit tests passed at the gate (67 after fix 3 below; `uv run pytest`), including exact action numbers for castling, en passant and every
 promotion type for both colors, and agreement with pgx's legal-action mask on targeted positions.
 
 ## Gate results
@@ -56,6 +56,10 @@ GPU throughput is to be measured on the PC or Modal in Phase 3.
    `test_repetition_of_the_start_position_is_detected`.
 2. **Scalar planes differ in the last bit.** XLA computes planes 113 and 118 (÷512, ÷100) with possible rounding
    in the last bit. The gate compares those two planes within 1e-6 and every other plane exactly.
+3. **pgx's `from_fen` keeps the default move history** (found after the gate, while building the lab page). A
+   position set up from FEN showed the standard start position as the previous ply. The gate played every game
+   from the start position, so it was not affected. Fixed in `env.state_from_fen`; regression test
+   `test_game_from_fen_has_no_history_before_its_start`.
 
 ## Open issues
 

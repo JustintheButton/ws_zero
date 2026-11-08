@@ -8,6 +8,9 @@ pgx is used through its low-level `Game` so that colors are explicit (no random 
 Fix for pgx 2.6 under JAX >= 0.5: pgx builds its Zobrist hash tables from JAX's random generator at import time but
 hard-codes the start position's hash computed under an older generator, so repetitions of the start position were
 never detected. `initial_state` stores the correctly computed hash instead.
+
+Fix for pgx 2.6's `from_fen`: it keeps the default move history, so a position set up from FEN showed the standard
+start position as the previous ply. `state_from_fen` clears the history.
 """
 import jax
 import jax.numpy as jnp
@@ -24,7 +27,10 @@ def initial_state() -> GameState:
 
 def state_from_fen(fen: str) -> GameState:
     """A single position (no move history) from FEN."""
-    return from_fen(fen)._x
+    state = from_fen(fen)._x
+    # pgx's from_fen keeps the default history, so the standard start position would appear one ply back.
+    return state._replace(board_history=jnp.zeros_like(state.board_history).at[0].set(state.board),
+                          hash_history=jnp.zeros_like(state.hash_history).at[0].set(state.hash_history[0]))
 
 
 def state_to_fen(state: GameState) -> str:
