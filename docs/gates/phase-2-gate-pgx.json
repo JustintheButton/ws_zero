@@ -1,0 +1,49 @@
+{
+  "games": 2000,
+  "seed": 0,
+  "repetition_key": "pgx",
+  "positions_checked": 680319,
+  "mismatches": {},
+  "mismatch_examples": [],
+  "endings": {
+    "checkmate": 298,
+    "stalemate": 135,
+    "insufficient_material": 1036,
+    "fifty_move_rule": 390,
+    "threefold_repetition": 57,
+    "ply_cap": 84
+  },
+  "legal_move_occurrences": {
+    "castle_kingside_black": 1961,
+    "castle_kingside_white": 2046,
+    "castle_queenside_black": 882,
+    "castle_queenside_white": 943,
+    "en_passant_black": 488,
+    "en_passant_white": 500,
+    "promote_bishop_black": 13676,
+    "promote_bishop_white": 13501,
+    "promote_knight_black": 13676,
+    "promote_knight_white": 13501,
+    "promote_queen_black": 13676,
+    "promote_queen_white": 13501,
+    "promote_rook_black": 13676,
+    "promote_rook_white": 13501
+  },
+  "moves_played": {
+    "castle_kingside_black": 57,
+    "castle_kingside_white": 60,
+    "castle_queenside_black": 31,
+    "castle_queenside_white": 22,
+    "en_passant_black": 15,
+    "en_passant_white": 14,
+    "promote_bishop_black": 648,
+    "promote_bishop_white": 680,
+    "promote_knight_black": 665,
+    "promote_knight_white": 656,
+    "promote_queen_black": 673,
+    "promote_queen_white": 687,
+    "promote_rook_black": 679,
+    "promote_rook_white": 644
+  },
+  "seconds": 128.5
+}

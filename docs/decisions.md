@@ -27,6 +27,10 @@ recorded here as **deviations**, with Justin's approval.
 | 2026-11-08 | Consistency fix (option A): with 5 seeds (D7) and one network or heuristic per seed (D3, D4), D5 becomes 5 WSP attempts at 50 passes (plus 3 at 0) and D4 five heuristics; D6 becomes GO if ≥ 3 of 5 networks pass. LLM usage: 10 long + 3 short sessions, spread over as many weeks as needed. | Justin |
 | 2026-11-08 | Technical fix: LR drops and warmup defined as fractions of the game budget rather than of training steps (steps aren't known in advance under D2); pilot runs follow the full-budget schedule and stop at 20%. | Claude (no objection) |
 | 2026-11-08 | **Protocol v1.0 approved** and committed as the pre-registration. | Justin |
+| 2026-11-08 | Chess environment: **pgx** (JAX, runs thousands of games in parallel on the GPU; its chess uses AlphaZero's 119-plane observation, 4,672 actions and termination rules) instead of wrapping python-chess. python-chess stays as the reference implementation for the Phase 2 gate and for Stockfish, tablebases and the distillation heuristic. Amends checklist Phase 2; not a protocol deviation (the algorithm is unchanged). Consequence: network and training move to JAX (Flax, Optax), replacing PyTorch. The search implementation (our own JAX MCTS vs DeepMind's mctx) is decided at Phase 4. | Justin |
+| 2026-11-08 | Phase 2: fixed a pgx 2.6 bug under JAX ≥ 0.5 (start-position repetitions never detected: hard-coded hash from JAX's old random generator); `env.initial_state` stores the correct hash. | Claude (bug fix, reported) |
+| 2026-11-08 | Repetition identity: **accept pgx's convention** (an en passant square counts after every two-square pawn move, even with no capture possible) rather than patching pgx to FIDE. Measured: 0.007% of positions get different repetition planes; no game outcome differed in 2,000 games; identical across arms. Documented in docs/encoding.md. | Justin |
+| 2026-11-08 | **Phase 2 gate passed** (docs/gates/phase-2.md). | Justin |
 
 ## Open questions for the protocol
 

@@ -52,16 +52,25 @@ sample efficiency in early training, not final superhuman strength.
 
 ## Phase 2: Chess environment
 
-- [ ] Wrap `python-chess` behind a generic Game interface (initial state, legal actions, next state, terminal
-  value, encode).
-- [ ] Implement the 119-plane encoder; flip the board when Black is to move.
-- [ ] Implement 4,672-move encode/decode. Queen promotions use queen-style planes; N/B/R promotions use
-  underpromotion planes.
-- [ ] Terminal handling: checkmate, stalemate, insufficient material, 50-move rule, threefold repetition,
-  512-ply cap.
+*Amended 2026-11-08: the environment is **pgx** (GPU-vectorized, AlphaZero encodings built in) rather than a
+python-chess wrapper; python-chess is the reference it is checked against. See [decisions.md](decisions.md).*
+
+- [x] Wrap pgx chess behind a generic, batched Game interface (initial state, legal actions, next state, terminal
+  value, observation). *(Originally: wrap `python-chess`.)* `src/ws_zero/game/env.py`
+- [x] Check pgx's 119-plane observation against a reference encoder written from the AlphaZero paper on
+  python-chess (board flipped when Black is to move), and document every plane exactly (the WSP prompt needs it).
+  `src/ws_zero/game/reference.py`, [encoding.md](encoding.md)
+- [x] Map pgx's 4,672 actions to and from python-chess moves. Queen promotions use queen-style planes; N/B/R
+  promotions use underpromotion planes. `src/ws_zero/game/moves.py`
+- [x] Check pgx's terminal handling against python-chess: checkmate, stalemate, insufficient material, 50-move
+  rule, threefold repetition, 512-ply cap.
 
 > **GATE:** encode → decode round-trips exactly on every legal move across thousands of random positions,
-> including castling, en passant and all promotion types.
+> including castling, en passant and all promotion types; and pgx's legal moves, observations and game results
+> agree with the python-chess reference across thousands of random games.
+>
+> **PASSED 2026-11-08:** 680,319 positions from 2,000 games, zero mismatches (pgx's repetition convention
+> accepted). [Report](gates/phase-2.md).
 
 ## Phase 3: Network
 

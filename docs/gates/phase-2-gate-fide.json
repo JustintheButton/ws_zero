@@ -1,0 +1,296 @@
+{
+  "games": 2000,
+  "seed": 0,
+  "repetition_key": "fide",
+  "positions_checked": 680319,
+  "mismatches": {
+    "observation": 48
+  },
+  "mismatch_examples": [
+    {
+      "kind": "observation",
+      "fen": "4k3/8/4p3/p1P1b1B1/P1P1P3/8/6K1/8 b - - 4 71",
+      "ply": 141,
+      "detail": {
+        "planes": [
+          12,
+          13,
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "4k3/8/4p3/p1P3B1/P1P1P3/2b5/6K1/8 w - - 5 72",
+      "ply": 142,
+      "detail": {
+        "planes": [
+          26,
+          27,
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "4k3/8/4p3/p1P3B1/P1P1P3/2b5/8/5K2 b - - 6 72",
+      "ply": 143,
+      "detail": {
+        "planes": [
+          40,
+          41,
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "8/5k2/4p3/p1P3B1/P1P1P3/2b5/8/5K2 w - - 7 73",
+      "ply": 144,
+      "detail": {
+        "planes": [
+          54,
+          55,
+          110,
+          111
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "8/5k2/4p3/p1P3B1/P1P1P3/2b5/5K2/8 b - - 8 73",
+      "ply": 145,
+      "detail": {
+        "planes": [
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "8/5k2/4p3/p1P3B1/PbP1P3/8/5K2/8 w - - 9 74",
+      "ply": 146,
+      "detail": {
+        "planes": [
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "8/5k2/4p3/p1P3B1/PbP1P3/5K2/8/8 b - - 10 74",
+      "ply": 147,
+      "detail": {
+        "planes": [
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "6k1/8/4p3/p1P3B1/PbP1P3/5K2/8/8 w - - 11 75",
+      "ply": 148,
+      "detail": {
+        "planes": [
+          110,
+          111
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qkbnr/pp1b1p1p/n2p4/1Bp1p1p1/2PPP3/1N6/PP3P1P/R1BQK1NR b KQkq - 4 13",
+      "ply": 25,
+      "detail": {
+        "planes": [
+          12,
+          13,
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qkbnr/pp3p1p/n2p4/1bp1p1p1/2PPP3/1N6/PP3P1P/R1BQK1NR w KQkq - 0 14",
+      "ply": 26,
+      "detail": {
+        "planes": [
+          26,
+          27,
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qkbnr/pp3p1p/n2p4/1bp1p1p1/2PPP3/1N6/PP1K1P1P/R1BQ2NR b kq - 1 14",
+      "ply": 27,
+      "detail": {
+        "planes": [
+          40,
+          41,
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qkbnr/pp3p1p/n2p4/2p1p1p1/2bPP3/1N6/PP1K1P1P/R1BQ2NR w kq - 0 15",
+      "ply": 28,
+      "detail": {
+        "planes": [
+          54,
+          55,
+          110,
+          111
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qkbnr/pp3p1p/n2p4/2p1p1p1/2bPP3/1N6/PP1K1P1P/R1B2QNR b kq - 1 15",
+      "ply": 29,
+      "detail": {
+        "planes": [
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qk1nr/pp3p1p/n2p3b/2p1p1p1/2bPP3/1N6/PP1K1P1P/R1B2QNR w kq - 2 16",
+      "ply": 30,
+      "detail": {
+        "planes": [
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "r2qk1nr/pp3p1p/n2p3b/2p1p1p1/2QPP3/1N6/PP1K1P1P/R1B3NR b kq - 0 16",
+      "ply": 31,
+      "detail": {
+        "planes": [
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "1r1qk1nr/pp3p1p/n2p3b/2p1p1p1/2QPP3/1N6/PP1K1P1P/R1B3NR w k - 1 17",
+      "ply": 32,
+      "detail": {
+        "planes": [
+          110,
+          111
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 4 3",
+      "ply": 5,
+      "detail": {
+        "planes": [
+          12,
+          13,
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "rnbqkbnr/pp1ppppp/2p5/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 4",
+      "ply": 6,
+      "detail": {
+        "planes": [
+          26,
+          27,
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "rnbqkbnr/pp1ppppp/2p5/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 4",
+      "ply": 7,
+      "detail": {
+        "planes": [
+          40,
+          41,
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "kind": "observation",
+      "fen": "rnbqkbnr/pp1pp1pp/2p5/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 5",
+      "ply": 8,
+      "detail": {
+        "planes": [
+          54,
+          55,
+          110,
+          111
+        ]
+      }
+    }
+  ],
+  "endings": {
+    "checkmate": 298,
+    "stalemate": 135,
+    "insufficient_material": 1036,
+    "fifty_move_rule": 390,
+    "threefold_repetition": 57,
+    "ply_cap": 84
+  },
+  "legal_move_occurrences": {
+    "castle_kingside_black": 1961,
+    "castle_kingside_white": 2046,
+    "castle_queenside_black": 882,
+    "castle_queenside_white": 943,
+    "en_passant_black": 488,
+    "en_passant_white": 500,
+    "promote_bishop_black": 13676,
+    "promote_bishop_white": 13501,
+    "promote_knight_black": 13676,
+    "promote_knight_white": 13501,
+    "promote_queen_black": 13676,
+    "promote_queen_white": 13501,
+    "promote_rook_black": 13676,
+    "promote_rook_white": 13501
+  },
+  "moves_played": {
+    "castle_kingside_black": 57,
+    "castle_kingside_white": 60,
+    "castle_queenside_black": 31,
+    "castle_queenside_white": 22,
+    "en_passant_black": 15,
+    "en_passant_white": 14,
+    "promote_bishop_black": 648,
+    "promote_bishop_white": 680,
+    "promote_knight_black": 665,
+    "promote_knight_white": 656,
+    "promote_queen_black": 673,
+    "promote_queen_white": 687,
+    "promote_rook_black": 679,
+    "promote_rook_white": 644
+  },
+  "seconds": 132.2
+}
