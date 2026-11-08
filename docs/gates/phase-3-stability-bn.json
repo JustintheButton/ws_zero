@@ -1,0 +1,66 @@
+{
+ "script": "scripts/stability_phase3.py",
+ "network": "batch norm restored (AlphaZero's value head)",
+ "lr": 0.003,
+ "targets": "realistic",
+ "evaluated_every": 50,
+ "clip_0_means": "no clipping",
+ "saturated_means": ">= 50% of values with |v| > 0.99",
+ "date": "2026-11-08",
+ "results": [
+  {
+   "test": "overfit (256 positions, full batch)",
+   "mode": "gate",
+   "clip": 0.0,
+   "seed": 0,
+   "steps": 3000,
+   "first_saturated_step": null,
+   "final_value_mse": 0.0001,
+   "best_value_mse": 0.0001,
+   "final_move_kl": 0.01,
+   "final_saturated": 0.11,
+   "grad_norm": {
+    "p50": 0.0,
+    "p90": 0.3,
+    "p99": 0.9,
+    "max": 0.9
+   }
+  },
+  {
+   "test": "overfit (256 positions, full batch)",
+   "mode": "gate",
+   "clip": 0.0,
+   "seed": 1,
+   "steps": 3000,
+   "first_saturated_step": null,
+   "final_value_mse": 0.0,
+   "best_value_mse": 0.0,
+   "final_move_kl": 0.009,
+   "final_saturated": 0.06,
+   "grad_norm": {
+    "p50": 0.0,
+    "p90": 0.3,
+    "p99": 0.8,
+    "max": 0.8
+   }
+  },
+  {
+   "test": "overfit (256 positions, full batch)",
+   "mode": "gate",
+   "clip": 0.0,
+   "seed": 2,
+   "steps": 3000,
+   "first_saturated_step": null,
+   "final_value_mse": 0.0001,
+   "best_value_mse": 0.0001,
+   "final_move_kl": 0.011,
+   "final_saturated": 0.06,
+   "grad_norm": {
+    "p50": 0.0,
+    "p90": 0.3,
+    "p99": 0.8,
+    "max": 1.0
+   }
+  }
+ ]
+}

@@ -240,7 +240,13 @@ table.cov td.num, table.cov th.num { text-align: right; }
 .chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
 .chart text.lbl { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
 .chart .ln-orig { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
-.chart .ln-fix { stroke: var(--signal); stroke-width: 2; fill: none; }
+.chart .ln-fix { stroke: var(--muted); stroke-width: 1.5; fill: none; opacity: 0.75; }
+.chart .ln-bn { stroke: var(--signal); stroke-width: 2; fill: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: var(--step--1); color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 1.4rem; height: 0; margin-right: 0.4rem; vertical-align: middle; border-top: 2px solid var(--muted); }
+.legend .orig::before { border-top-style: dashed; }
+.legend .fix::before { border-top-width: 1.5px; opacity: 0.75; }
+.legend .bn::before { border-top-color: var(--signal); }
 .chart .bar-hi { fill: var(--sq-dark); opacity: 0.4; }
 .chart .bar-lo { fill: var(--sq-dark); }
 .chart .bar-best { fill: var(--signal); }
@@ -314,7 +320,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
           <h3>Output: 4,672 move slots</h3>
           <p>One row per from-square (0–63, counted from the mover's side) and one column per move type (0–72). Dark cells are the legal moves; every other slot is masked off. The selected move is in blue. The network puts a probability in each dark cell; tick the box to see the choices of a network written by hand.</p>
         </div>
-        <label class="toggle" for="show-hand"><input type="checkbox" id="show-hand"> Show the hand-written network: 3 nonzero weights out of 570,379, meaning "push a pawn two squares"</label>
+        <label class="toggle" for="show-hand"><input type="checkbox" id="show-hand"> Show the hand-written network: 3 nonzero weights out of about 570,000, meaning "push a pawn two squares"</label>
         <p class="caption" id="pol-cap">Point at a cell to decode it.</p>
         <canvas class="policy" id="policy" aria-label="Grid of 4,672 move slots with legal moves marked"></canvas>
         <div class="policy-axis"><span>under-promotions 0–8</span><span>queen-style moves 9–64 (direction × distance)</span><span>knight 65–72</span></div>
@@ -363,13 +369,14 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     <div class="block-head">
       <p class="kicker" id="p3-kicker">Phase 3</p>
       <h2 id="net-h">Teaching the network who is winning</h2>
-      <p>For every position the network gives two answers: how promising each move looks, and who is winning. Moves were easy. Judging the position nearly failed: AlphaZero's design relies on batch norm, which this experiment removes in every arm, and without it one on/off switch in the "who is winning" part shut off for good. The test that caught it trained on 16,384 positions from games and was scored on 2,048 it never saw.</p>
+      <p>For every position the network gives two answers: how promising each move looks, and who is winning. Moves were easy. Judging the position failed twice without batch norm, a part of AlphaZero's design that the brief removed in every arm: first an on/off switch in the "who is winning" part shut off for good; then, with that switch taken out, a rare oversized training step froze the answer at "certain win" or "certain loss". Batch norm is back in every arm (Justin's call, 8 Nov), and every check at the plan's smallest learning rate now passes; at the two largest the switch shuts off again (bottom table). The main test trains on 16,384 positions from games and is scored on 2,048 it never saw.</p>
     </div>
     <div class="gate-grid">
       <div class="panel">
         <h3>Error of the "who is winning" answer</h3>
         <div class="chart" id="value-chart"></div>
-        <p class="hint">Original design: all three random starts stopped learning within 300 steps. With the switch removed (approved 8 Nov), all three learned. Lower is better; 0.52 is a network that always says "equal".</p>
+        <div class="legend" id="value-legend"></div>
+        <p class="hint">Without batch norm, the original design stopped learning within 300 steps on all three random starts; with the switch removed all three learned, though over longer runs one in three got stuck (table below). With batch norm all three learned through 3,000 steps, to a lower error than ever before. Lower is better; 0.52 is a network that always says "equal".</p>
       </div>
       <div class="panel">
         <h3>What 1,000 self-play games cost on Modal</h3>
@@ -379,9 +386,15 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
     <div class="panel" style="margin-top: 2rem">
       <h3>The rare runaway step, and a cap on step size</h3>
-      <p class="hint" style="margin-top: 0">Every so often one training step is far larger than the rest and pins the "who is winning" answer at "certain win" or "certain loss" for every position, where it gets stuck. Overnight, 3,000 steps per run, three random starts each, with and without a cap on how large one step may be.</p>
+      <p class="hint" style="margin-top: 0">Every so often one training step is far larger than the rest and pins the "who is winning" answer at "certain win" or "certain loss" for every position, where it gets stuck. Three random starts each, 3,000 steps per run: overnight without batch norm, with and without a cap on how large one step may be; then with batch norm.</p>
       <div style="overflow-x: auto"><table class="cov" id="stability"></table></div>
-      <p class="hint">"Who is winning" error: 0 is perfect, about 1.6 is stuck. Move error: lower is better. The memorization test is the Phase 3 gate (move error under 0.05, "who is winning" error at most 0.01). A cap of 5 stops the runaway everywhere but slows move learning in real-style training; whether to add one is Justin's call.</p>
+      <p class="hint">"Who is winning" error: 0 is perfect, about 1.6 is stuck. Move error: lower is better. The memorization test is the Phase 3 gate (move error under 0.05, "who is winning" error at most 0.01). Without batch norm, a cap of 5 stopped the runaway but slowed move learning. With batch norm (Justin's call), no run gets stuck and the gate passes, with no cap.</p>
+    </div>
+    <div class="panel" style="margin-top: 2rem">
+      <h3>Batch norm at the plan's four learning rates</h3>
+      <p class="hint" style="margin-top: 0">The learning rate sets how big each training step is. The Phase 7 pilot will try these four and keep the one that plays best. Real-style training, one random start, 1,000 steps.</p>
+      <div style="overflow-x: auto"><table class="cov" id="lrs"></table></div>
+      <p class="hint">At the two largest rates the on/off switch in the "who is winning" part shut off for good, as it did without batch norm, so that answer never left "equal" (error 0.52). Moves were learned fastest at those rates. Open question for Justin.</p>
     </div>
   </section>
 
@@ -393,11 +406,11 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
     <div class="arms">
       <div class="arm"><h3>Random start</h3><p>Standard random weights. The baseline that AlphaZero itself used.</p></div>
-      <div class="arm"><h3>Claude writes the weights</h3><p>Claude sets all 570,379 numbers directly, with no training. It may test its network up to 50 times against practice bots or on positions it picks.</p></div>
+      <div class="arm"><h3>Claude writes the weights</h3><p>Claude sets every weight directly, with no training. It may test its network up to 50 times against practice bots or on positions it picks.</p></div>
       <div class="arm"><h3>Claude writes a heuristic</h3><p>The control. Claude writes its chess knowledge as a Python evaluator instead, and the network is trained to copy it before self-play begins.</p></div>
     </div>
     <dl class="facts">
-      <div><dt>Network</dt><dd>6 residual blocks × 64 filters, no batch norm, 570,379 weights</dd></div>
+      <div><dt>Network</dt><dd>6 residual blocks × 64 filters, batch norm as in AlphaZero (restored 8 Nov), 571,276 weights</dd></div>
       <div><dt>Search</dt><dd>About 200 simulations per move, AlphaZero's exploration formula</dd></div>
       <div><dt>Headline measure</dt><dd>Self-play games needed to reach the finish line</dd></div>
       <div><dt>Finish line</dt><dd>Score 50% against a fixed Stockfish level, set by a calibration run</dd></div>
@@ -830,30 +843,38 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   (function renderStability() {
     const rows = P3.stability || [];
     const test = { check: "Real-style training (16,384 positions)", gate: "Memorization test (256 positions)" };
-    const fmt = (v) => (v >= 0.05 ? v.toFixed(2) : v.toFixed(4).replace(/0+$/, ""));
-    const head = `<tr><th>Test</th><th>Step cap</th><th>Runs stuck for good</th><th class="num">"Who is winning" error</th><th class="num">Move error</th><th>Gate</th></tr>`;
+    const fmt = (v) => (v >= 0.05 ? v.toFixed(2) : v.toFixed(4).replace(/0+$/, "").replace(/\.$/, ""));
+    const design = { nobn: "No batch norm", bn: "<b>Batch norm</b>" };
+    const head = `<tr><th>Network</th><th>Test</th><th>Step cap</th><th>Runs stuck for good</th><th class="num">"Who is winning" error</th><th class="num">Move error</th><th>Gate</th></tr>`;
     document.getElementById("stability").innerHTML = head + rows.map((r) => {
       const stuck = `${r.broke} of ${r.runs}` + (r.wobbled ? ` <span class="hint">(${r.wobbled} more stuck briefly)</span>` : "");
       const gate = r.gate === null ? "" : r.gate === r.runs ? "<b>pass</b>" : `fail ${r.runs - r.gate} of ${r.runs}`;
-      return `<tr><td>${test[r.mode]}</td><td>${r.cap ? r.cap : "none"}</td><td>${stuck}</td>` +
+      return `<tr><td>${design[r.design]}</td><td>${test[r.mode]}</td><td>${r.cap ? r.cap : "none"}</td><td>${stuck}</td>` +
         `<td class="num">${r.mse.map(fmt).join(" / ")}</td><td class="num">${r.kl.map((v) => v.toFixed(r.kl[1] < 0.1 ? 3 : 2)).join("–")}</td><td>${gate}</td></tr>`;
     }).join("");
   })();
+  (function renderLrs() {
+    const rows = P3.lrs || [];
+    const head = `<tr><th class="num">Learning rate</th><th>"Who is winning" part</th><th class="num">"Who is winning" error</th><th class="num">Move error</th></tr>`;
+    document.getElementById("lrs").innerHTML = head + rows.map((r) =>
+      `<tr><td class="num">${r.lr}</td><td>${r.brokeAt === null ? "healthy" : `<b>shut off</b> by step ${r.brokeAt}`}</td>` +
+      `<td class="num">${r.mse.toFixed(2)}</td><td class="num">${r.kl.toFixed(2)}</td></tr>`).join("");
+  })();
   function renderValueChart() {
-    const W = 440, H = 230, L = 40, R = 118, T = 12, B = 30;
-    const x = (s) => L + (s / 900) * (W - L - R), y = (v) => T + (1 - v / 0.6) * (H - T - B);
+    const W = 440, H = 230, L = 40, R = 24, T = 12, B = 30;
+    const bn = P3.valueBN || [], series = [[P3.valueOriginal, "ln-orig"], [P3.valueFixed, "ln-fix"], [bn, "ln-bn"]];
+    const maxStep = Math.max(900, ...series.flatMap(([cs]) => cs.map((c) => c.at(-1).step)));
+    const x = (s) => L + (s / maxStep) * (W - L - R), y = (v) => T + (1 - v / 0.6) * (H - T - B);
     let g = "";
     for (const v of [0, 0.2, 0.4, 0.6]) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`;
-    for (const s of [0, 300, 600, 900]) g += `<text x="${x(s)}" y="${H - 14}" text-anchor="middle">${s}</text>`;
+    const ticks = maxStep > 900 ? [0, 1000, 2000, 3000].filter((s) => s <= maxStep) : [0, 300, 600, 900];
+    for (const s of ticks) g += `<text x="${x(s)}" y="${H - 14}" text-anchor="middle">${s.toLocaleString("en-US")}</text>`;
     g += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">training steps</text>`;
-    const upto = (c) => c.filter((p) => p.step <= 900);
-    const path = (c) => upto(c).map((p, i) => `${i ? "L" : "M"}${x(p.step).toFixed(1)},${y(Math.min(p.mse, 0.6)).toFixed(1)}`).join("");
-    P3.valueOriginal.forEach((c) => { g += `<path class="ln-orig" d="${path(c)}"/>`; });
-    P3.valueFixed.forEach((c) => { g += `<path class="ln-fix" d="${path(c)}"/>`; });
-    const endY = (cs) => y(cs.map((c) => upto(c).at(-1).mse).reduce((a, b) => a + b, 0) / cs.length);
-    if (P3.valueOriginal.length) g += `<text class="lbl" x="${W - R + 8}" y="${endY(P3.valueOriginal) + 4}">original design</text>`;
-    if (P3.valueFixed.length) g += `<text class="lbl" x="${W - R + 8}" y="${endY(P3.valueFixed) + 4}" style="fill: var(--signal)">switch removed</text>`;
-    document.getElementById("value-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Value error during training: flat for the original design, falling after the amendment">${g}</svg>`;
+    const path = (c) => c.map((p, i) => `${i ? "L" : "M"}${x(p.step).toFixed(1)},${y(Math.min(p.mse, 0.6)).toFixed(1)}`).join("");
+    for (const [cs, cls] of series) cs.forEach((c) => { g += `<path class="${cls}" d="${path(c)}"/>`; });
+    document.getElementById("value-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Error of the who-is-winning answer during training, for each network design">${g}</svg>`;
+    document.getElementById("value-legend").innerHTML = '<span class="orig">no batch norm, original</span><span class="fix">no batch norm, switch removed</span>' +
+      (bn.length ? '<span class="bn">batch norm (AlphaZero\'s design)</span>' : "");
   }
   function renderCostChart() {
     const rows = P3.gpus, W = 440, row = 30, L = 78, R = 92, T = 6, H = T + rows.length * row + 24;

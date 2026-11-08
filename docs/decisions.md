@@ -37,6 +37,7 @@ recorded here as **deviations**, with Justin's approval.
 | 2026-11-08 | **Value head amended: no ReLU after the 1×1 value conv.** The realistic check (scripts/check_value_head.py) showed the original value head dying in all 3 seeds within 300 steps while moves were learned; with the ReLU removed all 3 learned. Approved by Justin on the condition that seeds 1 and 2 also learn (error halved); condition met (seed 1 at 900 steps). Supersedes the "keep the protocol unchanged" row above. Value-head health logging and the Phase 7 check stay. The Phase 3 gate now uses spread-out move targets and realistic results (Justin's suggestion); the random-label version is kept as an option. | Justin |
 | 2026-11-08 | Modal GPU benchmark run (T4, L4, A10, L40S, A100-40GB, H100; docs/gates/phase-3-bench-modal.json). Cost under $2. | Justin |
 | 2026-11-08 | Compute raised: 11 Modal workspaces (about $35 of credit each, $330 in all). Hard limit of **$30 per workspace**, never exceeded: set by Justin in each workspace's Modal settings, and enforced again by the run launcher. Credentials stay on Justin's machine (never in the repo or logs). Changing the protocol's $240 cap (D7) is decided when the game budget is fixed. | Justin |
+| 2026-11-08 | **Batch norm restored in every arm**, as in AlphaZero, with AlphaZero's original value head (conv → batch norm → ReLU). Overnight runs without batch norm: over 3,000 steps of the realistic check one seed in three saturated for good; a gradient-norm cap of 5 prevented it but slowed move learning. Options offered: an always-on cap (recommended), cap 5 now, batch norm, no change; Justin chose batch norm. Departs from the checklist ("batch norm removed or folded to identity"). Supersedes the value-head amendment above. Implementation choices (conventions, not separate decisions): no bias on convs followed by batch norm; running statistics with momentum 0.1, ε 1e-5; zero-initialized scale of each block's last batch norm instead of a zeroed conv; no weight decay on batch norm scales and offsets; value-map activity added to value-head health. | Justin |
 | 2026-11-08 | Lab notebook page: `lab/template.html`, built by `scripts/build_lab.py` from pgx positions checked against the reference; one section added per phase. | Justin |
 
 ## Open questions for the protocol
@@ -52,6 +53,12 @@ Raised while reading the brief and the WSP logs; each needs a decision in `proto
    Evaluation needs a fixed opening suite.
 4. **When to fix the game budget.** Throughput is measured in Phase 3, after the protocol. Proposal: approve
    everything else now and fix the game budget right after the Phase 3 benchmark, still before any experiment.
+6. **Written weights and batch norm (before Phase 6).** In training mode batch norm rescales each channel by the
+   batch's statistics, which Claude cannot control, so a written network would compute something different from
+   what Claude wrote once training starts. Proposal: Claude writes the network without batch norm (convs with
+   biases), and before training the harness sets each batch norm to the identity on sample positions (running
+   statistics = the channel's measured mean and variance, scale = its standard deviation, offset = its mean plus the
+   written bias), so training starts from exactly the written network.
 5. **Undefined terms:** "clearly better" at the GO / NO-GO; "matched effort" for the distillation arm; the
    strength threshold for the headline metric; K.
 6. **Practice vs. evaluation opponents.** The WSP model's practice opponents must not be the opponents that score

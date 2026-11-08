@@ -27,7 +27,7 @@ sample efficiency in early training, not final superhuman strength.
 |---|---|---|
 | Input | 119 planes: 8 history × 14 (6 piece types per side + 2 repetition) + 7 constant (colour, move count, 4 castling rights, no-progress count) | Same |
 | Policy output | 8×8×73 = 4,672 logits (56 queen-style, 8 knight, 9 underpromotion per square); illegal moves masked before softmax | Same |
-| Network | 19 residual blocks, 256 filters, batch norm | ~6 blocks, 64 filters; batch norm removed or folded to identity (all arms) |
+| Network | 19 residual blocks, 256 filters, batch norm | ~6 blocks, 64 filters; batch norm removed or folded to identity (all arms). *Amended 2026-11-08 (Justin): batch norm kept, as in AlphaZero; see protocol §10.* |
 | Search | 800 sims/move; PUCT with c(s) = log((N+19652+1)/19652) + 1.25 | ~200 sims/move; same formula |
 | Exploration | Root Dirichlet α = 0.3, ε = 0.25; sample moves for first 30 plies, then argmax | Same |
 | Loss | (z − v)² − πᵀ log p + L2 | Same |
@@ -80,6 +80,10 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 
 > **GATE:** the network overfits a small batch of positions; throughput numbers are reported so the experiment
 > timeline can be checked.
+>
+> **Passed 2026-11-08** with batch norm restored (Justin's amendment): every seed, both kinds of targets; the value
+> head also stays healthy through 3,000 steps of realistic training at LR 0.003. Open: at LR 0.05 and 0.2 the
+> value map's ReLU died. [Report](gates/phase-3.md)
 
 ## Phase 4: MCTS
 

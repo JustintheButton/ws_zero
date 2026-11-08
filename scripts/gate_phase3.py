@@ -8,7 +8,7 @@ Targets (--targets):
     (softmax of 2 x the value of the piece captured), and the result target is who is ahead in material,
     tanh(material difference / 4) (scripts/check_value_head.py).
     Pass: move KL divergence < 0.05, value error <= 0.01, and a healthy value head at the end (fewer than half
-    the values saturated, value layer active on more than 1% of units).
+    the values saturated, value map and value layer each active on more than 1% of units).
   random: one random legal move and a random result in {-1, 0, +1}, which can only be memorized (the first
     version of this gate; harsher than real training). Pass: every move target ranked first, value error <= 0.01.
 
@@ -84,7 +84,7 @@ def main():
         if args.targets == "random":
             return m["top1"] == 1.0 and m["value_mse"] <= 0.01
         return (m["policy_kl"] < 0.05 and m["value_mse"] <= 0.01 and m["saturated"] < 0.5
-                and m["fc1_active"] > 0.01)
+                and m["fc1_active"] > 0.01 and m["conv_active"] > 0.01)
 
     curve, passed_at, start = [], None, time.time()
     for i in range(args.steps + 1):
@@ -96,7 +96,8 @@ def main():
             if passed_at is None and passed(m):
                 passed_at = i
             print(f"step {i:5d}  move KL {m['policy_kl']:.3f}  top-1 {m['top1']:6.1%}  value error {mse:.4f}  "
-                  f"saturated {m['saturated']:.2f}  value layer active {m['fc1_active']:.2f}", flush=True)
+                  f"saturated {m['saturated']:.2f}  value map / layer active {m['conv_active']:.2f} / "
+                  f"{m['fc1_active']:.2f}", flush=True)
             if passed_at is not None and i >= passed_at + 100:
                 break
         if i < args.steps:

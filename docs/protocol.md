@@ -28,12 +28,12 @@ useful weights is itself untested; Phase 6 measures it before any training.
 | Part | Specification |
 |---|---|
 | Input | 119 × 8 × 8 planes (AlphaZero encoding), board flipped so the side to move is always at the bottom |
-| Stem | 3×3 conv, 119 → 64 filters, bias, ReLU |
-| Body | 6 residual blocks: 3×3 conv (64) → ReLU → 3×3 conv (64) → add skip → ReLU; all convs with bias |
-| Policy head | 3×3 conv (64) → ReLU → 1×1 conv (73) → 4,672 logits; illegal moves masked before softmax |
-| Value head | 1×1 conv (1) → linear 64 → 256 → ReLU → linear 256 → 1 → tanh *(amended 2026-11-08: no ReLU after the 1×1 conv; see §10)* |
-| Normalization | none (no batch norm in any arm) |
-| Size | 570,379 parameters |
+| Stem | 3×3 conv, 119 → 64 filters, batch norm, ReLU |
+| Body | 6 residual blocks: 3×3 conv (64) → batch norm → ReLU → 3×3 conv (64) → batch norm → add skip → ReLU |
+| Policy head | 3×3 conv (64) → batch norm → ReLU → 1×1 conv (73, with bias) → 4,672 logits; illegal moves masked before softmax |
+| Value head | 1×1 conv (1) → batch norm → ReLU → linear 64 → 256 → ReLU → linear 256 → 1 → tanh (AlphaZero's) |
+| Normalization | batch norm after every conv except the policy head's final 1×1 conv, as in AlphaZero, in every arm; convs followed by batch norm have no bias. Training normalizes with the batch's statistics; self-play and evaluation use running statistics (momentum 0.1, ε = 10⁻⁵, PyTorch's defaults) *(amended 2026-11-08: v1.0 had no batch norm; see §10)* |
+| Size | 571,276 trainable parameters, plus 1,794 batch norm running statistics |
 
 The value is from the side to move's perspective, in [−1, 1].
 
@@ -50,7 +50,8 @@ The value is from the side to move's perspective, in [−1, 1].
 ## 4. Training (identical in every arm)
 
 - **Loss:** (z − v)² − πᵀ log p, plus L2 on weights via SGD `weight_decay = 1e-4`. This equals the
-  pseudocode's `1e-4 · l2_loss(weights)`; it is not added a second time. Biases are not decayed.
+  pseudocode's `1e-4 · l2_loss(weights)`; it is not added a second time. Biases and batch norm scales and
+  offsets are not decayed.
 - **Targets:** π = root visit-count distribution; z = final game result from the side to move's perspective
   (+1 / 0 / −1).
 - **Optimizer:** SGD, momentum 0.9.
@@ -58,8 +59,8 @@ The value is from the side to move's perspective, in [−1, 1].
   Drops after 1/7, 3/7 and 5/7 of the self-play game budget (AlphaZero's 100k / 300k / 500k of 700k steps,
   scaled; defined by games because under D2 the total number of steps is not known in advance). A linear warmup
   from 0 to the first value spans the training steps of the first part of the game budget (D1).
-- **[D1] Base learning rate, warmup and stability without batch norm.** AlphaZero's 0.2 was tuned *with* batch norm
-  and is likely unstable without it. **Decided (Justin, 2026-11-08):** a short pilot on the **random arm only** (pilot seeds are
+- **[D1] Base learning rate, warmup and stability.** AlphaZero's 0.2 was tuned *with* batch norm, which v1.0
+  removed (restored 2026-11-08, §10; the pilot and its fallback are unchanged). **Decided (Justin, 2026-11-08):** a short pilot on the **random arm only** (pilot seeds are
   never reused; pilot results are excluded from all analyses) chooses
   - the base LR from {0.2, 0.05, 0.0125, 0.003} (each ÷4), and
   - the warmup length from {1%, 3%} of the game budget,
@@ -75,10 +76,12 @@ The value is from the side to move's perspective, in [−1, 1].
   makes every run reproducible from its seed.
 - **Replay window:** the most recent W games, sampled uniformly by position. W *(fixed after Phase 3)* = the
   larger of 2,500 games and 12.5% of the game budget.
-- **Initialization of the random arm:** He (Kaiming) normal for all conv and linear weights, zero biases; the
-  second conv of each residual block, the policy head's final 1×1 conv and the value head's final linear layer are
-  zero-initialized. The network therefore starts as an identity-like stack with a uniform policy and value 0, the
-  standard way to train residual networks stably without normalization.
+- **Initialization of the random arm:** He (Kaiming) normal for all conv and linear weights, zero biases, batch
+  norm scale 1 and offset 0 (running mean 0, variance 1); the scale of the second batch norm of each residual block,
+  the policy head's final 1×1 conv and the value head's final linear layer are zero-initialized. The network
+  therefore starts as an identity-like stack with a uniform policy and value 0 (zero-initializing the last batch
+  norm scale of each residual branch is the standard way, Goyal et al. 2017; v1.0 zeroed the second conv instead,
+  which suits a network without batch norm).
 - **Divergence:** a run whose loss becomes NaN or infinite is recorded as diverged; it is not restarted. A run
   interrupted by an infrastructure failure (crash, power loss) resumes from its last checkpoint, and this is
   recorded.
@@ -255,7 +258,8 @@ that channel's activation and the feature on a fixed probe set of positions.
 - **Pre-experiment parameters fixed by rule after Phase 3:** game budget, replay window, K, and LR drop steps
   (from §4, §7, §8.1); and, after the D1 pilot and calibration run, the base LR, warmup and primary threshold
   (§4, §8.4). All are recorded in [decisions.md](decisions.md) before any WSP or distillation training run.
-- **Value head (amended 2026-11-08, Justin, before any results).** AlphaZero's value head is 1×1 conv → batch norm
+- **Value head (amended 2026-11-08, Justin, before any results; superseded the same day by restoring batch
+  norm, below).** AlphaZero's value head is 1×1 conv → batch norm
   → ReLU → … With batch norm removed (in every arm), that single ReLU channel died: in a realistic training check
   (16,384 positions, soft move targets, a material-based result target, batch 1,024, LR 0.003) the value head of
   all three seeds died within 300 steps and learned nothing, while the move head learned normally. With the ReLU
@@ -266,6 +270,15 @@ that channel's activation and the feature on a fixed probe set of positions.
   `ws_zero.net.value_head_health` (value layer activity, saturated fraction, spread of values), and the
   **Phase 7 gate** also requires a healthy value head throughout the smoke run. If it fails there, the issue is
   revisited with Justin before any experiment.
+
+- **Batch norm restored (amended 2026-11-08, Justin, before any results).** Without batch norm, the amended value
+  head still failed: over 3,000 steps of the realistic check one seed in three saturated for good (value pinned at
+  ±1 after a rare explosive training step) and a second saturated briefly; the overfit check failed on every seed
+  the same way. A cap on the gradient norm prevented it but slowed learning. Justin chose to restore batch norm, as
+  in AlphaZero, in every arm, with AlphaZero's original value head (the ReLU after the value conv returns, since
+  batch norm removes the reason it was dropped). This departs from the checklist's "batch norm removed or folded to
+  identity". How the WSP arm's written weights meet batch norm (the network Claude writes is used in training mode,
+  where batch statistics replace the stored ones) is decided before Phase 6. Details: Phase 3 gate report.
 
 ## 11. Deviations
 

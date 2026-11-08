@@ -6,7 +6,7 @@ import pytest
 
 from ws_zero.game.moves import NUM_ACTIONS
 from ws_zero.game.reference import ReferenceGame
-from ws_zero.net import init_params, loss_fn
+from ws_zero.net import STAT_NAMES, apply_train, init_params, loss_fn
 from ws_zero.train import make_optimizer, make_train_step
 
 
@@ -25,13 +25,15 @@ def _batch(n=8, seed=0):
     return tuple(jnp.asarray(np.stack(a)) for a in (obs, masks, pis, np.array(zs, dtype=np.float32)))
 
 
-def test_weight_decay_applies_to_weights_but_not_biases():
-    params = {"layer/w": jnp.full((2, 2), 2.0), "layer/b": jnp.full((2,), 2.0)}
+def test_weight_decay_applies_to_weights_only():
+    names = ["layer/w", "layer/b", "layer/bn/scale", "layer/bn/offset", "layer/bn/mean", "layer/bn/var"]
+    params = {name: jnp.full((2,), 2.0) for name in names}
     opt = make_optimizer(learning_rate=1.0, momentum=0.0, weight_decay=0.1)
     zero_grads = jax.tree.map(jnp.zeros_like, params)
     updates, _ = opt.update(zero_grads, opt.init(params), params)
     np.testing.assert_allclose(updates["layer/w"], -0.2)  # -lr * wd * w
-    np.testing.assert_allclose(updates["layer/b"], 0.0)
+    for name in names[1:]:  # biases, batch norm scale and offset, running statistics
+        np.testing.assert_allclose(updates[name], 0.0, err_msg=name)
 
 
 def test_momentum_matches_heavy_ball_sgd():
@@ -57,4 +59,15 @@ def test_train_step_lowers_the_loss_on_a_fixed_batch():
     for _ in range(20):
         params, state, loss, parts = step(params, state, batch)
     assert float(loss_fn(params, *batch)[0]) < 0.9 * before
-    assert set(parts) == {"value", "policy"}
+    assert set(parts) == {"value", "policy", "grad_norm"}
+
+
+def test_train_step_stores_the_new_running_statistics():
+    batch = _batch()
+    params = init_params(jax.random.key(0))
+    opt = make_optimizer(learning_rate=0.003)
+    _, _, expected = apply_train(params, batch[0])
+    new_params, _, _, parts = make_train_step(opt)(params, opt.init(params), batch)
+    for name in STAT_NAMES:
+        np.testing.assert_allclose(new_params[name], expected[name], rtol=1e-6, err_msg=name)
+    assert float(parts["grad_norm"]) > 0

@@ -8,11 +8,12 @@ functions of the position, soft, and drawn in minibatches from many positions, a
     are favoured and quiet moves share the rest.
 The same random starts as the gate (seed k = init key derive_seed(k, "init")). Protocol optimizer, batch 1,024.
 
-Pass: in every seed the value head stays healthy at every check (value layer active on more than 1% of units, fewer
-than half the values saturated) and the held-out value error falls below half its starting value.
+Pass: in every seed the value head stays healthy at every check (value map and value layer each active on more than
+1% of units, fewer than half the values saturated) and the held-out value error falls below half its starting value.
 
-History: with the protocol's original value head (ReLU after the 1x1 value conv) the value head died in all three
-seeds within 300 steps; this check led to the amendment that made the value conv linear (protocol §10).
+History (protocol §10): without batch norm, the original value head (ReLU after the 1x1 value conv) died in all
+three seeds within 300 steps; with that ReLU removed it learned over 900 steps, but over 3,000 steps one seed in
+three saturated for good. Batch norm was then restored, with AlphaZero's original value head.
 
     uv run python scripts/check_value_head.py --seeds 0,1,2 --out docs/gates/phase-3-value-check.json
 """
@@ -102,14 +103,15 @@ def run_seed(seed, train_obs, train_mask, test, lr, steps, batch):
                  **{k: float(v) for k, v in health.items()}}
             curve.append(c)
             print(f"seed {seed} step {i:4d}  held-out value error {c['value_mse']:.4f}  move KL {c['policy_kl']:.3f}  "
-                  f"value layer active {c['fc1_active']:.2f}  saturated {c['saturated']:.2f}", flush=True)
+                  f"value map / layer active {c['conv_active']:.2f} / {c['fc1_active']:.2f}  saturated {c['saturated']:.2f}",
+                  flush=True)
         if i < steps:
             idx = rng.integers(0, len(train_obs), batch)
             obs = jnp.asarray(train_obs[idx], dtype=jnp.float32)
             mask = jnp.asarray(train_mask[idx])
             pi, z = targets(obs, mask)
             params, opt_state, _, _ = step(params, opt_state, (obs, mask, pi, z))
-    alive = all(c["fc1_active"] > 0.01 and c["saturated"] < 0.5 for c in curve)
+    alive = all(c["conv_active"] > 0.01 and c["fc1_active"] > 0.01 and c["saturated"] < 0.5 for c in curve)
     learned = curve[-1]["value_mse"] < 0.5 * curve[0]["value_mse"]
     return {"seed": seed, "passed": alive and learned, "value_head_alive": alive, "value_learned": learned,
             "curve": curve}

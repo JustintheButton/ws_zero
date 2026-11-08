@@ -16,7 +16,7 @@ import numpy as np
 from ws_zero.game.env import ChessEnv, initial_state, state_from_fen
 from ws_zero.game.moves import move_to_action
 from ws_zero.game.reference import SCALAR_PLANES, ReferenceGame, observations_match
-from ws_zero.net import PARAM_SHAPES, apply, masked_log_softmax
+from ws_zero.net import apply, blank_params, masked_log_softmax
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,7 +33,7 @@ SCENES = [  # (name, starting FEN or None for the start position, moves in SAN)
 
 def hand_written_network():
     """Three nonzero weights: copy "my pawns" through the stem and policy conv, then score "two squares forward"."""
-    params = {name: jnp.zeros(shape) for name, shape in PARAM_SHAPES.items()}
+    params = blank_params()  # every weight 0, every batch norm the identity
     params["stem/w"] = params["stem/w"].at[1, 1, 0, 0].set(1.0)
     params["policy/conv/w"] = params["policy/conv/w"].at[1, 1, 0, 0].set(1.0)
     params["policy/out/w"] = params["policy/out/w"].at[0, 0, 0, 17].set(1.0)
@@ -101,7 +101,8 @@ def build_scene(env: ChessEnv, name: str, fen: str | None, sans: list[str]) -> d
 
 
 def phase3_data(gates: Path) -> dict:
-    """Value-head check curves (original and amended head) and Modal cost per 1,000 games."""
+    """Value-head check curves (no batch norm: original and linear head; batch norm), Modal cost per 1,000 games,
+    the step-cap table, and the gate verdict (current design: batch norm)."""
     def curves(name):
         path = gates / name
         if not path.exists():
@@ -122,34 +123,67 @@ def phase3_data(gates: Path) -> dict:
     gate = [json.loads((gates / f"phase-3-overfit-realistic-seed{s}.json").read_text())["passed"]
             for s in range(3) if (gates / f"phase-3-overfit-realistic-seed{s}.json").exists()]
     return {"valueOriginal": curves("phase-3-value-check-original-head.json"),
-            "valueFixed": curves("phase-3-value-check.json"), "gpus": sorted(gpus, key=lambda g: g["cost"][1]),
-            "gatePassed": bool(gate) and all(gate), "stability": stability_rows(gates)}
+            "valueFixed": curves("phase-3-value-check-no-bn.json"), "valueBN": curves("phase-3-value-check.json"),
+            "gpus": sorted(gpus, key=lambda g: g["cost"][1]),
+            "gatePassed": bool(gate) and all(gate), "stability": stability_rows(gates), "lrs": lr_rows(gates)}
+
+
+def lr_rows(gates: Path, at: int = 1000) -> list:
+    """Batch norm network at each D1 learning rate (realistic check, seed 0): when the value head broke, if it did,
+    and the held-out value error and move KL at step `at`."""
+    sources = [(0.003, gates / "phase-3-value-check.json")] + [
+        (lr, gates / f"phase-3-value-check-lr{lr}.json") for lr in (0.0125, 0.05, 0.2)]
+    rows = []
+    for lr, path in sources:
+        if not path.exists():
+            continue
+        curve = next(r for r in json.loads(path.read_text())["results"] if r["seed"] == 0)["curve"]
+        point = next(c for c in curve if c["step"] == at)
+        broke = next((c["step"] for c in curve if c["step"] <= at and (
+            c["conv_active"] <= 0.01 or c["fc1_active"] <= 0.01 or c["saturated"] >= 0.5)), None)
+        rows.append({"lr": lr, "brokeAt": broke, "mse": round(point["value_mse"], 3),
+                     "kl": round(point["policy_kl"], 2)})
+    return rows
 
 
 def stability_rows(gates: Path) -> list:
-    """One row per (test, step cap): runs that broke for good or briefly, final value error, move KL, gate verdict."""
-    runs = []  # (mode, cap, ever_saturated, final_saturated, value_mse, kl)
-    for s in range(3):
-        path = gates / f"phase-3-overfit-realistic-seed{s}.json"
-        if path.exists():
-            curve = json.loads(path.read_text())["curve"]
-            runs.append(("gate", 0.0, any(c["saturated"] >= 0.5 for c in curve), curve[-1]["saturated"],
-                         curve[-1]["value_mse"], curve[-1]["policy_kl"]))
-    path = gates / "phase-3-stability.json"
+    """One row per (design, test, step cap): runs stuck for good or briefly, final value error, move KL, gate verdict.
+
+    design "nobn": protocol v1.0 without batch norm (linear value conv); "bn": batch norm restored, no cap.
+    """
+    def from_curve(design, mode, curve):
+        return (design, mode, 0.0, any(c["saturated"] >= 0.5 for c in curve), curve[-1]["saturated"],
+                curve[-1]["value_mse"], curve[-1]["policy_kl"])
+
+    runs = []  # (design, mode, cap, ever_saturated, final_saturated, value_mse, kl)
+    long_bn = gates / "phase-3-stability-bn.json"  # full-length gate runs with batch norm, if made
+    for design, suffix in (("nobn", "-no-bn"), ("bn", "")):
+        if design == "bn" and long_bn.exists():
+            continue
+        for s in range(3):
+            path = gates / f"phase-3-overfit-realistic{suffix}-seed{s}.json"
+            if path.exists():
+                runs.append(from_curve(design, "gate", json.loads(path.read_text())["curve"]))
+    path = gates / "phase-3-value-check.json"
     if path.exists():
-        for r in json.loads(path.read_text())["results"]:
-            runs.append((r["mode"], r["clip"], r["first_saturated_step"] is not None, r["final_saturated"],
-                         r["final_value_mse"], r["final_move_kl"]))
+        runs += [from_curve("bn", "check", r["curve"]) for r in json.loads(path.read_text())["results"]]
+    for design, path in (("nobn", gates / "phase-3-stability.json"), ("bn", long_bn)):
+        if path.exists():
+            for r in json.loads(path.read_text())["results"]:
+                runs.append((design, r["mode"], r["clip"], r["first_saturated_step"] is not None,
+                             r["final_saturated"], r["final_value_mse"], r["final_move_kl"]))
     rows = []
-    for mode, cap in [("check", 0.0), ("check", 5.0), ("gate", 0.0), ("gate", 5.0), ("gate", 2.0)]:
-        group = [r for r in runs if r[0] == mode and r[1] == cap]
+    order = [("nobn", "check", 0.0), ("nobn", "check", 5.0), ("bn", "check", 0.0),
+             ("nobn", "gate", 0.0), ("nobn", "gate", 5.0), ("nobn", "gate", 2.0), ("bn", "gate", 0.0)]
+    for design, mode, cap in order:
+        group = [r[3:] for r in runs if r[:3] == (design, mode, cap)]
         if not group:
             continue
-        broke = sum(r[3] >= 0.5 for r in group)
-        rows.append({"mode": mode, "cap": cap, "runs": len(group), "broke": broke,
-                     "wobbled": sum(r[2] for r in group) - broke, "mse": [round(r[4], 4) for r in group],
-                     "kl": [round(min(r[5] for r in group), 3), round(max(r[5] for r in group), 3)],
-                     "gate": None if mode == "check" else sum(r[5] < 0.05 and r[4] <= 0.01 and r[3] < 0.5
+        broke = sum(r[1] >= 0.5 for r in group)
+        rows.append({"design": design, "mode": mode, "cap": cap, "runs": len(group), "broke": broke,
+                     "wobbled": sum(r[0] for r in group) - broke, "mse": [round(r[2], 4) for r in group],
+                     "kl": [round(min(r[3] for r in group), 3), round(max(r[3] for r in group), 3)],
+                     "gate": None if mode == "check" else sum(r[3] < 0.05 and r[2] <= 0.01 and r[1] < 0.5
                                                               for r in group)})
     return rows
 

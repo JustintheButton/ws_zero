@@ -16,9 +16,9 @@ import optax
 sys.path.insert(0, str(Path(__file__).parent))
 import check_value_head as C  # noqa: E402
 import gate_phase3 as G  # noqa: E402
-from ws_zero.net import apply, init_params, loss_fn, masked_log_softmax, value_head_health  # noqa: E402
+from ws_zero.net import apply, init_params, masked_log_softmax, value_head_health  # noqa: E402
 from ws_zero.seeding import derive_seed  # noqa: E402
-from ws_zero.train import make_optimizer  # noqa: E402
+from ws_zero.train import make_optimizer, make_train_step  # noqa: E402
 
 mode, clip, seeds, steps = sys.argv[1], float(sys.argv[2]), [int(s) for s in sys.argv[3].split(",")], int(sys.argv[4])
 
@@ -43,11 +43,11 @@ for seed in seeds:
     params = init_params(jax.random.key(derive_seed(seed, "init")))
     state = opt.init(params)
 
-    @jax.jit
+    train_step = make_train_step(opt)
+
     def step(params, state, batch):
-        (loss, _), g = jax.value_and_grad(loss_fn, has_aux=True)(params, *batch)
-        u, state = opt.update(g, state, params)
-        return optax.apply_updates(params, u), state, optax.global_norm(g)
+        params, state, _, parts = train_step(params, state, batch)
+        return params, state, parts["grad_norm"]
 
     @jax.jit
     def evaluate(params):
