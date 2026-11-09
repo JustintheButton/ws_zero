@@ -57,7 +57,9 @@
   }
 
   /** Search `game` (not finished) with `simulations` look-aheads. Returns the root's moves with their visit counts
-      and values, sorted by action, the move to play (most visits; ties to the lowest action), and the root value. */
+      and values, sorted by action, the move to play (most visits; ties to the lowest action), and the root value.
+      onProgress(done, total) is called every 25 look-aheads; if it returns false the search stops and returns
+      null (the page uses this when the game being searched has been replaced). */
   async function search(game, evaluate, simulations, onProgress) {
     const first = await evaluate(game);
     const root = new Node(game, first.logits, false);
@@ -98,7 +100,7 @@
         parent.visits += 1;
         parent.valueSum += g;
       }
-      if (onProgress && (sim + 1) % 25 === 0) await onProgress(sim + 1, simulations);
+      if (onProgress && (sim + 1) % 25 === 0 && (await onProgress(sim + 1, simulations)) === false) return null;
     }
     const moves = root.moves.map((m) => {
       const ch = root.children.get(m.action);

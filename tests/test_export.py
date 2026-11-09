@@ -56,3 +56,19 @@ def test_a_written_model_file_reads_back_exactly(tmp_path):
     back = read_model(tmp_path / "m")
     for name, array in fold_batch_norm(params).items():
         np.testing.assert_array_equal(back[name], np.asarray(array, np.float32))
+
+
+def test_model_ids_that_contain_a_dot_keep_their_own_files(tmp_path):
+    # Path.with_suffix would cut "random-seed0-1.5k" to "random-seed0-1", so two checkpoints would share one file.
+    from ws_zero.export import read_model, write_model
+    first, second = _trained_looking_params(), init_params(jax.random.key(3))
+    write_model(tmp_path / "random-seed0-1.5k", first, {"name": "a"})
+    write_model(tmp_path / "random-seed0-1.0k", second, {"name": "b"})
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        "random-seed0-1.0k.bin", "random-seed0-1.0k.json", "random-seed0-1.5k.bin", "random-seed0-1.5k.json"]
+    assert json.loads((tmp_path / "random-seed0-1.5k.json").read_text())["name"] == "a"
+    from ws_zero.export import fold_batch_norm
+    for model, params in [("random-seed0-1.5k", first), ("random-seed0-1.0k", second)]:
+        back = read_model(tmp_path / model)
+        for name, array in fold_batch_norm(params).items():
+            np.testing.assert_array_equal(back[name], np.asarray(array, np.float32))

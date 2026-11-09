@@ -13,6 +13,7 @@ const ROOT = path.resolve(__dirname, "..", "..");
 globalThis.Chess = require(path.join(ROOT, "build/vendor/chess.min.js")).Chess;
 const { Game } = require(path.join(ROOT, "arena/js/chessgame.js"));
 const { search, materialCounter } = require(path.join(ROOT, "arena/js/search.js"));
+const { valuePath } = require(path.join(ROOT, "arena/js/chart.js"));
 
 const cases = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
 let failures = 0;
@@ -81,6 +82,35 @@ async function main() {
     const want = Object.fromEntries(Object.entries(c.visits).map(([a, v]) => [a, v]));
     if (JSON.stringify(got) !== JSON.stringify(want)) fail(`search at ${label(c)}: ${JSON.stringify(got)} != ${JSON.stringify(want)}`);
     else console.log(`search at ${label(c)}: ${c.simulations} simulations, visit counts identical`);
+  }
+
+  // 4. A search told to stop (its game was replaced) stops at the next progress report and returns null.
+  {
+    let evaluations = 0;
+    const counting = (game) => { evaluations++; return materialCounter(game); };
+    const stopped = await search(Game.start(), counting, 800, () => false);
+    if (stopped !== null || evaluations > 26) fail(`stopping a search: returned ${stopped === null ? "null" : "a result"} after ${evaluations} evaluations`);
+    else console.log(`stopping a search: stopped after ${evaluations} evaluations of 801`);
+    const kept = await search(Game.start(), materialCounter, 50, () => {});
+    if (!kept || kept.moves.reduce((a, m) => a + m.visits, 0) !== 50) fail("a progress report that returns nothing must not stop the search");
+  }
+
+  // 5. The value chart's line joins every value there is. Against an opponent that does not search, every other
+  //    value is missing; the line must still be drawn. Values are for the side that moved; the chart shows White's view.
+  {
+    const id = (v) => v;
+    const checks = [
+      [[0.2, null, -0.5, null, 1], true, "M0.0,0.2L2.0,-0.5L4.0,1.0"],
+      [[null, 0.5, null, 0.2], true, "M1.0,-0.5L3.0,-0.2"],
+      [[0.5, 0.5, 0.5], false, "M0.0,-0.5L1.0,0.5L2.0,-0.5"],
+      [[null, null], true, ""],
+    ];
+    let ok = 0;
+    for (const [values, whiteFirst, want] of checks) {
+      const got = valuePath(values, whiteFirst, id, id);
+      if (got !== want) fail(`value chart line for ${JSON.stringify(values)}: ${got} != ${want}`); else ok++;
+    }
+    console.log(`value chart: ${ok} of ${checks.length} lines as expected`);
   }
   console.log(failures ? `${failures} FAILED` : "all checks passed");
   process.exit(failures ? 1 : 0);

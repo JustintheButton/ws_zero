@@ -15,7 +15,7 @@ net:
   policy_size: 4672         # 8 x 8 x 73
   blocks: 6
   filters: 64
-  batch_norm: false         # removed in all arms
+  batch_norm: true          # as in AlphaZero, in every arm (restored 2026-11-08, protocol §10)
 
 mcts:
   simulations: 800         # raised from 200 (Justin, 2026-11-08), as in AlphaZero

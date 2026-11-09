@@ -18,7 +18,7 @@ import urllib.request
 from pathlib import Path
 
 from ws_zero.arena import network_cases, network_lines, pawn_pusher, untrained
-from ws_zero.export import write_model
+from ws_zero.export import model_file, write_model
 
 ROOT = Path(__file__).resolve().parents[1]
 VENDOR = {"chess.min.js": "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js",
@@ -74,10 +74,10 @@ def main():
             params = make()
             path = out / "models" / model_id
             write_model(path, params, {"id": model_id, "name": name})
-            model = json.loads(path.with_suffix(".json").read_text())
-            model["data"] = base64.b64encode(path.with_suffix(".bin").read_bytes()).decode("ascii")
-            path.with_suffix(".json").write_text(json.dumps(model, separators=(",", ":")))
-            path.with_suffix(".bin").unlink()
+            model = json.loads(model_file(path, ".json").read_text())
+            model["data"] = base64.b64encode(model_file(path, ".bin").read_bytes()).decode("ascii")
+            model_file(path, ".json").write_text(json.dumps(model, separators=(",", ":")))
+            model_file(path, ".bin").unlink()
             entry.update(kind="network", file=model_id, check=network_cases(params, network_lines()))
         manifest.append(entry)
     (out / "data" / "models.json").write_text(json.dumps(manifest, separators=(",", ":")))

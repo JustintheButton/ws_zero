@@ -49,6 +49,9 @@ def bench(label: str, batches: str) -> dict:
 
 @app.local_entrypoint()
 def main(gpus: str = "T4,L4,A10,L40S,A100-40GB,H100", batches: str = "100,400,1600,6400"):
+    unknown = [g for g in gpus.split(",") if g not in GPU_PRICE]
+    if unknown:  # before the paid runs: their results would be lost when the price is looked up
+        raise SystemExit(f"no price for GPU {', '.join(map(repr, unknown))}; known: {', '.join(GPU_PRICE)}")
     calls = {g: bench.with_options(gpu=g).spawn(g, batches) for g in gpus.split(",")}
     results = {}
     for g, call in calls.items():

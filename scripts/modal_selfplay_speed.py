@@ -49,6 +49,8 @@ def measure(label: str, games: int, plies: int) -> dict:
 
 @app.local_entrypoint()
 def main(gpu: str = "L4", games: int = 100, plies: int = 40):
+    if gpu not in GPU_PRICE:  # before the paid run: its result would be lost when the price is looked up
+        raise SystemExit(f"no price for GPU {gpu!r}; known: {', '.join(GPU_PRICE)}")
     result = measure.with_options(gpu=gpu).remote(gpu, games, plies)
     hourly = GPU_PRICE[gpu] + CPU_CORES * CORE_PRICE + MEMORY_GIB * GIB_PRICE
     result["usd_per_hour"] = hourly

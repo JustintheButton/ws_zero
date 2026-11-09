@@ -52,6 +52,12 @@ def apply_folded(folded: dict, obs: jax.Array) -> tuple[jax.Array, jax.Array]:
     return logits, jnp.tanh(hidden @ folded["value/fc2/w"] + folded["value/fc2/b"])[:, 0]
 
 
+def model_file(path: Path, suffix: str) -> Path:
+    """`<path><suffix>`, added to the whole name: a model id may contain dots ("random-seed0-1.5k")."""
+    path = Path(path)
+    return path.with_name(path.name + suffix)
+
+
 def write_model(path: Path, params: dict, fields: dict) -> None:
     """Write `<path>.bin` and `<path>.json` for the folded network of `params`."""
     path = Path(path)
@@ -60,13 +66,13 @@ def write_model(path: Path, params: dict, fields: dict) -> None:
         arrays.append([name, list(array.shape), offset])
         chunks.append(array.astype("<f4").tobytes())
         offset += array.size
-    path.with_suffix(".bin").write_bytes(b"".join(chunks))
-    path.with_suffix(".json").write_text(json.dumps({**fields, "arrays": arrays}))
+    model_file(path, ".bin").write_bytes(b"".join(chunks))
+    model_file(path, ".json").write_text(json.dumps({**fields, "arrays": arrays}))
 
 
 def read_model(path: Path) -> dict[str, np.ndarray]:
     """Read back the folded arrays written by `write_model`."""
     path = Path(path)
-    manifest = json.loads(path.with_suffix(".json").read_text())
-    data = np.frombuffer(path.with_suffix(".bin").read_bytes(), dtype="<f4")
+    manifest = json.loads(model_file(path, ".json").read_text())
+    data = np.frombuffer(model_file(path, ".bin").read_bytes(), dtype="<f4")
     return {name: data[offset:offset + int(np.prod(shape))].reshape(shape) for name, shape, offset in manifest["arrays"]}

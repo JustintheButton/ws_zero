@@ -318,11 +318,12 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.22.0/tf.min.js"></script>
 <script src="js/chessgame.js"></script>
 <script src="js/search.js"></script>
+<script src="js/chart.js"></script>
 <script src="js/network.js"></script>
 <script>
 (function () {
   "use strict";
-  const { Game, search, instinct, materialCounter, loadNetwork } = window.WSZ;
+  const { Game, search, instinct, materialCounter, loadNetwork, valuePath } = window.WSZ;
   const $ = (id) => document.getElementById(id);
   const FILES = "abcdefgh", VS = "︎";
   const FILLED = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
@@ -403,7 +404,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
 
   // ---------- models ----------
   let MODELS = [], DATA = { runs: [], tables: [], games: {} };
-  const loaded = new Map();  // id -> {evaluate, check}
+  const loaded = new Map();  // id -> Promise of {evaluate, check}
   let backendNote = "";
 
   async function initBackend() {
@@ -428,14 +429,17 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     }
     return { ok: worst < 2e-3 && worstValue < 1e-3, worst, worstValue, n: cases.length };
   }
-  async function getModel(id) {
-    if (loaded.has(id)) return loaded.get(id);
-    const m = MODELS.find((x) => x.id === id);
-    if (m.kind === "material") {
-      const entry = { evaluate: materialCounter, check: { ok: true, text: "Plain material counting; no network to check." } };
-      loaded.set(id, entry);
-      return entry;
+  function getModel(id) {  // one load and check per model: a second request while it loads waits for the same one
+    if (!loaded.has(id)) {
+      const loading = loadModel(id);
+      loaded.set(id, loading);
+      loading.catch(() => loaded.delete(id));  // a failed load can be tried again
     }
+    return loaded.get(id);
+  }
+  async function loadModel(id) {
+    const m = MODELS.find((x) => x.id === id);
+    if (m.kind === "material") return { evaluate: materialCounter, check: { ok: true, text: "Plain material counting; no network to check." } };
     const manifest = await fetch(`models/${m.file}.json`).then((r) => { if (!r.ok) throw new Error(`models/${m.file}.json: ${r.status}`); return r.json(); });
     const bytes = atob(manifest.data), view = new Uint8Array(bytes.length);  // float32 arrays, base64
     for (let i = 0; i < bytes.length; i++) view[i] = bytes.charCodeAt(i);
@@ -448,14 +452,12 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       net = loadNetwork(manifest, buffer);
       result = await runCheck(net, m.check);
     }
-    const entry = {
+    return {
       evaluate: result.ok ? net.evaluate : null,
       check: { ok: result.ok, text: result.ok
         ? `Checked against Python on ${result.n} positions: move scores ${within(result.worst)}, estimate ${within(result.worstValue)}.`
         : `Did not match Python (move scores off by ${result.worst.toFixed(4)}, estimate by ${result.worstValue.toFixed(4)}), so it is not offered.` },
     };
-    loaded.set(id, entry);
-    return entry;
   }
 
   // ---------- play ----------
@@ -553,14 +555,16 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       let result;
       if (play.sims === 0) result = await instinct(g, model.evaluate);
       else result = await search(g, model.evaluate, play.sims, async (n, total) => {
-        if (token === play.token) playStatus(`<b>${esc(modelName())} is thinking…</b> <span class="num">${n} / ${total}</span> look-aheads`);
+        if (token !== play.token) return false;  // the game was replaced: stop this search
+        playStatus(`<b>${esc(modelName())} is thinking…</b> <span class="num">${n} / ${total}</span> look-aheads`);
         await new Promise((r) => setTimeout(r, 0));
       });
-      if (token !== play.token) return;  // a new game started meanwhile
+      if (token !== play.token || !result) return;  // a new game started meanwhile
       play.game = g.play(result.best);
       play.thoughts[playLine().length - 1] = describe(result, g);
       play.view = playLine().length - 1;
     } catch (e) {
+      if (token !== play.token) return;  // an old game's search: the current game's status is not its to change
       playStatus(`<b>The model could not move.</b> ${esc(e.message || e)}`);
       play.busy = false;
       return;
@@ -593,7 +597,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     renderPlay();
     maybeModelMove();
   }
-  async function selectOpponent(id) {
+  async function selectOpponent(id, startNewGame) {
     play.id = id;
     store.set("opponent", id);
     $("opponent").value = id;
@@ -602,15 +606,18 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     $("opponent-check").className = "check";
     $("opponent-check").textContent = "Checking against Python…";
     renderPlay();
+    let check;
     try {
       const entry = await getModel(id);
-      $("opponent-check").className = `check ${entry.check.ok ? "ok" : "bad"}`;
-      $("opponent-check").textContent = (entry.check.ok ? "✓ " : "✗ ") + entry.check.text;
+      check = [entry.check.ok, entry.check.text];
     } catch (e) {
-      $("opponent-check").className = "check bad";
-      $("opponent-check").textContent = `✗ Could not load this model: ${e.message || e}`;
+      check = [false, `Could not load this model: ${e.message || e}`];
     }
-    if (!play.busy) maybeModelMove();
+    if (play.id !== id) return;  // another opponent was chosen while this one loaded
+    $("opponent-check").className = `check ${check[0] ? "ok" : "bad"}`;
+    $("opponent-check").textContent = (check[0] ? "✓ " : "✗ ") + check[1];
+    if (startNewGame) newGame();
+    else if (!play.busy) maybeModelMove();
   }
   function setSeg(el, value) { el.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(value)))); }
 
@@ -665,13 +672,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     for (const v of [-1, 0, 1]) g += `<line class="${v === 0 ? "zero" : "grid"}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 5}" y="${y(v) + 3}" text-anchor="end">${v > 0 ? "+1" : v}</text>`;
     const step = n > 200 ? 100 : n > 60 ? 20 : 10;
     for (let i = 0; i <= n; i += step) g += `<text x="${x(Math.max(0, i - 1))}" y="${H - 6}" text-anchor="middle">${i}</text>`;
-    let d = "", pen = false;
-    rec.values.forEach((v, i) => {
-      if (v === null) { pen = false; return; }
-      const whiteView = i % 2 === (gv.line[0].turn === "w" ? 0 : 1) ? v : -v;
-      d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(whiteView).toFixed(1)}`;
-      pen = true;
-    });
+    const d = valuePath(rec.values, gv.line[0].turn === "w", x, y);
     if (d) g += `<path class="line" d="${d}"/>`;
     if (gv.ply > 0) g += `<line class="now" x1="${x(gv.ply - 1)}" x2="${x(gv.ply - 1)}" y1="${T}" y2="${H - B}"/>`;
     $("g-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="The searching player's estimate of who is winning, move by move">${g}</svg>`;
@@ -779,7 +780,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   $("g-prev").addEventListener("click", () => { gv.ply = Math.max(0, gv.ply - 1); renderGames(); });
   $("g-next").addEventListener("click", () => { gv.ply = Math.min(gv.line.length - 1, gv.ply + 1); renderGames(); });
   $("g-last").addEventListener("click", () => { gv.ply = gv.line.length - 1; renderGames(); });
-  $("g-play").addEventListener("click", () => { const id = $("g-play").dataset.model; if (id) { location.hash = "play"; selectOpponent(id).then(newGame); } });
+  $("g-play").addEventListener("click", () => { const id = $("g-play").dataset.model; if (id) { location.hash = "play"; selectOpponent(id, true); } });
 
   async function start() {
     route();

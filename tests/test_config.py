@@ -24,7 +24,7 @@ def test_project_base_config_loads():
 
     config = load_config(Path(__file__).parents[1] / "configs" / "base.yaml")
     assert config["init"]["method"] == "random"
-    assert config["net"]["batch_norm"] is False
+    assert config["net"]["batch_norm"] is True  # restored in every arm, 2026-11-08 (protocol §10)
 
 
 def test_override_cannot_add_keys_missing_from_base(tmp_path):
