@@ -28,7 +28,7 @@ sample efficiency in early training, not final superhuman strength.
 | Input | 119 planes: 8 history × 14 (6 piece types per side + 2 repetition) + 7 constant (colour, move count, 4 castling rights, no-progress count) | Same |
 | Policy output | 8×8×73 = 4,672 logits (56 queen-style, 8 knight, 9 underpromotion per square); illegal moves masked before softmax | Same |
 | Network | 19 residual blocks, 256 filters, batch norm | ~6 blocks, 64 filters; batch norm removed or folded to identity (all arms). *Amended 2026-11-08 (Justin): batch norm kept, as in AlphaZero; see protocol §10.* |
-| Search | 800 sims/move; PUCT with c(s) = log((N+19652+1)/19652) + 1.25 | ~200 sims/move; same formula |
+| Search | 800 sims/move; PUCT with c(s) = log((N+19652+1)/19652) + 1.25 | 800 sims/move, same formula. *Amended 2026-11-08 (Justin): raised from ~200; see protocol §10.* |
 | Exploration | Root Dirichlet α = 0.3, ε = 0.25; sample moves for first 30 plies, then argmax | Same |
 | Loss | (z − v)² − πᵀ log p + L2 | Same |
 | Optimizer | SGD, momentum 0.9, weight decay 1e-4, LR 0.2 → 0.02 → 0.002 → 0.0002 | Same, plus a short low-LR warmup in every arm |

@@ -7,7 +7,7 @@ Measures, at several batch sizes (one batch = many games in parallel):
   - training steps per second at the protocol's batch of 1,024.
 
 Estimate (protocol D2: chunks of 100 games played together, then training): a chunk's search lasts as long as
-its longest game, at 200 simulations per ply, with the batch equal to the number of games in flight; training
+its longest game, at SIMULATIONS simulations per ply, with the batch equal to the number of games in flight; training
 draws each position 4 times (positions x 4 / 1,024 steps). Batch 100 is one run per GPU; larger batches show what
 several runs sharing one GPU could reach. Search bookkeeping is not included; Phase 4 measures real self-play.
 
@@ -27,7 +27,7 @@ from ws_zero.game.env import ChessEnv
 from ws_zero.net import apply, init_params
 from ws_zero.train import make_optimizer, make_train_step
 
-SIMULATIONS = 200
+SIMULATIONS = 800  # protocol §3 (200 until 2026-11-08)
 TRAIN_BATCH = 1024
 SAMPLES_PER_POSITION = 4
 AVERAGE_PLIES = 340  # average length of the Phase 2 random games

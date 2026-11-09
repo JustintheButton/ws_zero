@@ -39,7 +39,8 @@ The value is from the side to move's perspective, in [−1, 1].
 
 ## 3. Search
 
-- PUCT with c(s) = log((N(s) + 19652 + 1) / 19652) + 1.25; 200 simulations per move.
+- PUCT with c(s) = log((N(s) + 19652 + 1) / 19652) + 1.25; 800 simulations per move, as in AlphaZero (raised from
+  200, Justin, 2026-11-08; see §10).
 - Root Dirichlet noise α = 0.3, ε = 0.25 in self-play only.
 - Self-play move choice: sample proportional to visit counts for the first 30 plies, then the most-visited move.
 - A new tree for every move (no tree reuse); no resignation; draw adjudicated at 512 plies.
@@ -173,7 +174,7 @@ spread over as many weeks of the subscription allowance as needed.
 
 **[D6] GO / NO-GO criterion ("clearly better than random initialization").** **Decided (Justin, 2026-11-08):**
 **GO** if at least
-3 of the 5 budget-50 networks, as full agents (200 simulations, no noise, most-visited move), score at least 60%
+3 of the 5 budget-50 networks, as full agents (800 simulations, no noise, most-visited move), score at least 60%
 against the random-initialization agent over 200 games (100 openings × both colors), with the 95% confidence
 interval's lower bound above 50%. Results are reported to Justin either way, and Phase 7 starts only with his
 approval.
@@ -207,7 +208,7 @@ run). K *(fixed after Phase 3)* = budget / 20.
 - The anchor ladder is calibrated (anchors play each other) in Phase 5, before any training run.
 
 ### 8.3 Games
-- Our agent: 200 simulations, no Dirichlet noise, the most-visited move from ply 1. A secondary agent plays the
+- Our agent: 800 simulations, no Dirichlet noise, the most-visited move from ply 1. A secondary agent plays the
   raw policy's top move (no search).
 - Openings: a fixed suite of 50 positions for checkpoint evaluation and a separate 100 for the GO / NO-GO test.
   Generated once by random 8-ply sequences kept only if Stockfish (depth 20) evaluates them within ±50 centipawns;
@@ -264,7 +265,7 @@ that channel's activation and the feature on a fixed probe set of positions.
 
 - **Phase 4 gate:** a uniform-policy dummy network with value 0 cannot see that hanging its queen is bad. The gate
   uses a dummy network with a uniform policy and a **material-count value**, and must find mate-in-1 and avoid
-  hanging its queen at 200 simulations or fewer.
+  hanging its queen at 800 simulations, the number used throughout (200 or fewer until 2026-11-08; see below).
 - **Phase 5 gate:** "two identical checkpoints rate as equal" is tested using the opening suite, since otherwise
   identical deterministic agents replay identical games.
 - **Pre-experiment parameters fixed by rule after Phase 3:** game budget, replay window, K, and LR drop steps
@@ -298,6 +299,15 @@ that channel's activation and the feature on a fixed probe set of positions.
   broken (one shut off and recovered). D1 therefore treats a pilot setting whose value head is broken at the end of
   its pilot run as diverged. "At the end" rather than "ever", because with batch norm a shut-off can recover. The
   network and the learning-rate grid are unchanged. Details: Phase 3 gate report.
+
+- **800 simulations per move (amended 2026-11-08, Justin, before any experiment).** At 200 simulations one
+  Phase 4 gate position failed in every run: with a material-count dummy and no move preferences, the search could
+  not check Black's reply (the knight takes the queen) against each of White's 38 moves, about 1,300 lines, and
+  played a3, leaving its queen hanging. Justin chose AlphaZero's 800 for the whole project: self-play (§3),
+  evaluation games (§8.3), the GO / NO-GO agent (D6) and the Phase 4 gate. Known costs: about 4× the search work per
+  game (Phase 3 estimate, one run on an L4: 710–1,070 games per hour instead of 2,800–4,200, $1.05–1.58 per 1,000
+  games instead of $0.27–0.40), so the game budget D7's rule gives will be smaller and its fallback more likely; and
+  mctx's search tree for 100 games in flight grows from 2.5 GB to 9.9 GB.
 
 ## 11. Deviations
 

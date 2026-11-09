@@ -18,7 +18,7 @@ net:
   batch_norm: false         # removed in all arms
 
 mcts:
-  simulations: 200
+  simulations: 800         # raised from 200 (Justin, 2026-11-08), as in AlphaZero
   c_base: 19652             # c(s) = log((N + c_base + 1) / c_base) + c_init
   c_init: 1.25
   dirichlet_alpha: 0.3
