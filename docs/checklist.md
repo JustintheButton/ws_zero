@@ -98,7 +98,7 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 >
 > **Passed 2026-11-09** at 800 simulations (Justin's amendment, protocol §10), 49 of 50 runs: every mate in every
 > run; the queen kept safe in 19 of 20, the miss a near-tie in the knight position, which Justin accepted.
-> [Results](gates/phase-4-gate.json), [decision](decisions.md)
+> [Report](gates/phase-4.md), [results](gates/phase-4-gate.json), [decision](decisions.md)
 
 ## Phase 5: Evaluation harness
 
