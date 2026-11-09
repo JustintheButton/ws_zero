@@ -1,0 +1,815 @@
+<title>ws_zero Arena</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..700&family=JetBrains+Mono:wght@400;600&family=Libre+Franklin:wght@400;500;600&family=Noto+Sans+Symbols+2&display=swap">
+<style>
+/* Layout: a playing hall. The board sits large on the left like a tournament table; the opponent's card, the
+   scoresheet and its thinking run down the right. Tabs lead to the game archive and the score tables.
+   Palette and type are the lab notebook's, so the two pages read as one project. */
+:root {
+  --paper: #f1f3f0;
+  --sheet: #fafbf9;
+  --ink: #17201d;
+  --muted: #586661;
+  --rule: #d2d9d5;
+  --sq-light: #e9e4d4;
+  --sq-dark: #8da69d;
+  --signal: #2244c0;
+  --signal-soft: rgba(34, 68, 192, 0.13);
+  --lastmove: rgba(212, 176, 52, 0.42);
+  --good: #1d7548;
+  --bad: #b23a28;
+  --piece-white: #fdfcf7;
+  --piece-edge: #121715;
+  --piece-black: #161b1a;
+  --coord-on-light: #5d7a70;
+  --coord-on-dark: #eef2e8;
+
+  --font-display: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+  --font-body: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-chess: "Noto Sans Symbols 2", "Segoe UI Symbol", "DejaVu Sans", sans-serif;
+
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.9rem, 1.3rem + 2.4vw, 2.8rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
+    --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
+    --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --bad: #ff8b72;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
+  --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
+  --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --bad: #ff8b72;
+  color-scheme: dark;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.5; }
+.page {
+  max-width: 1180px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 1.6rem 4rem;
+  display: grid; gap: 1.6rem;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.12; margin: 0; text-wrap: balance; }
+h1 { font-size: var(--step-3); letter-spacing: -0.01em; }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+p { margin: 0; }
+a { color: var(--signal); }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.eyebrow { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.hint { font-size: var(--step--1); color: var(--muted); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* masthead and tabs */
+.masthead { display: grid; gap: 0.5rem; }
+.masthead .lede { max-width: 66ch; color: var(--muted); }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; border-bottom: 1px solid var(--rule); }
+.tabs a { padding: 0.55rem 0.9rem; text-decoration: none; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--signal); }
+.demo-note { font-size: var(--step--1); color: var(--muted); border-left: 3px solid var(--sq-dark); padding: 0.2rem 0 0.2rem 0.7rem; max-width: 80ch; }
+
+/* two-column hall */
+.hall { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 2rem; align-items: start; }
+@media (max-width: 860px) { .hall { grid-template-columns: minmax(0, 1fr); } }
+.col { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+.panel { display: grid; gap: 0.6rem; min-width: 0; }
+.panel h3 { font-size: var(--step-1); }
+
+/* board */
+.board-wrap { display: grid; gap: 0.5rem; max-width: 620px; width: 100%; }
+.player { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; font-size: var(--step--1); }
+.player b { font-weight: 600; font-size: var(--step-0); }
+.board { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); aspect-ratio: 1; max-width: 100%; container-type: inline-size; border-radius: 4px; overflow: hidden; box-shadow: 0 0 0 1px var(--rule); user-select: none; }
+.sq { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; overflow: hidden; }
+.sq.l { background: var(--sq-light); } .sq.d { background: var(--sq-dark); }
+.sq.last::after { content: ""; position: absolute; inset: 0; background: var(--lastmove); }
+.sq.sel::after { content: ""; position: absolute; inset: 0; background: var(--signal-soft); box-shadow: inset 0 0 0 3px var(--signal); }
+.sq.target::before { content: ""; position: absolute; width: 26%; height: 26%; border-radius: 50%; background: var(--signal); opacity: 0.5; z-index: 2; }
+.sq.target.occ::before { width: 84%; height: 84%; background: none; box-shadow: inset 0 0 0 4px var(--signal); }
+.sq.check { box-shadow: inset 0 0 0 3px var(--bad); }
+.sq.click { cursor: pointer; }
+.sq .coord { position: absolute; font-family: var(--font-mono); font-size: max(9px, 2.3cqi); line-height: 1; z-index: 3; opacity: 0.75; }
+.sq .coord.f { right: 3%; bottom: 3%; } .sq .coord.r { left: 4%; top: 4%; }
+.sq.l .coord { color: var(--coord-on-light); } .sq.d .coord { color: var(--coord-on-dark); }
+.pc { position: relative; z-index: 1; display: grid; place-items: center; font-family: var(--font-chess); font-size: 9.6cqi; line-height: 1; font-variant-emoji: text; pointer-events: none; }
+.pc > span { grid-area: 1 / 1; }
+.pc .fill { color: var(--piece-white); }
+.pc .edge { color: var(--piece-edge); }
+.pc.b { color: var(--piece-black); }
+.promo { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.35); z-index: 5; }
+.promo div { display: flex; gap: 0.4rem; background: var(--sheet); padding: 0.6rem; border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+.promo button { width: 3.4rem; height: 3.4rem; font-family: var(--font-chess); font-size: 2.2rem; line-height: 1; border: 1px solid var(--rule); border-radius: 4px; background: var(--sq-light); cursor: pointer; color: var(--piece-black); }
+.status { min-height: 1.5em; font-size: var(--step--1); color: var(--muted); }
+.status b { color: var(--ink); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.btn { padding: 0.4rem 0.8rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--signal); }
+.btn.primary { background: var(--signal); border-color: var(--signal); color: var(--sheet); font-weight: 600; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* opponent settings */
+.field { display: grid; gap: 0.3rem; }
+.field label, .field .label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+select { padding: 0.45rem 0.5rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); max-width: 100%; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.seg button { padding: 0.38rem 0.75rem; border: 0; border-right: 1px solid var(--rule); background: var(--sheet); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--signal); color: var(--sheet); font-weight: 600; }
+.settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem 1rem; }
+.settings .wide { grid-column: 1 / -1; }
+@media (max-width: 460px) { .settings { grid-template-columns: minmax(0, 1fr); } }
+.about { font-size: var(--step--1); color: var(--muted); }
+.check { font-family: var(--font-mono); font-size: 0.72rem; }
+.check.ok { color: var(--good); } .check.bad { color: var(--bad); }
+.toggle { display: inline-flex; gap: 0.45rem; align-items: center; cursor: pointer; font-size: var(--step--1); }
+
+/* thinking */
+.think { display: grid; gap: 0.5rem; border-top: 1px solid var(--rule); padding-top: 0.8rem; }
+.cands { display: grid; gap: 0.3rem; }
+.cand { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr) 6.5rem; gap: 0.5rem; align-items: center; font-size: var(--step--1); }
+.cand .mv { font-family: var(--font-mono); font-weight: 600; }
+.cand .bar { height: 8px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.cand .bar span { display: block; height: 100%; background: var(--sq-dark); }
+.cand.chosen .bar span { background: var(--signal); }
+.cand .n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
+.gauge { position: relative; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--piece-black), var(--sq-dark) 50%, var(--piece-white)); box-shadow: inset 0 0 0 1px var(--rule); }
+.gauge i { position: absolute; top: -4px; width: 3px; height: 18px; background: var(--signal); border-radius: 2px; transform: translateX(-1px); }
+.gauge-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); }
+
+/* scoresheet */
+.sheet { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr) minmax(0, 1fr); font-family: var(--font-mono); font-size: var(--step--1); max-height: 17rem; overflow-y: auto; border-top: 1px solid var(--rule); }
+.sheet span { padding: 0.18rem 0.35rem; border-bottom: 1px solid var(--rule); }
+.sheet .no { color: var(--muted); }
+.sheet button { all: unset; cursor: pointer; padding: 0.18rem 0.35rem; border-bottom: 1px solid var(--rule); border-radius: 2px; }
+.sheet button:focus-visible { outline: 2px solid var(--signal); }
+.sheet button.on { background: var(--signal-soft); color: var(--ink); font-weight: 600; }
+
+/* archive */
+.runs { display: grid; gap: 0.8rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip { padding: 0.25rem 0.6rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--sheet); cursor: pointer; font-family: var(--font-mono); font-size: 0.75rem; }
+.chip[aria-pressed="true"] { border-color: var(--signal); color: var(--signal); font-weight: 600; }
+.glist { display: grid; border-top: 1px solid var(--rule); }
+.glist button { all: unset; display: grid; grid-template-columns: 4.2rem 4.6rem minmax(0, 1fr) 4rem; gap: 0.5rem; padding: 0.4rem 0.3rem; border-bottom: 1px solid var(--rule); cursor: pointer; font-size: var(--step--1); }
+.glist button:hover, .glist button[aria-pressed="true"] { background: var(--signal-soft); }
+.glist button:focus-visible { outline: 2px solid var(--signal); }
+.glist .res { font-family: var(--font-mono); font-weight: 600; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .line { fill: none; stroke: var(--signal); stroke-width: 1.8; }
+.chart .now { stroke: var(--bad); stroke-width: 1.5; }
+.chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+
+/* score tables */
+.scores { display: grid; gap: 1.6rem; }
+.xt { border-collapse: collapse; font-size: var(--step--1); min-width: 100%; }
+.xt th, .xt td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: middle; }
+.xt th { font-family: var(--font-mono); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.xt td.cell button { all: unset; display: grid; gap: 0.25rem; min-width: 7.5rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 3px; }
+.xt td.cell button:hover, .xt td.cell button[aria-pressed="true"] { background: var(--signal-soft); }
+.xt td.cell button:focus-visible { outline: 2px solid var(--signal); }
+.xt .pct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.ci { position: relative; height: 6px; background: var(--rule); border-radius: 3px; }
+.ci i { position: absolute; top: 0; bottom: 0; background: var(--sq-dark); border-radius: 3px; }
+.ci b { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--ink); }
+.ci .half { position: absolute; left: 50%; top: -2px; width: 1px; height: 10px; background: var(--muted); }
+.scroll-x { overflow-x: auto; }
+footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; }
+@media (prefers-reduced-motion: no-preference) { .cand .bar span { transition: width 0.3s ease; } }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <p class="eyebrow">ws_zero · arena</p>
+    <h1>Play the networks, replay their games</h1>
+    <p class="lede">Every model here runs in your browser: the same network and the same search the experiment uses, checked against the Python originals before each one is offered. Until training starts, three stand-ins take the seats.</p>
+    <nav class="tabs" aria-label="Arena sections">
+      <a href="#play" id="tab-play">Play</a>
+      <a href="#games" id="tab-games">Games</a>
+      <a href="#scores" id="tab-scores">Scores</a>
+    </nav>
+  </header>
+
+  <!-- PLAY -->
+  <section id="view-play" class="hall" aria-label="Play a model">
+    <div class="col">
+      <div class="board-wrap">
+        <div class="player"><span><b id="top-name">—</b> <span class="muted" id="top-side"></span></span><span class="muted num" id="top-note"></span></div>
+        <div class="board" id="play-board" aria-label="Chessboard"></div>
+        <div class="player"><span><b id="bottom-name">You</b> <span class="muted" id="bottom-side"></span></span><span class="muted num" id="bottom-note"></span></div>
+      </div>
+      <p class="status" id="play-status" aria-live="polite">Loading…</p>
+      <div class="controls">
+        <button type="button" class="btn primary" id="new-game">New game</button>
+        <button type="button" class="btn" id="take-back">Take back</button>
+        <button type="button" class="btn" id="play-prev" aria-label="Previous move">◀</button>
+        <button type="button" class="btn" id="play-next" aria-label="Next move">▶</button>
+        <button type="button" class="btn" id="play-live">Back to the game</button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Opponent</h3>
+        <div class="settings">
+          <div class="field wide">
+            <label for="opponent">Model</label>
+            <select id="opponent"></select>
+            <p class="about" id="opponent-about"></p>
+            <p class="check" id="opponent-check"></p>
+          </div>
+          <div class="field">
+            <span class="label" id="color-label">You play</span>
+            <div class="seg" role="group" aria-labelledby="color-label" id="color-seg">
+              <button type="button" data-v="w">White</button><button type="button" data-v="b">Black</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label" id="strength-label">Its look-aheads per move</span>
+            <div class="seg" role="group" aria-labelledby="strength-label" id="strength-seg">
+              <button type="button" data-v="0" title="The network's own top move, no search">Instinct</button><button type="button" data-v="50">50</button><button type="button" data-v="200">200</button><button type="button" data-v="800">800</button>
+            </div>
+          </div>
+          <div class="field wide">
+            <label class="toggle" for="show-thinking"><input type="checkbox" id="show-thinking"> Show its thinking after each of its moves</label>
+          </div>
+        </div>
+      </div>
+      <div class="think" id="think" hidden></div>
+      <div class="panel">
+        <h3>Scoresheet</h3>
+        <div class="sheet" id="play-sheet"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section id="view-games" class="hall" aria-label="Game archive" hidden>
+    <div class="col">
+      <div class="board-wrap">
+        <div class="player"><span><b id="g-black">—</b> <span class="muted">Black</span></span><span class="muted num" id="g-result"></span></div>
+        <div class="board" id="games-board" aria-label="Chessboard"></div>
+        <div class="player"><span><b id="g-white">—</b> <span class="muted">White</span></span><span class="muted num" id="g-ply"></span></div>
+      </div>
+      <div class="controls">
+        <button type="button" class="btn" id="g-first" aria-label="First position">|◀</button>
+        <button type="button" class="btn" id="g-prev" aria-label="Previous move">◀</button>
+        <button type="button" class="btn" id="g-next" aria-label="Next move">▶</button>
+        <button type="button" class="btn" id="g-last" aria-label="Last position">▶|</button>
+        <button type="button" class="btn" id="g-play">Play this model</button>
+      </div>
+      <div class="panel">
+        <h3>Who is winning, by its own estimate</h3>
+        <div class="chart" id="g-chart"></div>
+        <p class="hint">The searching player's estimate at each of its moves, from White's side: +1 White is winning, −1 Black is. The red line is the move on the board.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p class="demo-note" id="g-demo" hidden></p>
+      <div class="panel">
+        <h3>Self-play games</h3>
+        <div class="field">
+          <label for="g-run">Run</label>
+          <select id="g-run"></select>
+        </div>
+        <div class="field">
+          <span class="label" id="g-cp-label">After this many training games</span>
+          <div class="chips" role="group" aria-labelledby="g-cp-label" id="g-cps"></div>
+        </div>
+        <div class="glist" id="g-list"></div>
+      </div>
+      <div class="think" id="g-think"></div>
+      <div class="panel">
+        <h3>Moves</h3>
+        <div class="sheet" id="games-sheet"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORES -->
+  <section id="view-scores" class="scores" aria-label="Score tables" hidden>
+    <p class="demo-note" id="s-demo" hidden></p>
+    <div id="s-tables" class="scores"></div>
+    <div class="panel" id="s-games-panel" hidden>
+      <h3 id="s-games-title">Games</h3>
+      <div class="glist" id="s-games"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Part of <a href="https://github.com/JustintheButton/ws_zero" target="_blank" rel="noopener">ws_zero</a>, built from commit __COMMIT__. Networks run with TensorFlow.js 4.22.0, legal moves come from chess.js 0.10.3, and the search is a copy of the project's own. <span id="backend"></span></p>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.22.0/tf.min.js"></script>
+<script src="js/chessgame.js"></script>
+<script src="js/search.js"></script>
+<script src="js/network.js"></script>
+<script>
+(function () {
+  "use strict";
+  const { Game, search, instinct, materialCounter, loadNetwork } = window.WSZ;
+  const $ = (id) => document.getElementById(id);
+  const FILES = "abcdefgh", VS = "︎";
+  const FILLED = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+  const OUTLINE = { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pct = (x) => `${Math.round(100 * x)}%`;
+  const signed = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("wsz-arena-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("wsz-arena-" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+  };
+
+  // ---------- board ----------
+  function pieceHTML(ch) {
+    const t = ch.toLowerCase();
+    if (ch === t) return `<span class="pc b">${FILLED[t]}${VS}</span>`;
+    return `<span class="pc w"><span class="fill">${FILLED[t]}${VS}</span><span class="edge">${OUTLINE[t]}${VS}</span></span>`;
+  }
+  function boardMap(game) {
+    const map = {};
+    for (const [rank, file, color, type] of game.pieces) map[FILES[file] + (rank + 1)] = color === "w" ? type.toUpperCase() : type;
+    return map;
+  }
+  /** opts: {flipped, selected, targets: Set, last: [from, to], check: square, clickable: Set, onSquare} */
+  function drawBoard(el, game, opts) {
+    const map = boardMap(game);
+    let html = "";
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const rank = opts.flipped ? row : 7 - row, file = opts.flipped ? 7 - col : col;
+        const sq = FILES[file] + (rank + 1);
+        const cls = ["sq", (file + rank) % 2 ? "l" : "d"];
+        if (opts.last && opts.last.includes(sq)) cls.push("last");
+        if (sq === opts.selected) cls.push("sel");
+        if (opts.targets && opts.targets.has(sq)) { cls.push("target"); if (map[sq]) cls.push("occ"); }
+        if (sq === opts.check) cls.push("check");
+        const click = opts.clickable && opts.clickable.has(sq);
+        if (click) cls.push("click");
+        html += `<div class="${cls.join(" ")}" data-sq="${sq}"${click ? ` role="button" tabindex="0" aria-label="${sq}"` : ""}>` +
+          (map[sq] ? pieceHTML(map[sq]) : "") +
+          (row === 7 ? `<span class="coord f">${FILES[file]}</span>` : "") + (col === 0 ? `<span class="coord r">${rank + 1}</span>` : "") + `</div>`;
+      }
+    }
+    el.innerHTML = html;
+    if (opts.onSquare) {
+      el.querySelectorAll(".sq.click").forEach((d) => {
+        d.addEventListener("click", () => opts.onSquare(d.dataset.sq));
+        d.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); opts.onSquare(d.dataset.sq); } });
+      });
+    }
+  }
+  function kingInCheck(game) {
+    const c = new window.Chess(game.fen);
+    if (!c.in_check()) return null;
+    const k = game.pieces.find(([, , color, type]) => type === "k" && color === game.turn);
+    return k ? FILES[k[1]] + (k[0] + 1) : null;
+  }
+  function drawSheet(el, sans, current, onPick, firstMoveBlack) {
+    let html = "", ply = 0;
+    const cell = (i) => (i < sans.length ? `<button type="button" data-ply="${i + 1}" class="${i + 1 === current ? "on" : ""}">${esc(sans[i])}</button>` : "<span></span>");
+    if (firstMoveBlack) { html += `<span class="no">1.</span><span>…</span>${cell(0)}`; ply = 1; }
+    for (let n = firstMoveBlack ? 2 : 1; ply < sans.length; n++, ply += 2) html += `<span class="no">${n}.</span>${cell(ply)}${cell(ply + 1)}`;
+    el.innerHTML = html || `<span class="no"></span><span class="muted">No moves yet</span><span></span>`;
+    el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => onPick(Number(b.dataset.ply))));
+    const on = el.querySelector("button.on");
+    if (on) on.scrollIntoView({ block: "nearest" });
+  }
+  function thinkingHTML(t, moverIsWhite, title) {
+    if (!t) return "";
+    const value = t.value, whiteView = moverIsWhite ? value : -value;
+    const rows = t.top.map((c, i) => `<div class="cand${i === 0 && t.chosenFirst ? " chosen" : ""}"><span class="mv">${esc(c.san)}</span>` +
+      `<span class="bar"><span style="width:${(100 * c.share).toFixed(1)}%"></span></span><span class="n">${esc(c.label)}</span></div>`).join("");
+    return `<h3>${esc(title)}</h3><p class="hint">${esc(t.caption)}</p><div class="cands">${rows}</div>` +
+      `<div class="field"><span class="label">Who is winning, by its estimate: ${signed(value)} for ${moverIsWhite ? "White" : "Black"}</span>` +
+      `<div class="gauge" role="img" aria-label="Estimate ${signed(whiteView)} from White's side"><i style="left:${(50 + 50 * whiteView).toFixed(1)}%"></i></div>` +
+      `<div class="gauge-labels"><span>Black winning</span><span>equal</span><span>White winning</span></div></div>`;
+  }
+
+  // ---------- models ----------
+  let MODELS = [], DATA = { runs: [], tables: [], games: {} };
+  const loaded = new Map();  // id -> {evaluate, check}
+  let backendNote = "";
+
+  async function initBackend() {
+    await tf.ready();
+    try { if (!(await tf.setBackend("webgl"))) throw new Error("no webgl"); }
+    catch (e) { await tf.setBackend("cpu"); }
+    backendNote = tf.getBackend() === "webgl" ? "Running on your graphics chip (WebGL)." : "Running on your processor (no WebGL), so look-aheads are slower.";
+    $("backend").textContent = backendNote;
+  }
+  function lineOf(c) {
+    let g = Game.start(c.fen || undefined);
+    for (const uci of c.moves) g = g.play({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+    return g;
+  }
+  const within = (x) => (x === 0 ? "exactly equal" : `within ${x.toExponential(0)}`);
+  async function runCheck(net, cases) {
+    let worst = 0, worstValue = 0;
+    for (const c of cases) {
+      const { logits, value } = await net.evaluate(lineOf(c));
+      c.legal.forEach((a, i) => { worst = Math.max(worst, Math.abs(logits[a] - c.logits[i])); });
+      worstValue = Math.max(worstValue, Math.abs(value - c.value));
+    }
+    return { ok: worst < 2e-3 && worstValue < 1e-3, worst, worstValue, n: cases.length };
+  }
+  async function getModel(id) {
+    if (loaded.has(id)) return loaded.get(id);
+    const m = MODELS.find((x) => x.id === id);
+    if (m.kind === "material") {
+      const entry = { evaluate: materialCounter, check: { ok: true, text: "Plain material counting; no network to check." } };
+      loaded.set(id, entry);
+      return entry;
+    }
+    const manifest = await fetch(`models/${m.file}.json`).then((r) => { if (!r.ok) throw new Error(`models/${m.file}.json: ${r.status}`); return r.json(); });
+    const bytes = atob(manifest.data), view = new Uint8Array(bytes.length);  // float32 arrays, base64
+    for (let i = 0; i < bytes.length; i++) view[i] = bytes.charCodeAt(i);
+    const buffer = view.buffer;
+    let net = loadNetwork(manifest, buffer), result = await runCheck(net, m.check);
+    if (!result.ok && tf.getBackend() !== "cpu") {  // some graphics chips compute in half precision: retry on the processor
+      net.dispose();
+      await tf.setBackend("cpu");
+      $("backend").textContent = "Running on your processor: this graphics chip's results did not match Python closely enough.";
+      net = loadNetwork(manifest, buffer);
+      result = await runCheck(net, m.check);
+    }
+    const entry = {
+      evaluate: result.ok ? net.evaluate : null,
+      check: { ok: result.ok, text: result.ok
+        ? `Checked against Python on ${result.n} positions: move scores ${within(result.worst)}, estimate ${within(result.worstValue)}.`
+        : `Did not match Python (move scores off by ${result.worst.toFixed(4)}, estimate by ${result.worstValue.toFixed(4)}), so it is not offered.` },
+    };
+    loaded.set(id, entry);
+    return entry;
+  }
+
+  // ---------- play ----------
+  const play = {
+    id: store.get("opponent", null), color: store.get("color", "w"), sims: store.get("sims", 800), show: store.get("show", false),
+    game: null, view: 0, selected: null, busy: false, thoughts: [], token: 0, pendingPromo: null,
+  };
+  const playLine = () => play.game.line();
+  function playStatus(html) { $("play-status").innerHTML = html; }
+  function modelName() { const m = MODELS.find((x) => x.id === play.id); return m ? m.name : "—"; }
+  function renderPlay() {
+    const line = playLine(), live = play.view === line.length - 1, shown = line[play.view];
+    const humanToMove = live && !play.busy && !shown.outcome()[0] && shown.turn === play.color;
+    const legal = humanToMove ? shown.legalMoves() : [];
+    const targets = new Set(play.selected ? legal.filter((m) => m.from === play.selected).map((m) => m.to) : []);
+    const clickable = new Set(humanToMove ? [...legal.map((m) => m.from), ...targets] : []);
+    drawBoard($("play-board"), shown, {
+      flipped: play.color === "b", selected: play.selected, targets, clickable,
+      last: shown.lastMove ? [shown.lastMove.from, shown.lastMove.to] : null, check: kingInCheck(shown), onSquare: onPlaySquare,
+    });
+    if (play.pendingPromo) showPromo();
+    const them = play.color === "w" ? "Black" : "White";
+    $("top-name").textContent = modelName();
+    $("top-side").textContent = them;
+    $("top-note").textContent = play.sims ? `${play.sims} look-aheads` : "instinct";
+    $("bottom-side").textContent = play.color === "w" ? "White" : "Black";
+    const sans = line.slice(1).map((g) => g.lastMove.san);
+    drawSheet($("play-sheet"), sans, play.view, (ply) => { play.view = ply; play.selected = null; renderPlay(); }, line[0].turn === "b");
+    $("take-back").disabled = play.busy || line.length < 2;
+    $("play-prev").disabled = play.view === 0;
+    $("play-next").disabled = live;
+    $("play-live").hidden = live;
+    renderThinking();
+    if (play.busy) return;
+    const end = line[line.length - 1];
+    if (!live) playStatus(`Looking at move ${play.view} of ${line.length - 1}. <b>Back to the game</b> to continue.`);
+    else if (end.outcome()[0]) {
+      const [, v] = end.outcome(), reason = end.endReason();
+      const result = v === -1 ? (end.turn === "w" ? "0–1" : "1–0") : "½–½";
+      const youWon = v === -1 && end.turn !== play.color;
+      playStatus(`<b>${result}</b>, ${reason}. ${v === -1 ? (youWon ? "You won." : `${esc(modelName())} won.`) : "A draw."}`);
+    } else if (end.turn === play.color) playStatus(`<b>Your move.</b> ${legal.length} legal moves.`);
+  }
+  function renderThinking() {
+    const el = $("think");
+    const line = playLine(), at = play.view;
+    const t = play.show ? play.thoughts[at] : null;  // thoughts[ply] = what it thought before the move that reached ply
+    el.hidden = !t;
+    if (t) el.innerHTML = thinkingHTML(t, line[at - 1].turn === "w", `Its thinking before ${line[at].lastMove.san}`);
+  }
+  function onPlaySquare(sq) {
+    const shown = playLine()[play.view];
+    const legal = shown.legalMoves();
+    if (play.selected && legal.some((m) => m.from === play.selected && m.to === sq)) {
+      const options = legal.filter((m) => m.from === play.selected && m.to === sq);
+      if (options.length > 1) { play.pendingPromo = options; renderPlay(); return; }
+      humanMove(options[0]);
+      return;
+    }
+    play.selected = legal.some((m) => m.from === sq) && play.selected !== sq ? sq : null;
+    renderPlay();
+  }
+  function showPromo() {
+    const board = $("play-board"), wrap = document.createElement("div");
+    const white = play.color === "w";
+    wrap.className = "promo";
+    wrap.innerHTML = `<div role="group" aria-label="Promote to">${["q", "r", "b", "n"].map((p) => `<button type="button" data-p="${p}" aria-label="${{ q: "Queen", r: "Rook", b: "Bishop", n: "Knight" }[p]}">${(white ? OUTLINE : FILLED)[p]}${VS}</button>`).join("")}</div>`;
+    wrap.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      const options = play.pendingPromo;
+      play.pendingPromo = null;
+      if (b) humanMove(options.find((m) => m.promotion === b.dataset.p));
+      else renderPlay();
+    });
+    board.appendChild(wrap);
+    wrap.querySelector("button").focus();
+  }
+  function humanMove(move) {
+    play.game = play.game.play(move);
+    play.selected = null;
+    play.view = playLine().length - 1;
+    renderPlay();
+    maybeModelMove();
+  }
+  async function maybeModelMove() {
+    const g = play.game;
+    if (g.outcome()[0] || g.turn === play.color || play.busy) return;
+    const token = play.token;
+    play.busy = true;
+    renderPlay();
+    try {
+      const model = await getModel(play.id);
+      if (!model.evaluate) throw new Error(model.check.text);
+      playStatus(`<b>${esc(modelName())} is thinking…</b>`);
+      let result;
+      if (play.sims === 0) result = await instinct(g, model.evaluate);
+      else result = await search(g, model.evaluate, play.sims, async (n, total) => {
+        if (token === play.token) playStatus(`<b>${esc(modelName())} is thinking…</b> <span class="num">${n} / ${total}</span> look-aheads`);
+        await new Promise((r) => setTimeout(r, 0));
+      });
+      if (token !== play.token) return;  // a new game started meanwhile
+      play.game = g.play(result.best);
+      play.thoughts[playLine().length - 1] = describe(result, g);
+      play.view = playLine().length - 1;
+    } catch (e) {
+      playStatus(`<b>The model could not move.</b> ${esc(e.message || e)}`);
+      play.busy = false;
+      return;
+    } finally {
+      if (token === play.token) play.busy = false;
+    }
+    renderPlay();
+  }
+  function describe(result, g) {
+    if (result.moves) {
+      const total = result.moves.reduce((a, m) => a + m.visits, 0);
+      const top = result.moves.slice().sort((a, b) => b.visits - a.visits || a.move.action - b.move.action).slice(0, 3)
+        .map((m) => ({ san: m.move.san, share: m.visits / total, label: `${m.visits} · ${m.value === null ? "—" : signed(m.value)}` }));
+      return { top, value: result.rootValue, chosenFirst: true, caption: `Its three most-visited moves, with look-aheads and the value of each for it. ${total} look-aheads in all.` };
+    }
+    const legal = g.legalMoves(), logits = legal.map((m) => result.prior.logits[m.action]);
+    const max = Math.max(...logits), z = logits.map((l) => Math.exp(l - max)), sum = z.reduce((a, b) => a + b, 0);
+    const top = legal.map((m, i) => ({ san: m.san, share: z[i] / sum, action: m.action })).sort((a, b) => b.share - a.share || a.action - b.action).slice(0, 3)
+      .map((c) => ({ ...c, label: pct(c.share) }));
+    return { top, value: result.rootValue, chosenFirst: true, caption: "Instinct only: the network's own move probabilities, no search." };
+  }
+  function newGame() {
+    play.token++;
+    play.busy = false;
+    play.game = Game.start();
+    play.view = 0;
+    play.selected = null;
+    play.thoughts = [];
+    play.pendingPromo = null;
+    renderPlay();
+    maybeModelMove();
+  }
+  async function selectOpponent(id) {
+    play.id = id;
+    store.set("opponent", id);
+    $("opponent").value = id;
+    const m = MODELS.find((x) => x.id === id);
+    $("opponent-about").textContent = m.about;
+    $("opponent-check").className = "check";
+    $("opponent-check").textContent = "Checking against Python…";
+    renderPlay();
+    try {
+      const entry = await getModel(id);
+      $("opponent-check").className = `check ${entry.check.ok ? "ok" : "bad"}`;
+      $("opponent-check").textContent = (entry.check.ok ? "✓ " : "✗ ") + entry.check.text;
+    } catch (e) {
+      $("opponent-check").className = "check bad";
+      $("opponent-check").textContent = `✗ Could not load this model: ${e.message || e}`;
+    }
+    if (!play.busy) maybeModelMove();
+  }
+  function setSeg(el, value) { el.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(value)))); }
+
+  // ---------- games ----------
+  const gv = { runId: null, cp: 0, gameId: null, line: [], ply: 0 };
+  function openGame(id) {
+    const rec = DATA.games[id];
+    gv.gameId = id;
+    let g = Game.start(rec.start || undefined);
+    const line = [g];
+    for (const uci of rec.moves) { g = g.play({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }); line.push(g); }
+    gv.line = line;
+    gv.ply = 0;
+    $("g-white").textContent = rec.white;
+    $("g-black").textContent = rec.black;
+    $("g-result").textContent = `${rec.result.replace("1/2-1/2", "½–½").replace("-", "–")} · ${rec.end}`;
+    renderGames();
+  }
+  function renderGames() {
+    const rec = DATA.games[gv.gameId];
+    if (!rec) return;
+    const shown = gv.line[gv.ply];
+    drawBoard($("games-board"), shown, { flipped: false, last: shown.lastMove ? [shown.lastMove.from, shown.lastMove.to] : null, check: kingInCheck(shown) });
+    $("g-ply").textContent = `move ${gv.ply} of ${gv.line.length - 1}`;
+    drawSheet($("games-sheet"), rec.san, gv.ply, (p) => { gv.ply = p; renderGames(); }, gv.line[0].turn === "b");
+    $("g-first").disabled = $("g-prev").disabled = gv.ply === 0;
+    $("g-next").disabled = $("g-last").disabled = gv.ply === gv.line.length - 1;
+    document.querySelectorAll("#g-list button, #s-games button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === gv.gameId)));
+    const top = gv.ply > 0 ? rec.top[gv.ply - 1] : null;
+    if (top) {
+      const total = top.reduce((a, [, n]) => a + n, 0);
+      const t = { top: top.map(([san, n]) => ({ san, share: n / total, label: `${n} look-aheads` })), value: rec.values[gv.ply - 1], chosenFirst: top[0][0] === rec.san[gv.ply - 1],
+        caption: "Its most-visited moves before this move." };
+      $("g-think").innerHTML = thinkingHTML(t, gv.line[gv.ply - 1].turn === "w", `Its thinking before ${rec.san[gv.ply - 1]}`);
+    } else {
+      $("g-think").innerHTML = gv.ply > 0 ? `<p class="hint">${esc(rec.san[gv.ply - 1])} was played by a player that does not search (no thinking recorded).</p>` : `<p class="hint">Step through the game to see what the searching player considered before each move.</p>`;
+    }
+    drawValueChart(rec);
+    const model = playableModel(rec);
+    $("g-play").hidden = !model;
+    $("g-play").dataset.model = model || "";
+  }
+  function playableModel(rec) {
+    const names = [rec.white, rec.black];
+    const m = MODELS.find((x) => names.includes(x.name) && !x.missing);
+    return m ? m.id : null;
+  }
+  function drawValueChart(rec) {
+    const n = rec.moves.length, W = 520, H = 150, L = 30, R = 10, T = 8, B = 22;
+    const x = (i) => L + (n > 1 ? (i / (n - 1)) * (W - L - R) : 0), y = (v) => T + (1 - (v + 1) / 2) * (H - T - B);
+    let g = "";
+    for (const v of [-1, 0, 1]) g += `<line class="${v === 0 ? "zero" : "grid"}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 5}" y="${y(v) + 3}" text-anchor="end">${v > 0 ? "+1" : v}</text>`;
+    const step = n > 200 ? 100 : n > 60 ? 20 : 10;
+    for (let i = 0; i <= n; i += step) g += `<text x="${x(Math.max(0, i - 1))}" y="${H - 6}" text-anchor="middle">${i}</text>`;
+    let d = "", pen = false;
+    rec.values.forEach((v, i) => {
+      if (v === null) { pen = false; return; }
+      const whiteView = i % 2 === (gv.line[0].turn === "w" ? 0 : 1) ? v : -v;
+      d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(whiteView).toFixed(1)}`;
+      pen = true;
+    });
+    if (d) g += `<path class="line" d="${d}"/>`;
+    if (gv.ply > 0) g += `<line class="now" x1="${x(gv.ply - 1)}" x2="${x(gv.ply - 1)}" y1="${T}" y2="${H - B}"/>`;
+    $("g-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="The searching player's estimate of who is winning, move by move">${g}</svg>`;
+  }
+  function renderRuns() {
+    const runs = DATA.runs;
+    $("g-run").innerHTML = runs.map((r) => `<option value="${esc(r.id)}">${esc(r.label)}</option>`).join("");
+    if (!runs.length) { $("g-list").innerHTML = `<p class="hint">No games yet.</p>`; return; }
+    if (!gv.runId || !runs.some((r) => r.id === gv.runId)) gv.runId = runs[0].id;
+    $("g-run").value = gv.runId;
+    const run = runs.find((r) => r.id === gv.runId);
+    if (!run.checkpoints.some((c) => c.games === gv.cp)) gv.cp = run.checkpoints[0].games;
+    $("g-cps").innerHTML = run.checkpoints.map((c) => `<button type="button" class="chip" data-cp="${c.games}" aria-pressed="${c.games === gv.cp}">${c.games.toLocaleString("en-US")}</button>`).join("");
+    $("g-cps").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { gv.cp = Number(b.dataset.cp); renderRuns(); }));
+    const cp = run.checkpoints.find((c) => c.games === gv.cp);
+    $("g-list").innerHTML = gameRows(cp.selfplay);
+    bindGameRows($("g-list"));
+    if (!gv.gameId || !cp.selfplay.includes(gv.gameId)) openGame(cp.selfplay[0]);
+    else renderGames();
+  }
+  function gameRows(ids) {
+    return ids.map((id, i) => {
+      const r = DATA.games[id];
+      return `<button type="button" data-id="${esc(id)}" aria-pressed="${id === gv.gameId}"><span>Game ${i + 1}</span><span class="res">${esc(r.result.replace("1/2-1/2", "½–½"))}</span><span>${esc(r.end)}</span><span class="num muted">${r.moves.length} plies</span></button>`;
+    }).join("");
+  }
+  function bindGameRows(el) { el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { openGame(b.dataset.id); if (el.id === "s-games") location.hash = "games"; })); }
+
+  // ---------- scores ----------
+  const sv = { cell: null };
+  function renderScores() {
+    $("s-tables").innerHTML = DATA.tables.map((t, ti) => {
+      const head = `<tr><th>Model</th>${t.opponents.map((o) => `<th>${esc(o)}</th>`).join("")}</tr>`;
+      const rows = t.rows.map((row, ri) => `<tr><td>${esc(row.label)}</td>${row.cells.map((c, ci) => {
+        const key = `${ti}-${ri}-${ci}`;
+        return `<td class="cell"><button type="button" data-key="${key}" aria-pressed="${sv.cell === key}" aria-label="${esc(row.label)} against ${esc(t.opponents[ci])}: ${pct(c.score)}, 95% range ${pct(c.lo)} to ${pct(c.hi)}, ${c.n} games">` +
+          `<span><span class="pct">${pct(c.score)}</span> <span class="muted">(${pct(c.lo)}–${pct(c.hi)}, ${c.n} games)</span></span>` +
+          `<span class="ci"><span class="half"></span><i style="left:${100 * c.lo}%;width:${100 * (c.hi - c.lo)}%"></i><b style="left:calc(${100 * c.score}% - 1px)"></b></span></button></td>`;
+      }).join("")}</tr>`).join("");
+      return `<div class="panel"><h3>${esc(t.title)}</h3><div class="scroll-x"><table class="xt">${head}${rows}</table></div>` +
+        `<p class="hint">Score = wins plus half the draws, from the model's side. The bar is the 95% range; the tick marks 50%. Click a cell for its games.</p></div>`;
+    }).join("") || `<p class="hint">No score tables yet.</p>`;
+    $("s-tables").querySelectorAll("button[data-key]").forEach((b) => b.addEventListener("click", () => { sv.cell = b.dataset.key; renderScores(); }));
+    if (sv.cell) {
+      const [ti, ri, ci] = sv.cell.split("-").map(Number), t = DATA.tables[ti], row = t.rows[ri], c = row.cells[ci];
+      $("s-games-panel").hidden = false;
+      $("s-games-title").textContent = `${row.label} against ${t.opponents[ci]}: ${c.n} games`;
+      $("s-games").innerHTML = gameRows(c.games);
+      bindGameRows($("s-games"));
+    }
+  }
+
+  // ---------- views ----------
+  function route() {
+    const view = ["play", "games", "scores"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "play";
+    for (const v of ["play", "games", "scores"]) {
+      $(`view-${v}`).hidden = v !== view;
+      $(`tab-${v}`).toggleAttribute("aria-current", v === view);
+      if (v === view) $(`tab-${v}`).setAttribute("aria-current", "page");
+    }
+  }
+  window.addEventListener("hashchange", route);
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest("select, input")) return;
+    if (!$("view-games").hidden && gv.gameId) {
+      if (e.key === "ArrowLeft" && gv.ply > 0) { gv.ply--; renderGames(); }
+      if (e.key === "ArrowRight" && gv.ply < gv.line.length - 1) { gv.ply++; renderGames(); }
+    } else if (!$("view-play").hidden && play.game) {
+      const last = playLine().length - 1;
+      if (e.key === "ArrowLeft" && play.view > 0) { play.view--; play.selected = null; renderPlay(); }
+      if (e.key === "ArrowRight" && play.view < last) { play.view++; renderPlay(); }
+    }
+  });
+
+  // ---------- wiring ----------
+  $("new-game").addEventListener("click", newGame);
+  $("take-back").addEventListener("click", () => {
+    play.token++;
+    play.busy = false;
+    let g = play.game;
+    if (g.parent) g = g.parent;
+    while (g.parent && g.turn !== play.color) g = g.parent;
+    play.game = g;
+    play.thoughts.length = playLine().length;
+    play.view = playLine().length - 1;
+    play.selected = null;
+    renderPlay();
+    maybeModelMove();
+  });
+  $("play-prev").addEventListener("click", () => { if (play.view > 0) { play.view--; play.selected = null; renderPlay(); } });
+  $("play-next").addEventListener("click", () => { if (play.view < playLine().length - 1) { play.view++; renderPlay(); } });
+  $("play-live").addEventListener("click", () => { play.view = playLine().length - 1; renderPlay(); });
+  $("opponent").addEventListener("change", (e) => { selectOpponent(e.target.value); });
+  $("color-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    play.color = b.dataset.v; store.set("color", play.color); setSeg($("color-seg"), play.color); newGame();
+  });
+  $("strength-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    play.sims = Number(b.dataset.v); store.set("sims", play.sims); setSeg($("strength-seg"), play.sims); renderPlay();
+  });
+  $("show-thinking").addEventListener("change", (e) => { play.show = e.target.checked; store.set("show", play.show); renderThinking(); });
+  $("g-run").addEventListener("change", (e) => { gv.runId = e.target.value; gv.gameId = null; renderRuns(); });
+  $("g-first").addEventListener("click", () => { gv.ply = 0; renderGames(); });
+  $("g-prev").addEventListener("click", () => { gv.ply = Math.max(0, gv.ply - 1); renderGames(); });
+  $("g-next").addEventListener("click", () => { gv.ply = Math.min(gv.line.length - 1, gv.ply + 1); renderGames(); });
+  $("g-last").addEventListener("click", () => { gv.ply = gv.line.length - 1; renderGames(); });
+  $("g-play").addEventListener("click", () => { const id = $("g-play").dataset.model; if (id) { location.hash = "play"; selectOpponent(id).then(newGame); } });
+
+  async function start() {
+    route();
+    setSeg($("color-seg"), play.color);
+    setSeg($("strength-seg"), play.sims);
+    $("show-thinking").checked = play.show;
+    play.game = Game.start();
+    try {
+      [MODELS, DATA] = await Promise.all([
+        fetch("data/models.json").then((r) => r.json()),
+        fetch("data/games.json").then((r) => r.json()),
+      ]);
+    } catch (e) {
+      playStatus(`<b>Could not load the arena's data.</b> ${esc(e.message || e)}`);
+      return;
+    }
+    const groups = [...new Set(MODELS.map((m) => m.group))];
+    $("opponent").innerHTML = groups.map((g) => `<optgroup label="${esc(g)}">${MODELS.filter((m) => m.group === g).map((m) => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("")}</optgroup>`).join("");
+    if (DATA.demo) {
+      const note = `Demo data: games played by the stand-ins before any training, with ${DATA.simulations} look-aheads per move. The real runs' games and scores replace these from Phase 7.`;
+      $("g-demo").textContent = note; $("g-demo").hidden = false;
+      $("s-demo").textContent = note; $("s-demo").hidden = false;
+    }
+    renderRuns();
+    renderScores();
+    await initBackend();
+    if (!play.id || !MODELS.some((m) => m.id === play.id)) play.id = MODELS[0].id;
+    renderPlay();
+    await selectOpponent(play.id);
+  }
+  start();
+})();
+</script>

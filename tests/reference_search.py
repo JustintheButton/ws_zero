@@ -12,6 +12,7 @@ Positions come from the python-chess reference game (Phase 2), not pgx. Same rul
 import copy
 import math
 
+import chess
 import numpy as np
 
 from ws_zero.game.moves import action_to_move
@@ -46,9 +47,12 @@ class Node:
         return max(sorted(self.priors), key=score)
 
 
-def reference_search(fen: str, evaluate_one, num_simulations: int) -> Node:
-    """evaluate_one(obs (8, 8, 119)) -> (logits (4672,), value for the side to move)."""
+def reference_search(fen: str | None, evaluate_one, num_simulations: int, moves=()) -> Node:
+    """evaluate_one(obs (8, 8, 119)) -> (logits (4672,), value for the side to move). The search starts after
+    `moves` (UCI) from `fen` (None: the standard start), so the game's history counts."""
     game = ReferenceGame(fen, repetition_key="pgx")
+    for uci in moves:
+        game.push(chess.Move.from_uci(uci))
     logits, value = evaluate_one(game.observation())
     root = Node(game, logits)
     root.visits, root.value_sum = 1, value
