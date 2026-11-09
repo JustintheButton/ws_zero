@@ -14,7 +14,8 @@ so nothing below a finished position counts. Illegal moves get logit ILLEGAL_LOG
 network such as the Phase 4 gate's material counter.
 
 Move selection inside the tree is AlphaZero's PUCT (mctx's `muzero_policy`, constants 1.25 and 19652) with
-AlphaZero's value term (`alphazero_qtransform`) in place of mctx's default. One small difference from the
+AlphaZero's value term, untried moves scored at the position's own value (`alphazero_qtransform`), in place of
+mctx's default. One small difference from the
 pseudocode remains: mctx counts the root's own evaluation as a visit, so N(root) is one more than in the
 pseudocode (it only changes sqrt(N) in the exploration bonus at the root).
 """
@@ -64,13 +65,15 @@ def make_recurrent_fn(env, evaluate):
 def alphazero_qtransform(tree: mctx.Tree, node_index) -> jnp.ndarray:
     """AlphaZero's value term for choosing a move at a node: the mean value Q(s, a) on the -1..+1 scale.
 
-    Untried moves score 0 ("equal"), the AlphaGo Zero paper's rule (decision 2026-11-08; protocol §3). Illegal moves
-    score -inf: mctx excludes them only at the root, so below it this term is what keeps them from being chosen.
+    An untried move scores the position's own current value V(s), from the same side's point of view (decision
+    2026-11-08, revised after the Phase 4 gate; protocol §3). A fixed score (0, "equal") was tried first: when the
+    side to move was ahead, every tried move looked better than any untried one, and the search did not try the
+    mate. Illegal moves score -inf: mctx excludes them only at the root, so below it this term keeps them out.
     """
     q = tree.qvalues(node_index)
     visits = tree.children_visits[node_index]
     legal = tree.children_prior_logits[node_index] > ILLEGAL_LOGIT / 2
-    return jnp.where(legal, jnp.where(visits > 0, q, 0.0), -jnp.inf)
+    return jnp.where(legal, jnp.where(visits > 0, q, tree.node_values[node_index]), -jnp.inf)
 
 
 def add_root_noise(rng, prior_logits, legal, fraction: float):

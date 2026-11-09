@@ -47,9 +47,12 @@ The value is from the side to move's perspective, in [−1, 1].
 - First-play urgency (the value of unvisited children) follows the published AlphaZero pseudocode; checked and
   recorded in Phase 4. *Recorded 2026-11-08 (Justin):* the pseudocode scores an unvisited child 0, on a scale where
   its uniform network's value is 0.5 (0 = loss), so read literally an untried move counts as a loss; with a uniform
-  policy the search would then not try a second root move within 200 simulations. Untried moves therefore score
-  **0 on the −1…+1 value scale ("equal")**, the AlphaGo Zero paper's rule (Q(s, a) = 0 initially) and the
-  pseudocode's 0 read on the AlphaZero paper's −1…+1 scale. Two slips in the pseudocode are not copied: its backup
+  policy the search would then not try a second root move within 200 simulations. Untried moves were first scored
+  0 on the −1…+1 scale ("equal", the AlphaGo Zero paper's rule), but the Phase 4 gate showed that a fixed score acts
+  like "loss" whenever the side to move is ahead (a rook up, every tried move scored about +0.85 and the search
+  never tried the mate). *Revised the same day (Justin):* an untried move scores **the position's own current value
+  V(s)**, from the same side's point of view, as in Leela Chess Zero (which also subtracts a small penalty) and
+  mctx (relative to the position). In a level position this equals 0, as before. Two slips in the pseudocode are not copied: its backup
   credits each node's value to the wrong player for selection (the search uses the sign flip), and it evaluates
   finished positions with the network (the search uses the game's result).
 

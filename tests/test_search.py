@@ -102,7 +102,7 @@ def test_the_test_positions_are_what_they_claim(fen):
     assert board.is_checkmate() if fen == MATE_IN_ONE else board.is_stalemate()
 
 
-# ---------- AlphaZero's value term (untried moves score 0, "equal"; decision 2026-11-08) ----------
+# ---------- The value term: untried moves score the position's own value (decision 2026-11-08, revised) ----------
 
 def _search(fen, evaluate, simulations, seed=0):
     from ws_zero.search import run_search
@@ -111,10 +111,10 @@ def _search(fen, evaluate, simulations, seed=0):
     return run(jax.random.key(seed), state)
 
 
-def test_untried_moves_count_as_equal_so_every_root_move_is_tried():
-    # Uniform priors and value 0 everywhere: an untried move ("equal", 0) is as good as a tried one, and its larger
-    # exploration bonus makes the search try every move before repeating any. Counting untried moves as losses
-    # (the pseudocode read literally) would keep the search on its first move.
+def test_in_a_level_position_every_root_move_is_tried():
+    # Uniform priors and value 0 everywhere: an untried move (the position's value, 0) is as good as a tried one, and
+    # its larger exploration bonus makes the search try every move before repeating any. Counting untried moves as
+    # losses (the pseudocode read literally) would keep the search on its first move.
     out = _search(chess.STARTING_FEN, _constant(0.0), 40)
     visits = np.asarray(out.search_tree.summary().visit_counts[0])
     legal = np.asarray(_batch(chess.STARTING_FEN).legal_action_mask[0])
@@ -122,7 +122,7 @@ def test_untried_moves_count_as_equal_so_every_root_move_is_tried():
     assert visits[~legal].sum() == 0
 
 
-def test_value_term_is_the_mean_value_zero_when_untried_and_never_an_illegal_move():
+def test_value_term_is_the_mean_value_the_position_value_when_untried_and_never_an_illegal_move():
     from ws_zero.search import alphazero_qtransform
     out = _search(chess.STARTING_FEN, _constant(0.3), 8)  # 8 simulations: most of the 20 moves stay untried
     tree = jax.tree.map(lambda x: x[0], out.search_tree)  # game 0
@@ -134,8 +134,21 @@ def test_value_term_is_the_mean_value_zero_when_untried_and_never_an_illegal_mov
     assert tried.any() and untried.any()
     np.testing.assert_allclose(score[tried], q[tried])
     np.testing.assert_allclose(score[tried], -0.3)  # each reply position is worth +0.3 to the opponent
-    np.testing.assert_array_equal(score[untried], 0.0)
+    root_value = float(tree.node_values[tree.ROOT_INDEX])  # (0.3 + 8 x -0.3) / 9, from White's point of view
+    np.testing.assert_allclose(root_value, (0.3 - 8 * 0.3) / 9, rtol=1e-5)
+    np.testing.assert_allclose(score[untried], root_value)
     assert np.isneginf(score[~legal]).all()
+
+
+def test_when_ahead_every_root_move_is_still_tried_and_the_mate_is_found():
+    # A rook up, every tried move scores about +0.85. Scored as "equal" (0), untried moves looked worse than any
+    # tried one, and the search spent 170+ of 200 simulations on its first quiet move without trying the mate
+    # (Phase 4 gate, first run). Scored as the position's own value, they are tried.
+    out = _search(MATE_IN_ONE, _material, 200)
+    visits = np.asarray(out.search_tree.summary().visit_counts[0])
+    legal = np.asarray(_batch(MATE_IN_ONE).legal_action_mask[0])
+    assert (visits[legal] >= 1).all()
+    assert int(np.argmax(visits)) == int(_action(MATE_IN_ONE, "a1a8")[0])
 
 
 def test_the_search_never_plays_an_illegal_move_below_the_root():

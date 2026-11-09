@@ -3,8 +3,8 @@
 Positions come from the python-chess reference game (Phase 2), not pgx. Same rules as ws_zero.search:
 - PUCT: score = Q(s, a) + c(N) * P(s, a) * sqrt(N) / (1 + N(s, a)), c(N) = 1.25 + log((N + 19652 + 1) / 19652);
 - Q(s, a) = reward + discount * V(child), discount -1 (the opponent moves next) or 0 (the game is over);
-  an untried move has Q = 0 ("equal"); V(node) = mean of the values backed up through it, its own evaluation
-  included, from the point of view of its side to move;
+  an untried move has Q = V(node), the position's own current value; V(node) = mean of the values backed up
+  through it, its own evaluation included, from the point of view of its side to move;
 - N counts a node's own evaluation as a visit, so N(root) = 1 + simulations so far (as in mctx);
 - a move that ends the game gives the mover the result; going through a finished position again backs up its
   result unchanged (mctx descends below it into positions worth 0 with discount 0, which comes to the same thing).
@@ -34,7 +34,7 @@ class Node:
     def q(self, action):
         child = self.children.get(action)
         if child is None or child.visits == 0:
-            return 0.0
+            return self.value_sum / self.visits  # untried: as good as this position
         discount = 0.0 if child.terminal else -1.0
         return self.rewards[action] + discount * child.value_sum / child.visits
 
