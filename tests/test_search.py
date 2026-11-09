@@ -150,3 +150,147 @@ def test_the_search_never_plays_an_illegal_move_below_the_root():
     live = legal.any(axis=1)  # nodes that are positions with moves (not finished games or empty slots)
     assert (visits[live] > 0).sum() > 20  # the search went well below the root
     assert not np.any((visits > 0) & ~legal & live[:, None])
+
+
+# ---------- Move choice (protocol §3) ----------
+
+VISITS = jnp.array([[1.0, 3.0, 0.0, 6.0]])
+
+
+def test_self_play_samples_early_moves_in_proportion_to_visits():
+    from ws_zero.search import choose_moves
+    keys = jax.random.split(jax.random.key(0), 4000)
+    picks = jax.vmap(lambda k: choose_moves(k, VISITS, jnp.array([0]), sample=True)[0])(keys)
+    freq = np.bincount(np.asarray(picks), minlength=4) / 4000
+    np.testing.assert_allclose(freq, [0.1, 0.3, 0.0, 0.6], atol=0.03)
+    assert freq[2] == 0.0  # a move the search never visited is never played
+
+
+def test_self_play_plays_the_most_visited_move_from_ply_30():
+    from ws_zero.search import SAMPLING_PLIES, choose_moves
+    assert SAMPLING_PLIES == 30
+    visits, plies = jnp.repeat(VISITS, 3, axis=0), jnp.array([29, 30, 200])
+    picks = np.stack([np.asarray(choose_moves(jax.random.key(i), visits, plies, sample=True)) for i in range(60)])
+    assert (picks[:, 1] == 3).all() and (picks[:, 2] == 3).all()
+    assert len(set(picks[:, 0].tolist())) > 1  # ply 29 (the 30th ply) is still sampled
+
+
+def test_evaluation_plays_the_most_visited_move_from_the_first_ply():
+    from ws_zero.search import choose_moves
+    assert all(int(choose_moves(jax.random.key(i), VISITS, jnp.array([0]), sample=False)[0]) == 3 for i in range(20))
+
+
+def _root_prior(out):
+    return np.asarray(jax.nn.softmax(out.search_tree.children_prior_logits[0, out.search_tree.ROOT_INDEX]))
+
+
+def test_root_noise_is_added_in_self_play_only():
+    from ws_zero.search import search_moves
+    state = _batch(chess.STARTING_FEN)
+    legal = np.asarray(state.legal_action_mask[0])
+    run = jax.jit(lambda key, self_play: search_moves(ENV, _constant(0.0), None, key, state, 16, self_play),
+                  static_argnums=1)
+    _, played = run(jax.random.key(0), True)
+    _, evaluated = run(jax.random.key(0), False)
+    np.testing.assert_allclose(_root_prior(evaluated)[legal], 1 / 20, rtol=1e-5)  # the network's own prior
+    assert np.abs(_root_prior(played)[legal] - 1 / 20).max() > 0.01  # Dirichlet noise mixed in
+    np.testing.assert_allclose(_root_prior(played)[legal].sum(), 1.0, rtol=1e-5)
+    assert _root_prior(played)[~legal].max() < 1e-30
+
+
+def test_chosen_moves_are_legal_and_a_finished_game_in_the_batch_is_harmless():
+    from ws_zero.search import search_moves
+    fens = [chess.STARTING_FEN, CHECKMATED, MATE_IN_ONE]
+    state = jax.tree.map(lambda *xs: jnp.stack(xs), *[state_from_fen(f) for f in fens])
+    actions, out = jax.jit(lambda key: search_moves(ENV, _constant(0.1), None, key, state, 32, True))(
+        jax.random.key(1))
+    tree = out.search_tree
+    for values in (tree.node_values, tree.children_values, tree.children_prior_logits):
+        assert not np.isnan(np.asarray(values)).any()
+    legal = np.asarray(state.legal_action_mask)
+    assert legal[0, int(actions[0])] and legal[2, int(actions[2])]
+    after = ENV.step(state, actions)
+    np.testing.assert_array_equal(np.asarray(after.board[1]), np.asarray(state.board[1]))  # finished: unchanged
+
+
+def test_root_noise_is_dirichlet_over_the_legal_moves_mixed_in_at_a_quarter():
+    # AlphaZero: P = 0.75 p + 0.25 eta, eta ~ Dirichlet(0.3) over the legal moves only. mctx's own noise is spread
+    # over all 4,672 moves, so in chess almost none of it would reach the legal ones.
+    from ws_zero.search import add_root_noise
+    state = _batch(chess.STARTING_FEN)
+    legal = state.legal_action_mask
+    logits = jnp.where(legal, jnp.arange(NUM_ACTIONS) % 7 * 0.1, ILLEGAL_LOGIT)  # a non-uniform prior
+    p = np.asarray(jax.nn.softmax(logits))[0]
+    keys = jax.random.split(jax.random.key(0), 3000)
+    mixed = np.asarray(jax.vmap(lambda k: jax.nn.softmax(add_root_noise(k, logits, legal, 0.25))[0])(keys))
+    lm = np.asarray(legal[0])
+    eta = (mixed[:, lm] - 0.75 * p[lm]) / 0.25  # the noise part, per draw
+    assert (eta > -1e-5).all() and np.allclose(eta.sum(axis=1), 1.0, atol=1e-4)
+    assert mixed[:, ~lm].max() < 1e-30
+    n, alpha = 20, 0.3
+    np.testing.assert_allclose(eta.mean(axis=0), 1 / n, atol=0.01)
+    dirichlet_var = (1 / n) * (1 - 1 / n) / (n * alpha + 1)
+    np.testing.assert_allclose(eta.var(axis=0).mean(), dirichlet_var, rtol=0.15)
+
+
+# ---------- The sign flip at every level, and agreement with a plain-Python search ----------
+
+PIECE_VALUES = np.array([1, 3, 3, 5, 9, 0], dtype=np.float32)  # P N B R Q K
+CENTRE = np.array([[(7 - abs(2 * r - 7) + 7 - abs(2 * c - 7)) / 14 for c in range(8)] for r in range(8)],
+                  dtype=np.float32)
+ITALIAN = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3"
+SCHOLARS = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"  # Qxf7#
+PAWN_ENDING = "8/5k2/8/3p4/3P4/2K5/8/8 w - - 0 1"
+
+
+def _material(params, obs):
+    """A test network: every move a slightly different prior (no ties), and a value for the side to move from
+    material and how central the pieces are."""
+    pv, centre = jnp.asarray(PIECE_VALUES), jnp.asarray(CENTRE)
+    mine = jnp.einsum("bhwp,p->b", obs[..., 0:6], pv)
+    theirs = jnp.einsum("bhwp,p->b", obs[..., 6:12], pv)
+    central = jnp.einsum("bhwp,hw->b", obs[..., 0:6], centre) - jnp.einsum("bhwp,hw->b", obs[..., 6:12], centre)
+    logits = jnp.broadcast_to(0.5 * jnp.sin(1.7 * jnp.arange(NUM_ACTIONS)), (obs.shape[0], NUM_ACTIONS))
+    return logits, jnp.tanh((mine - theirs) / 4 + 0.05 * central)
+
+
+def test_values_flip_sign_at_every_level_of_the_tree():
+    # Each position's recorded value, from its side to move, times its visits = its own evaluation + the sum over
+    # its moves of visits x move value, and a move's value = reward - (the opponent's value of the next position),
+    # or just the reward when the move ends the game. Checked at every node of a real search (a pawn ending: few
+    # moves per position, so the tree goes deep).
+    out = _search(PAWN_ENDING, _material, 300)
+    tree = jax.tree.map(lambda x: x[0], out.search_tree)
+    visits = np.asarray(tree.node_visits)
+    live = visits > 0
+    finished = np.asarray(ENV.is_terminal(tree.embeddings))
+    own = np.where(finished, 0.0, np.asarray(_material(None, ENV.observe(tree.embeddings))[1]))
+    values, kids = np.asarray(tree.node_values), np.asarray(tree.children_index)
+    child_visits, rewards = np.asarray(tree.children_visits), np.asarray(tree.children_rewards)
+    discounts = np.asarray(tree.children_discounts)
+    parents, depth = np.asarray(tree.parents), np.zeros(len(visits), dtype=int)
+    for i in np.flatnonzero(live):
+        tried = child_visits[i] > 0
+        q = rewards[i] + np.where(finished[kids[i]], 0.0, -1.0) * values[kids[i]]
+        np.testing.assert_allclose(values[i] * visits[i], own[i] + (child_visits[i] * q)[tried].sum(), atol=1e-4)
+        np.testing.assert_allclose(np.asarray(tree.qvalues(i))[tried], q[tried], atol=1e-6)
+        np.testing.assert_array_equal(discounts[i][tried], np.where(finished[kids[i]], 0.0, -1.0)[tried])
+        if i != tree.ROOT_INDEX:
+            depth[i] = depth[parents[i]] + 1
+    assert depth.max() >= 4  # the check covered several levels
+
+
+@pytest.mark.parametrize("fen", [chess.STARTING_FEN, ITALIAN, SCHOLARS, MATE_IN_ONE, PAWN_ENDING])
+def test_the_search_spends_its_simulations_exactly_like_a_plain_python_search(fen):
+    from reference_search import reference_search, root_visits
+    simulations = 100
+    out = _search(fen, _material, simulations)
+    evaluate = jax.jit(_material)
+
+    def evaluate_one(obs):
+        logits, value = evaluate(None, jnp.asarray(obs)[None])
+        return np.asarray(logits[0], dtype=np.float64), float(value[0])
+
+    reference = reference_search(fen, evaluate_one, simulations)
+    np.testing.assert_array_equal(np.asarray(out.search_tree.summary().visit_counts[0]),
+                                  root_visits(reference, NUM_ACTIONS))
