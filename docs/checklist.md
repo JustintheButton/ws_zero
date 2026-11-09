@@ -87,12 +87,18 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 
 ## Phase 4: MCTS
 
-- [ ] PUCT search with the logarithmic c(s), root Dirichlet noise and the 30-ply temperature schedule.
-- [ ] Unit test that values flip sign at every level during backup (the most common AlphaZero bug).
-- [ ] Batch network evaluations across many parallel games.
+- [x] PUCT search with the logarithmic c(s), root Dirichlet noise and the 30-ply temperature schedule.
+  `src/ws_zero/search.py` (on mctx)
+- [x] Unit test that values flip sign at every level during backup (the most common AlphaZero bug).
+  `tests/test_search.py`, which also matches an independent plain-Python search exactly
+- [x] Batch network evaluations across many parallel games.
 
 > **GATE:** with a uniform dummy network, the search finds mate-in-1 and avoids hanging its queen at modest
 > simulation counts.
+>
+> **Passed 2026-11-09** at 800 simulations (Justin's amendment, protocol §10), 49 of 50 runs: every mate in every
+> run; the queen kept safe in 19 of 20, the miss a near-tie in the knight position, which Justin accepted.
+> [Results](gates/phase-4-gate.json), [decision](decisions.md)
 
 ## Phase 5: Evaluation harness
 

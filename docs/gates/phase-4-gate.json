@@ -1,0 +1,1258 @@
+{
+ "simulations": 800,
+ "seeds": 5,
+ "passed": false,
+ "seconds": 6935.3,
+ "results": [
+  {
+   "kind": "mate in one",
+   "position": "back rank",
+   "fen": "6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+   "seed": 0,
+   "move": "Ra8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra8#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h4",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd1",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "Scholar's mate",
+   "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+   "seed": 0,
+   "move": "Qxf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxf7#",
+     "visits": 758,
+     "value": 1.0
+    },
+    {
+     "move": "Na3",
+     "visits": 1,
+     "value": 0.0
+    },
+    {
+     "move": "b4",
+     "visits": 1,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "smothered mate",
+   "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+   "seed": 0,
+   "move": "Nf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Nf7#",
+     "visits": 789,
+     "value": 1.0
+    },
+    {
+     "move": "Nxh7",
+     "visits": 2,
+     "value": -0.635
+    },
+    {
+     "move": "Kg2",
+     "visits": 1,
+     "value": -0.762
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank, Black to move",
+   "fen": "r5k1/5ppp/8/8/8/8/5PPP/6K1 b - - 0 1",
+   "seed": 0,
+   "move": "Ra1#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra1#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h5",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd8",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "queen and king",
+   "fen": "k7/8/1K6/8/8/8/8/6Q1 w - - 0 1",
+   "seed": 0,
+   "move": "Qg8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qg8#",
+     "visits": 101,
+     "value": 1.0
+    },
+    {
+     "move": "Qg7",
+     "visits": 45,
+     "value": 0.982
+    },
+    {
+     "move": "Qg5",
+     "visits": 42,
+     "value": 0.98
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "mate by promotion",
+   "fen": "7k/4P3/6K1/8/8/8/8/8 w - - 0 1",
+   "seed": 0,
+   "move": "e8=R#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "e8=R#",
+     "visits": 382,
+     "value": 1.0
+    },
+    {
+     "move": "e8=Q#",
+     "visits": 382,
+     "value": 1.0
+    },
+    {
+     "move": "Kf7",
+     "visits": 10,
+     "value": 0.621
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/3Q4/8/PPP1PPPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 0,
+   "move": "Qxe5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe5+",
+     "visits": 653,
+     "value": 0.014
+    },
+    {
+     "move": "Qxa7",
+     "visits": 19,
+     "value": -0.051
+    },
+    {
+     "move": "Qh4",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "poisoned f7 pawn",
+   "fen": "rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 0,
+   "move": "a3",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "c4",
+     "visits": 24,
+     "value": 0.0
+    },
+    {
+     "move": "Qd3",
+     "visits": 24,
+     "value": 0.0
+    },
+    {
+     "move": "Nc3",
+     "visits": 24,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a knight",
+   "fen": "r1bqkbnr/pppp1ppp/8/4n3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 4",
+   "seed": 0,
+   "move": "Qb3",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qc3",
+     "visits": 34,
+     "value": 0.245
+    },
+    {
+     "move": "Qb3",
+     "visits": 34,
+     "value": 0.245
+    },
+    {
+     "move": "Qg3",
+     "visits": 33,
+     "value": 0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn, Black to move",
+   "fen": "rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+   "seed": 0,
+   "move": "Qxe4+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe4+",
+     "visits": 661,
+     "value": 0.017
+    },
+    {
+     "move": "Qxa2",
+     "visits": 15,
+     "value": -0.065
+    },
+    {
+     "move": "Nh6",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank",
+   "fen": "6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+   "seed": 1,
+   "move": "Ra8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra8#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h4",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd1",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "Scholar's mate",
+   "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+   "seed": 1,
+   "move": "Qxf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxf7#",
+     "visits": 758,
+     "value": 1.0
+    },
+    {
+     "move": "Na3",
+     "visits": 1,
+     "value": 0.0
+    },
+    {
+     "move": "b4",
+     "visits": 1,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "smothered mate",
+   "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+   "seed": 1,
+   "move": "Nf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Nf7#",
+     "visits": 789,
+     "value": 1.0
+    },
+    {
+     "move": "Nxh7",
+     "visits": 2,
+     "value": -0.635
+    },
+    {
+     "move": "Kg2",
+     "visits": 1,
+     "value": -0.762
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank, Black to move",
+   "fen": "r5k1/5ppp/8/8/8/8/5PPP/6K1 b - - 0 1",
+   "seed": 1,
+   "move": "Ra1#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra1#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h5",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd8",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "queen and king",
+   "fen": "k7/8/1K6/8/8/8/8/6Q1 w - - 0 1",
+   "seed": 1,
+   "move": "Qg8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qg8#",
+     "visits": 100,
+     "value": 1.0
+    },
+    {
+     "move": "Qg7",
+     "visits": 44,
+     "value": 0.982
+    },
+    {
+     "move": "Qg5",
+     "visits": 42,
+     "value": 0.98
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "mate by promotion",
+   "fen": "7k/4P3/6K1/8/8/8/8/8 w - - 0 1",
+   "seed": 1,
+   "move": "e8=R#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "e8=R#",
+     "visits": 382,
+     "value": 1.0
+    },
+    {
+     "move": "e8=Q#",
+     "visits": 381,
+     "value": 1.0
+    },
+    {
+     "move": "Kf7",
+     "visits": 8,
+     "value": 0.485
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/3Q4/8/PPP1PPPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 1,
+   "move": "Qxe5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe5+",
+     "visits": 683,
+     "value": 0.019
+    },
+    {
+     "move": "Nh3",
+     "visits": 3,
+     "value": -0.245
+    },
+    {
+     "move": "Qd5",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "poisoned f7 pawn",
+   "fen": "rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 1,
+   "move": "Bb5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Bb5+",
+     "visits": 124,
+     "value": 0.035
+    },
+    {
+     "move": "c4",
+     "visits": 22,
+     "value": 0.0
+    },
+    {
+     "move": "Qc3",
+     "visits": 22,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a knight",
+   "fen": "r1bqkbnr/pppp1ppp/8/4n3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 4",
+   "seed": 1,
+   "move": "Qb3",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qb3",
+     "visits": 67,
+     "value": 0.26
+    },
+    {
+     "move": "Qg3",
+     "visits": 36,
+     "value": 0.245
+    },
+    {
+     "move": "Qe3",
+     "visits": 36,
+     "value": 0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn, Black to move",
+   "fen": "rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+   "seed": 1,
+   "move": "Qxe4+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe4+",
+     "visits": 683,
+     "value": 0.021
+    },
+    {
+     "move": "Qxa2",
+     "visits": 13,
+     "value": -0.075
+    },
+    {
+     "move": "e6",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank",
+   "fen": "6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+   "seed": 2,
+   "move": "Ra8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra8#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h4",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd1",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "Scholar's mate",
+   "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+   "seed": 2,
+   "move": "Qxf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxf7#",
+     "visits": 739,
+     "value": 1.0
+    },
+    {
+     "move": "Bxf7+",
+     "visits": 13,
+     "value": 0.245
+    },
+    {
+     "move": "Qxe5+",
+     "visits": 5,
+     "value": 0.003
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "smothered mate",
+   "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+   "seed": 2,
+   "move": "Nf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Nf7#",
+     "visits": 789,
+     "value": 1.0
+    },
+    {
+     "move": "Nxh7",
+     "visits": 2,
+     "value": -0.635
+    },
+    {
+     "move": "Kg2",
+     "visits": 1,
+     "value": -0.762
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank, Black to move",
+   "fen": "r5k1/5ppp/8/8/8/8/5PPP/6K1 b - - 0 1",
+   "seed": 2,
+   "move": "Ra1#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra1#",
+     "visits": 590,
+     "value": 1.0
+    },
+    {
+     "move": "Ra5",
+     "visits": 12,
+     "value": 0.861
+    },
+    {
+     "move": "h5",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "queen and king",
+   "fen": "k7/8/1K6/8/8/8/8/6Q1 w - - 0 1",
+   "seed": 2,
+   "move": "Qg8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qg8#",
+     "visits": 100,
+     "value": 1.0
+    },
+    {
+     "move": "Qg7",
+     "visits": 44,
+     "value": 0.982
+    },
+    {
+     "move": "Qg5",
+     "visits": 42,
+     "value": 0.98
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "mate by promotion",
+   "fen": "7k/4P3/6K1/8/8/8/8/8 w - - 0 1",
+   "seed": 2,
+   "move": "e8=R#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "e8=R#",
+     "visits": 383,
+     "value": 1.0
+    },
+    {
+     "move": "e8=Q#",
+     "visits": 382,
+     "value": 1.0
+    },
+    {
+     "move": "Kf7",
+     "visits": 8,
+     "value": 0.485
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/3Q4/8/PPP1PPPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 2,
+   "move": "Qxe5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe5+",
+     "visits": 662,
+     "value": 0.017
+    },
+    {
+     "move": "Qxa7",
+     "visits": 10,
+     "value": -0.098
+    },
+    {
+     "move": "Qh4",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "poisoned f7 pawn",
+   "fen": "rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 2,
+   "move": "Bb5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Bb5+",
+     "visits": 75,
+     "value": 0.045
+    },
+    {
+     "move": "c4",
+     "visits": 22,
+     "value": 0.0
+    },
+    {
+     "move": "Qc3",
+     "visits": 22,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a knight",
+   "fen": "r1bqkbnr/pppp1ppp/8/4n3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 4",
+   "seed": 2,
+   "move": "Qh5",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qh5",
+     "visits": 62,
+     "value": 0.262
+    },
+    {
+     "move": "Qb3",
+     "visits": 48,
+     "value": 0.249
+    },
+    {
+     "move": "Qg3",
+     "visits": 39,
+     "value": 0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn, Black to move",
+   "fen": "rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+   "seed": 2,
+   "move": "Qxe4+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe4+",
+     "visits": 661,
+     "value": 0.016
+    },
+    {
+     "move": "Qxa2",
+     "visits": 11,
+     "value": -0.089
+    },
+    {
+     "move": "Qh5",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank",
+   "fen": "6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+   "seed": 3,
+   "move": "Ra8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra8#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h4",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd1",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "Scholar's mate",
+   "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+   "seed": 3,
+   "move": "Qxf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxf7#",
+     "visits": 741,
+     "value": 1.0
+    },
+    {
+     "move": "Bxf7+",
+     "visits": 13,
+     "value": 0.245
+    },
+    {
+     "move": "Qxh7",
+     "visits": 5,
+     "value": 0.245
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "smothered mate",
+   "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+   "seed": 3,
+   "move": "Nf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Nf7#",
+     "visits": 789,
+     "value": 1.0
+    },
+    {
+     "move": "Nxh7",
+     "visits": 2,
+     "value": -0.635
+    },
+    {
+     "move": "Kg2",
+     "visits": 1,
+     "value": -0.762
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank, Black to move",
+   "fen": "r5k1/5ppp/8/8/8/8/5PPP/6K1 b - - 0 1",
+   "seed": 3,
+   "move": "Ra1#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra1#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h5",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd8",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "queen and king",
+   "fen": "k7/8/1K6/8/8/8/8/6Q1 w - - 0 1",
+   "seed": 3,
+   "move": "Qg8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qg8#",
+     "visits": 103,
+     "value": 1.0
+    },
+    {
+     "move": "Qg7",
+     "visits": 45,
+     "value": 0.982
+    },
+    {
+     "move": "Qg5",
+     "visits": 42,
+     "value": 0.98
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "mate by promotion",
+   "fen": "7k/4P3/6K1/8/8/8/8/8 w - - 0 1",
+   "seed": 3,
+   "move": "e8=R#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "e8=R#",
+     "visits": 383,
+     "value": 1.0
+    },
+    {
+     "move": "e8=Q#",
+     "visits": 383,
+     "value": 1.0
+    },
+    {
+     "move": "Kh6",
+     "visits": 8,
+     "value": 0.561
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/3Q4/8/PPP1PPPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 3,
+   "move": "Qxe5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe5+",
+     "visits": 679,
+     "value": 0.02
+    },
+    {
+     "move": "Qxa7",
+     "visits": 11,
+     "value": -0.089
+    },
+    {
+     "move": "g4",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "poisoned f7 pawn",
+   "fen": "rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 3,
+   "move": "Bb5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Bb5+",
+     "visits": 73,
+     "value": 0.03
+    },
+    {
+     "move": "Ke2",
+     "visits": 22,
+     "value": 0.0
+    },
+    {
+     "move": "Nc3",
+     "visits": 22,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a knight",
+   "fen": "r1bqkbnr/pppp1ppp/8/4n3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 4",
+   "seed": 3,
+   "move": "b3",
+   "passed": false,
+   "top_moves": [
+    {
+     "move": "Qb3",
+     "visits": 32,
+     "value": 0.245
+    },
+    {
+     "move": "b3",
+     "visits": 32,
+     "value": 0.245
+    },
+    {
+     "move": "Qh3",
+     "visits": 32,
+     "value": 0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn, Black to move",
+   "fen": "rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+   "seed": 3,
+   "move": "Qxe4+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe4+",
+     "visits": 662,
+     "value": 0.019
+    },
+    {
+     "move": "Qxa2",
+     "visits": 24,
+     "value": -0.041
+    },
+    {
+     "move": "Nh6",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank",
+   "fen": "6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+   "seed": 4,
+   "move": "Ra8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra8#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h4",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd1",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "Scholar's mate",
+   "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+   "seed": 4,
+   "move": "Qxf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxf7#",
+     "visits": 746,
+     "value": 1.0
+    },
+    {
+     "move": "Bxf7+",
+     "visits": 13,
+     "value": 0.245
+    },
+    {
+     "move": "Na3",
+     "visits": 1,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "smothered mate",
+   "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+   "seed": 4,
+   "move": "Nf7#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Nf7#",
+     "visits": 789,
+     "value": 1.0
+    },
+    {
+     "move": "Nxh7",
+     "visits": 2,
+     "value": -0.635
+    },
+    {
+     "move": "Kg2",
+     "visits": 1,
+     "value": -0.762
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "back rank, Black to move",
+   "fen": "r5k1/5ppp/8/8/8/8/5PPP/6K1 b - - 0 1",
+   "seed": 4,
+   "move": "Ra1#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Ra1#",
+     "visits": 591,
+     "value": 1.0
+    },
+    {
+     "move": "h5",
+     "visits": 11,
+     "value": 0.848
+    },
+    {
+     "move": "Rd8",
+     "visits": 11,
+     "value": 0.848
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "queen and king",
+   "fen": "k7/8/1K6/8/8/8/8/6Q1 w - - 0 1",
+   "seed": 4,
+   "move": "Qg8#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qg8#",
+     "visits": 103,
+     "value": 1.0
+    },
+    {
+     "move": "Qg7",
+     "visits": 45,
+     "value": 0.982
+    },
+    {
+     "move": "Qg5",
+     "visits": 43,
+     "value": 0.98
+    }
+   ]
+  },
+  {
+   "kind": "mate in one",
+   "position": "mate by promotion",
+   "fen": "7k/4P3/6K1/8/8/8/8/8 w - - 0 1",
+   "seed": 4,
+   "move": "e8=R#",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "e8=R#",
+     "visits": 383,
+     "value": 1.0
+    },
+    {
+     "move": "e8=Q#",
+     "visits": 382,
+     "value": 1.0
+    },
+    {
+     "move": "Kh6",
+     "visits": 9,
+     "value": 0.576
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/3Q4/8/PPP1PPPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 4,
+   "move": "Qxe5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe5+",
+     "visits": 671,
+     "value": 0.019
+    },
+    {
+     "move": "Qxa7",
+     "visits": 16,
+     "value": -0.061
+    },
+    {
+     "move": "Be3",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "poisoned f7 pawn",
+   "fen": "rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+   "seed": 4,
+   "move": "Bb5+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Bb5+",
+     "visits": 30,
+     "value": 0.008
+    },
+    {
+     "move": "c4",
+     "visits": 24,
+     "value": 0.0
+    },
+    {
+     "move": "Qb3",
+     "visits": 24,
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a knight",
+   "fen": "r1bqkbnr/pppp1ppp/8/4n3/4P3/5Q2/PPPP1PPP/RNB1KBNR w KQkq - 0 4",
+   "seed": 4,
+   "move": "Qh3",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qh3",
+     "visits": 57,
+     "value": 0.254
+    },
+    {
+     "move": "Qd1",
+     "visits": 57,
+     "value": 0.254
+    },
+    {
+     "move": "Qh5",
+     "visits": 57,
+     "value": 0.254
+    }
+   ]
+  },
+  {
+   "kind": "hanging queen",
+   "position": "queen attacked by a pawn, Black to move",
+   "fen": "rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+   "seed": 4,
+   "move": "Qxe4+",
+   "passed": true,
+   "top_moves": [
+    {
+     "move": "Qxe4+",
+     "visits": 682,
+     "value": 0.022
+    },
+    {
+     "move": "Qxa2",
+     "visits": 20,
+     "value": -0.049
+    },
+    {
+     "move": "g6",
+     "visits": 3,
+     "value": -0.245
+    }
+   ]
+  }
+ ]
+}

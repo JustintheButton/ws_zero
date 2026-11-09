@@ -18,6 +18,7 @@
   --signal-soft: rgba(34, 68, 192, 0.13);
   --lastmove: rgba(212, 176, 52, 0.42);
   --good: #1d7548;
+  --bad: #b23a28;
   --off-a: #e6eae7;
   --off-b: #dbe1dd;
   --piece-white: #fdfcf7;
@@ -41,14 +42,14 @@
   :root:not([data-theme="light"]) {
     --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
     --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
-    --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --off-a: #1c2523; --off-b: #222c29;
+    --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --bad: #ff8b72; --off-a: #1c2523; --off-b: #222c29;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #101514; --sheet: #161e1c; --ink: #e2eae6; --muted: #93a39d; --rule: #29332f;
   --sq-light: #c8c2ae; --sq-dark: #6b887f; --signal: #8ba3ff; --signal-soft: rgba(139, 163, 255, 0.17);
-  --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --off-a: #1c2523; --off-b: #222c29;
+  --lastmove: rgba(232, 196, 76, 0.5); --good: #5bc28d; --bad: #ff8b72; --off-a: #1c2523; --off-b: #222c29;
   color-scheme: dark;
 }
 
@@ -250,13 +251,42 @@ table.cov td.num, table.cov th.num { text-align: right; }
 .chart .bar-hi { fill: var(--sq-dark); opacity: 0.4; }
 .chart .bar-lo { fill: var(--sq-dark); }
 .chart .bar-best { fill: var(--signal); }
+/* Phase 4: the gate positions as small boards */
+.p4-sum { display: flex; flex-wrap: wrap; gap: 1rem 2.6rem; margin: 0; }
+.p4-sum div { display: grid; gap: 0.15rem; }
+.p4-sum dt { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.p4-sum dd { margin: 0; font-family: var(--font-display); font-size: var(--step-2); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.p4-sum dd small { font-family: var(--font-body); font-size: var(--step--1); color: var(--muted); }
+.cards { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.8rem 1.2rem; }
+@media (max-width: 980px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 0.8rem; } }
+.card { display: grid; gap: 0.45rem; align-content: start; min-width: 0; }
+.card h4 { margin: 0; font-family: var(--font-body); font-size: var(--step--1); font-weight: 600; line-height: 1.3; }
+.card .side { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.card p { font-size: var(--step--1); color: var(--muted); }
+.card p.played { color: var(--ink); }
+.card .top { font-family: var(--font-mono); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip { font-family: var(--font-mono); font-size: 0.72rem; padding: 0.05rem 0.4rem; border-radius: 3px; border: 1px solid currentColor; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.pass { color: var(--good); }
+.chip.fail { color: var(--bad); }
+.bad { color: var(--bad); font-weight: 600; }
+.board.mini { border-radius: 3px; }
+.mini .sq.mv::after { content: ""; position: absolute; inset: 0; background: var(--lastmove); }
+.mini .sq.threat::before { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 2px var(--bad); z-index: 2; }
+.note-cell { grid-column: span 2; display: grid; gap: 0.6rem; align-content: start; font-size: var(--step--1); }
+.note-cell h4 { margin: 0; font-family: var(--font-display); font-size: var(--step-1); font-weight: 600; }
+.note-cell p { color: var(--muted); }
+@media (max-width: 980px) { .note-cell { grid-column: 1 / -1; max-width: 64ch; } }
+.chart .bar-plan { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .bar-bad { fill: var(--bad); }
 footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.3rem; }
 @media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.6s ease; } }
 </style>
 
 <div class="page">
   <header class="masthead">
-    <p class="eyebrow">ws_zero · lab notebook · updated 8 Nov 2026</p>
+    <p class="eyebrow">ws_zero · lab notebook · updated 9 Nov 2026</p>
     <h1>Can Claude write a chess network's first weights?</h1>
     <p class="lede">We are building a small AlphaZero for chess from scratch. Then we test whether starting it from weights that Claude writes by hand, instead of random numbers, makes it learn faster. This page gains a section each time a phase passes its gate.</p>
     <ol class="phases" id="phases" aria-label="Project phases"></ol>
@@ -381,7 +411,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       <div class="panel">
         <h3>What 1,000 self-play games cost on Modal</h3>
         <div class="chart" id="cost-chart"></div>
-        <p class="hint">One training run per GPU, 200 searches per move; the range runs from games averaging 340 moves to games hitting the 512-move cap. The search's own bookkeeping is added in Phase 4. For comparison, the Mac manages about 350–520 games an hour.</p>
+        <p class="hint">One training run per GPU, 200 look-aheads per move (the plan has since moved to 800, which makes every bar at least four times longer; see Phase 4); the range runs from games averaging 340 moves to games hitting the 512-move cap. The search's own bookkeeping is added in Phase 4. For comparison, the Mac manages about 350–520 games an hour.</p>
       </div>
     </div>
     <div class="panel" style="margin-top: 2rem">
@@ -398,6 +428,35 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
   </section>
 
+  <section class="block" id="search" aria-labelledby="search-h">
+    <div class="block-head">
+      <p class="kicker" id="p4-kicker">Phase 4 · in progress</p>
+      <h2 id="search-h">Looking ahead before each move</h2>
+      <p>Before each move the search plays out imagined lines (a move, a reply, a reply to that) and asks the network how good the position is at the end of each one. Each imagined line is one look-ahead. To test the search before any network is trained, it plays with a stand-in that knows nothing about moves: it rates every legal move as equally likely and judges a position only by counting material (pawn 1, knight and bishop 3, rook 5, queen 9). The gate asks for mate in one in six positions and a safe queen in four, five runs each with a different random seed. After the run at 200 look-aheads, Justin moved the whole project to 800 per move, AlphaZero's own number (8 Nov).</p>
+    </div>
+    <dl class="p4-sum" id="p4-sum"></dl>
+    <div class="panel">
+      <h3>Mate in one</h3>
+      <div class="cards" id="p4-mates"></div>
+    </div>
+    <div class="panel">
+      <h3>Keep the queen safe</h3>
+      <div class="cards" id="p4-queens"></div>
+    </div>
+    <div class="gate-grid">
+      <div class="panel">
+        <h3>Four times the look-aheads, fifty times the wait</h3>
+        <div class="chart" id="p4-time"></div>
+        <div style="overflow-x: auto"><table class="cov" id="p4-scan"></table></div>
+        <p class="hint" id="p4-time-note">The whole gate (10 positions, 5 runs each) on the Mac. If every look-ahead cost the same, 800 would take about 9 minutes; it took nearly two hours. The table times one search of the 10 positions: each doubling made it 6 to 7 times slower, while mctx on its own, with a do-nothing game of the same size, stays fast. The cause (found 9 Nov): after reaching a finished game, such as a mate, the search kept going below it, one step deeper on every return visit. In the smothered mate at 200 look-aheads, 189 of the 200 positions in the tree were a chain hanging below Nf7#, 190 moves deep. Nothing below a finished game counts, so the results are right, but every look-ahead walked the whole chain. A fix is proposed and waiting on Justin.</p>
+      </div>
+      <div class="panel">
+        <h3>What 800 means for the plan</h3>
+        <p class="hint" style="margin-top: 0">A training game at 800 look-aheads costs at least four times as much as at 200. On Modal's L4 that is $1.05–1.58 per 1,000 games instead of $0.27–0.40, before counting the slowdown on the left. A rough count: the money set aside buys about 7,000–10,000 games per training run instead of 27,000–40,000. That is under the plan's 15,000 line, below which Justin's PC runs seeds 4 and 5. The game budget is fixed later, from real self-play speed measured in this phase.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="plan" aria-labelledby="plan-h">
     <div class="block-head">
       <p class="kicker">Phase 1 · <b>approved</b> 8 Nov 2026</p>
@@ -411,7 +470,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
     <dl class="facts">
       <div><dt>Network</dt><dd>6 residual blocks × 64 filters, batch norm as in AlphaZero (restored 8 Nov), 571,276 weights</dd></div>
-      <div><dt>Search</dt><dd>About 200 simulations per move, AlphaZero's exploration formula</dd></div>
+      <div><dt>Search</dt><dd>800 simulations per move as in AlphaZero (raised from 200, 8 Nov), AlphaZero&rsquo;s exploration formula</dd></div>
       <div><dt>Headline measure</dt><dd>Self-play games needed to reach the finish line</dd></div>
       <div><dt>Finish line</dt><dd>Score 50% against a fixed Stockfish level, set by a calibration run</dd></div>
       <div><dt>Verdict</dt><dd>One-sided Mann–Whitney test, 5 runs against 5, at p &lt; 0.05</dd></div>
@@ -901,6 +960,111 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   }
   renderValueChart();
   renderCostChart();
+
+  // ---------- Phase 4: the search gate ----------
+  const P4 = DATA.phase4 || {};
+  const P4_NOTES = {
+    "back rank": "Ra8 mates: Black's king is boxed in by its own pawns.",
+    "Scholar's mate": "Qxf7 mates. The bishop on c4 guards f7.",
+    "smothered mate": "Nf7 mates. Black's own rook and pawns hem the king in.",
+    "back rank, Black to move": "Ra1 mates: the same pattern with the colors reversed.",
+    "queen and king": "Qg8 mates, with White's king covering a7 and b7.",
+    "mate by promotion": "Promoting on e8 mates. A rook mates as well as a queen; the two tied, and the tie went to the rook.",
+    "queen attacked by a pawn": "The e5 pawn attacks the queen. Qxe5+ takes it with check.",
+    "poisoned f7 pawn": "Qxf7+ grabs a pawn, but the king takes the queen. The search never took it.",
+    "queen attacked by a knight": "The e5 knight attacks the queen. Four runs moved it to safety; one played b3 and left it to be taken.",
+    "queen attacked by a pawn, Black to move": "The e4 pawn attacks the queen. Qxe4+ takes it with check.",
+  };
+  function miniBoard(fen, uci, threat, label) {
+    const { board } = parseFen(fen);
+    const mv = uci ? [uci.slice(0, 2), uci.slice(2, 4)] : [];
+    let html = "";
+    for (let r = 7; r >= 0; r--) {
+      for (let f = 0; f < 8; f++) {
+        const sq = FILES[f] + (r + 1);
+        const cls = ["sq", (f + r) % 2 ? "l" : "d"];
+        if (mv.includes(sq)) cls.push("mv");
+        if (threat.includes(sq)) cls.push("threat");
+        html += `<div class="${cls.join(" ")}">${board[sq] ? pieceHTML(board[sq]) : ""}</div>`;
+      }
+    }
+    return `<div class="board mini" role="img" aria-label="${label}">${html}</div>`;
+  }
+  function p4Card(p) {
+    const side = parseFen(p.fen).white ? "White" : "Black";
+    const counts = new Map();
+    for (const r of p.runs) {
+      const c = counts.get(r.move) || { n: 0, uci: r.uci, passed: r.passed };
+      c.n++; counts.set(r.move, c);
+    }
+    const moves = [...counts.entries()].sort((a, b) => b[1].n - a[1].n);
+    const shown = moves[0][1].uci;
+    const played = moves.length === 1
+      ? `Played ${moves[0][0]} in all ${p.runs.length} runs.`
+      : "Played " + moves.map(([m, c]) => `<span class="${c.passed ? "" : "bad"}">${m}</span>${c.n > 1 ? ` (${c.n})` : ""}`).join(", ") + ".";
+    const chips = Object.entries(p.passed).sort((a, b) => a[0] - b[0]).map(([sims, n]) =>
+      `<span class="chip ${n === p.runs.length ? "pass" : "fail"}">${sims} · ${n}/${p.runs.length}</span>`).join("");
+    const top = (p.top || []).map((t) => `${t.move} ${t.visits}`).join(" · ");
+    const title = p.name[0].toUpperCase() + p.name.slice(1);
+    return `<article class="card"><div><h4>${title}</h4><span class="side">${side} to move</span></div>` +
+      miniBoard(p.fen, shown, p.threat || [], `${title}. ${side} to move. Highlighted: ${moves[0][0]}.`) +
+      `<div class="chips">${chips}</div><p class="played">${played}</p><p>${P4_NOTES[p.name] || ""}</p>` +
+      (top ? `<p class="top">Most looked-at, first run at ${P4.simulations}: ${top}</p>` : "") + `</article>`;
+  }
+  (function renderPhase4() {
+    const ps = P4.positions || [];
+    if (!ps.length) return;
+    const total = ps.reduce((a, p) => a + p.runs.length, 0);
+    const passedAt = (sims) => ps.reduce((a, p) => a + (p.passed[sims] ?? 0), 0);
+    document.getElementById("p4-kicker").innerHTML = `Phase 4 · <b>gate passed</b> 9 Nov 2026 · ${passedAt(String(P4.simulations))} of ${total} runs`;
+    document.getElementById("p4-sum").innerHTML =
+      `<div><dt>200 look-aheads</dt><dd>${passedAt("200")} <small>of ${total} runs</small></dd></div>` +
+      `<div><dt>${P4.simulations} look-aheads</dt><dd>${passedAt(String(P4.simulations))} <small>of ${total} runs</small></dd></div>` +
+      `<div><dt>Gate</dt><dd>Passed <small>The rule set beforehand asked for all ${total}; Justin judged the one miss a near-tie and passed the gate (9 Nov).</small></dd></div>`;
+    document.getElementById("p4-mates").innerHTML = ps.filter((p) => p.kind === "mate in one").map(p4Card).join("");
+    document.getElementById("p4-queens").innerHTML = ps.filter((p) => p.kind !== "mate in one").map(p4Card).join("") +
+      `<div class="note-cell"><h4>Why the knight position was hard</h4>` +
+      `<p>To see that a quiet move like a3 loses the queen, the search must try that move and then find Black's knight capture among about 35 replies, and do it for each of White's 38 moves: roughly 1,300 look-aheads. The stand-in gives no hint which moves matter, so at 200 the look-aheads were spread about five per move, many moves looked equally fine, and no run saved the queen.</p>` +
+      `<p>At 800 the queen retreats rise to the top and four runs in five saved the queen. In the fifth, b3 edged ahead by a hair. A trained network points the search at the few moves that matter, so it should need far fewer look-aheads.</p></div>`;
+  })();
+  (function renderP4Time() {
+    const runs = P4.runs || [];
+    if (runs.length < 2) return;
+    const [a, b] = runs, min = (sec) => sec / 60;
+    const rows = [
+      [`${a.simulations}`, min(a.seconds), "bar-lo", ""],
+      [`${b.simulations}, if in step`, min(a.seconds) * b.simulations / a.simulations, "bar-plan", "expected"],
+      [`${b.simulations}, measured`, min(b.seconds), "bar-bad", ""],
+    ];
+    const W = 440, row = 34, L = 118, R = 64, T = 6, H = T + rows.length * row + 26;
+    const max = Math.max(120, Math.ceil(min(b.seconds) / 30) * 30);
+    const x = (v) => L + (v / max) * (W - L - R);
+    let g = "";
+    for (let v = 0; v <= max; v += 30) g += `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H - 24}"/><text x="${x(v)}" y="${H - 8}" text-anchor="middle">${v}</text>`;
+    g += `<text x="${W - R + 8}" y="${H - 8}">min</text>`;
+    rows.forEach(([label, v, cls], i) => {
+      const yy = T + i * row + 6;
+      g += `<text class="lbl" x="${L - 8}" y="${yy + 14}" text-anchor="end">${label}</text>`;
+      g += `<rect class="${cls}" x="${L}" y="${yy}" width="${Math.max(2, x(v) - L).toFixed(1)}" height="20" rx="2"/>`;
+      g += `<text x="${(Math.max(x(v), L + 2) + 6).toFixed(1)}" y="${yy + 14}">${v < 10 ? v.toFixed(1) : Math.round(v)} min</text>`;
+    });
+    document.getElementById("p4-time").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Time for the whole Phase 4 gate: ${min(a.seconds).toFixed(1)} minutes at ${a.simulations} look-aheads, ${Math.round(min(b.seconds))} minutes at ${b.simulations}">${g}</svg>`;
+  })();
+
+  (function renderP4Scan() {
+    const rows = P4.scan || [];
+    if (!rows.length) return;
+    const t = (sec) => (sec >= 600 ? `${Math.round(sec / 60)} min` : sec >= 100 ? `${Math.round(sec)} s` : `${sec.toFixed(1)} s`);
+    const alone = rows.some((r) => r.alone != null);
+    const head = `<tr><th class="num">Look-aheads</th><th class="num">One search</th><th class="num">Per look-ahead</th><th class="num">Growth</th>` +
+      (alone ? `<th class="num">mctx alone</th>` : "") + `</tr>`;
+    document.getElementById("p4-scan").innerHTML = head + rows.map((r, i) => {
+      const growth = i ? `×${(r.seconds / rows[i - 1].seconds).toFixed(1)}` : "";
+      return `<tr><td class="num">${r.sims}</td><td class="num">${r.estimated ? "about " : ""}${t(r.seconds)}</td>` +
+        `<td class="num">${(1000 * r.seconds / r.sims).toFixed(0)} ms</td><td class="num">${growth}</td>` +
+        (alone ? `<td class="num">${r.alone == null ? "" : t(r.alone)}</td>` : "") + `</tr>`;
+    }).join("");
+  })();
 
   // ---------- orchestration ----------
   function renderSelection() { renderBoard(); renderNet(); renderInspector(); renderPolicy(); }

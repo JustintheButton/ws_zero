@@ -9,6 +9,7 @@ import json
 import subprocess
 from pathlib import Path
 
+import chess
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -190,6 +191,48 @@ def stability_rows(gates: Path) -> list:
     return rows
 
 
+# The 200-simulation gate run of 8 Nov 2026 (untried moves at the position's value). Its results file was replaced
+# by the 800-simulation run, so its pass counts and time are copied here from its printed summary.
+GATE_200 = {"simulations": 200, "seconds": 138.6, "failed": {"queen attacked by a knight": 5}}
+
+
+# One search of the 10 gate positions on the Mac (M4 Pro, CPU), measured 9 Nov 2026 while looking for the cause of the
+# slow 800 run; "alone" is mctx with a do-nothing game of the same size (4,672 moves, no chess, no network). The 800 row
+# is the gate run's time divided by its 5 runs.
+SEARCH_TIMING = [{"sims": 100, "seconds": 4.3, "alone": 0.16}, {"sims": 200, "seconds": 26.8, "alone": 0.45},
+                 {"sims": 400, "seconds": 186.9, "alone": 1.40}, {"sims": 800, "seconds": 1387.1, "estimated": True}]
+
+
+def phase4_data(gates: Path) -> dict:
+    """The Phase 4 gate positions: moves played in each run, pass counts at 200 and 800 simulations, the most-visited
+    moves of the first run, and for the queen positions the attacked queen and its attackers."""
+    path = gates / "phase-4-gate.json"
+    if not path.exists():
+        return {}
+    gate = json.loads(path.read_text())
+    positions = {}
+    for r in gate["results"]:
+        board = chess.Board(r["fen"])
+        p = positions.setdefault(r["position"], {"name": r["position"], "kind": r["kind"], "fen": r["fen"], "runs": []})
+        p["runs"].append({"move": r["move"], "uci": board.parse_san(r["move"]).uci(), "passed": r["passed"]})
+        if r["seed"] == 0:
+            p["top"] = [{"move": t["move"], "visits": t["visits"]} for t in r["top_moves"]]
+    for p in positions.values():
+        board = chess.Board(p["fen"])
+        threat = []
+        for square in board.pieces(chess.QUEEN, board.turn) if p["kind"] == "hanging queen" else []:
+            attackers = list(board.attackers(not board.turn, square))
+            if attackers:
+                threat += [chess.square_name(s) for s in [square, *attackers]]
+        p["threat"] = threat
+        p["passed"] = {"200": len(p["runs"]) - GATE_200["failed"].get(p["name"], 0),
+                       str(gate["simulations"]): sum(x["passed"] for x in p["runs"])}
+    return {"simulations": gate["simulations"], "seeds": gate["seeds"], "positions": list(positions.values()),
+            "scan": SEARCH_TIMING,
+            "runs": [{"simulations": 200, "seconds": GATE_200["seconds"]},
+                     {"simulations": gate["simulations"], "seconds": gate["seconds"]}]}
+
+
 def commit_label() -> str:
     def git(*args):
         return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
@@ -205,7 +248,7 @@ def main():
     env = ChessEnv()
     data = {"planes": [plane_description(p) for p in range(73)],
             "scenes": [build_scene(env, *scene) for scene in SCENES],
-            "phase3": phase3_data(ROOT / "docs" / "gates")}
+            "phase3": phase3_data(ROOT / "docs" / "gates"), "phase4": phase4_data(ROOT / "docs" / "gates")}
     page = (ROOT / "lab" / "template.html").read_text()
     page = page.replace("__COMMIT__", commit_label()).replace("__DATA__", json.dumps(data, separators=(",", ":")))
     args.out.parent.mkdir(parents=True, exist_ok=True)
