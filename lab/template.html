@@ -280,6 +280,19 @@ table.cov td.num, table.cov th.num { text-align: right; }
 @media (max-width: 980px) { .note-cell { grid-column: 1 / -1; max-width: 64ch; } }
 .chart .bar-plan { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 3; }
 .chart .bar-bad { fill: var(--bad); }
+/* Phase 4: one search, look-ahead by look-ahead */
+.tree-grid { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 1.6rem; align-items: start; }
+@media (max-width: 720px) { .tree-grid { grid-template-columns: minmax(0, 1fr); } #p4-tree-board { max-width: 320px; } }
+.tree-col { display: grid; gap: 0.6rem; min-width: 0; }
+.tree-line { font-size: var(--step--1); }
+.tree-line b { font-family: var(--font-mono); font-weight: 600; }
+.tree-controls { display: flex; gap: 0.4rem; align-items: center; }
+.tree-controls button { border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px; padding: 0.3rem 0.7rem; cursor: pointer; font-family: var(--font-mono); }
+.tree-controls input[type="range"] { flex: 1; min-width: 0; accent-color: var(--signal); }
+.tree-count { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+table.cov tr.now td { background: var(--signal-soft); }
+table.cov tr.more td { color: var(--muted); }
+.tree-bar { display: inline-block; height: 0.6rem; background: var(--signal); border-radius: 2px; vertical-align: middle; margin-right: 0.45rem; }
 footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.3rem; }
 @media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.6s ease; } }
 </style>
@@ -443,16 +456,36 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       <h3>Keep the queen safe</h3>
       <div class="cards" id="p4-queens"></div>
     </div>
+    <div class="panel" id="p4-tree">
+      <h3>One search, look-ahead by look-ahead</h3>
+      <p class="hint" style="margin-top: 0">The back-rank mate as the gate searched it (first run, 800 look-aheads). Each look-ahead starts from the real position and picks a move by weighing how well it has scored so far against how little it has been tried. It answers for Black the same way, until it reaches a position it has not seen. It rates that position by counting material and passes the rating back up the line, flipping the sign at each move. Values run from +1 (a win for White) through 0 (equal) to −1. White is a rook up, so every quiet move rates +0.85. A move not yet tried counts as the position's own value, so nothing is ruled out unseen: the search tries all 20 of White's moves in its first 21 look-aheads. Ra8# comes up 11th and scores +1, a win, and from then on most look-aheads return to it. Below the mate there is nothing left to look at, so those visits only confirm the +1. The others still get an occasional look, in case they are better than they seem.</p>
+      <div class="tree-grid">
+        <div class="tree-col">
+          <div id="p4-tree-board"></div>
+          <p class="tree-line" id="p4-tree-line"></p>
+        </div>
+        <div class="tree-col">
+          <div class="tree-controls">
+            <button type="button" id="p4-tree-prev" aria-label="Previous look-ahead">◀</button>
+            <button type="button" id="p4-tree-play">Play</button>
+            <button type="button" id="p4-tree-next" aria-label="Next look-ahead">▶</button>
+            <input type="range" id="p4-tree-step" min="1" max="800" value="1" aria-label="Look-ahead number">
+          </div>
+          <p class="tree-count" id="p4-tree-count"></p>
+          <table class="cov" id="p4-tree-table"></table>
+        </div>
+      </div>
+    </div>
     <div class="gate-grid">
       <div class="panel">
         <h3>Fifty times the wait, then a fix</h3>
         <div class="chart" id="p4-time"></div>
         <div style="overflow-x: auto"><table class="cov" id="p4-scan"></table></div>
-        <p class="hint" id="p4-time-note">The whole gate (10 positions, 5 runs each) on the Mac. If every look-ahead cost the same, 800 would have taken about 9 minutes; it took nearly two hours. The cause: after reaching a finished game, such as a mate, the search kept going below it, one move deeper on every return visit. In the smothered mate at 200 look-aheads, 189 of the 200 positions in the tree were a chain hanging below Nf7#, 190 moves deep, and every look-ahead walked it. The table times one search of the 10 positions before the fix: each doubling made it 6 to 7 times slower, while mctx on its own stayed fast. Fixed 9 Nov: below a finished game the search now spreads its visits out. The gate at 800 then took 79 seconds, with every move and visit count exactly as before.</p>
+        <p class="hint" id="p4-time-note">The whole gate (10 positions, 5 runs each) on the Mac. If every look-ahead cost the same, 800 would have taken about 9 minutes; it took nearly two hours. The cause: after reaching a finished game, such as a mate, the search kept going below it, one move deeper on every return visit. In the smothered mate at 200 look-aheads, 189 of the 200 positions in the tree were a chain hanging below Nf7#, 190 moves deep, and every look-ahead walked it. The table times one search of the 10 positions before the fix: each doubling made it 6 to 7 times slower, while mctx on its own stayed fast. Fixed 9 Nov: below a finished game the search now spreads its visits out. The gate at 800 then took 79 seconds, with every move and visit count exactly as before. Measuring real self-play the same day found a second slowdown: after every look-ahead, passing the rating back up the line copied whole tables of the tree, the size of every move in every position searched. Our own version writes only the entries on the line. The gate now takes 15 seconds, again with every move and visit count unchanged.</p>
       </div>
       <div class="panel">
         <h3>What 800 means for the plan</h3>
-        <p class="hint" style="margin-top: 0">A training game at 800 look-aheads costs at least four times as much as at 200. On Modal's L4 that is $1.05–1.58 per 1,000 games instead of $0.27–0.40, by the Phase 3 estimate. A rough count: the money set aside buys about 7,000–10,000 games per training run instead of 27,000–40,000. That is under the plan's 15,000 line, below which Justin's PC runs seeds 4 and 5. The game budget is fixed later, from real self-play speed measured in this phase.</p>
+        <p class="hint" style="margin-top: 0">A training game at 800 look-aheads costs four times as much as at 200. Measured on one Modal L4 (9 Nov): one move for 100 games at once takes 0.92 seconds, so 758–1,137 games per hour and $0.98–1.47 per 1,000 games, in line with the Phase 3 estimate. That is a best case: an untrained network looks only 2–3 moves deep, and a trained one digs deeper, which makes every look-ahead slower (on the Mac, about twice as slow at 12 moves deep). A rough count on the best case: the money set aside buys about 7,000–10,000 games per training run instead of 27,000–40,000 at 200. That is under the plan's 15,000 line, below which Justin's PC runs seeds 4 and 5. To be settled before the training runs (Phase 7); a Stanford cluster may become available.</p>
       </div>
     </div>
   </section>
@@ -507,8 +540,8 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     ["Protocol", "done", "The frozen plan, below."],
     ["Chess rules", "done", "This board explorer and the agreement check with python-chess."],
     ["Network", P3.gatePassed ? "done" : "next", "The value-head fix, GPU costs per game, and a network written by hand, shown on the board explorer."],
-    ["Search", P3.gatePassed ? "next" : "", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
-    ["Evaluation", "", "The Stockfish ladder from 1 to 10,000 nodes, and test positions labelled with Stockfish's best move."],
+    ["Search", "done", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
+    ["Evaluation", "next","The Stockfish ladder from 1 to 10,000 nodes, and test positions labelled with Stockfish's best move."],
     ["WSP pilot", "", "Claude's hand-written networks: what they play on these positions, their games against practice bots, and the go / no-go result."],
     ["Training loop", "", "A short training run: the loss falling and a first win over the random mover."],
     ["Controls", "", "Claude's Python heuristic, and how closely the network learns to copy it."],
@@ -1035,7 +1068,7 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       [`${a.simulations}, before fix`, min(a.seconds), "bar-lo"],
       [`${b.simulations}, if in step`, min(a.seconds) * b.simulations / a.simulations, "bar-plan"],
       [`${b.simulations}, before fix`, min(b.seconds), "bar-bad"],
-      [`${c.simulations}, fixed`, min(c.seconds), "bar-best"],
+      [`${c.simulations}, chain fixed`, min(c.seconds), "bar-best"],
     ];
     const W = 440, row = 34, L = 118, R = 64, T = 6, H = T + rows.length * row + 26;
     const max = Math.max(120, Math.ceil(min(b.seconds) / 30) * 30);
@@ -1050,6 +1083,67 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       g += `<text x="${(Math.max(x(v), L + 2) + 6).toFixed(1)}" y="${yy + 14}">${v < 10 ? v.toFixed(1) : Math.round(v)} min</text>`;
     });
     document.getElementById("p4-time").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Time for the whole Phase 4 gate: ${min(a.seconds).toFixed(1)} minutes at ${a.simulations} look-aheads and ${Math.round(min(b.seconds))} at ${b.simulations} before the fix; ${min(c.seconds).toFixed(1)} at ${c.simulations} after it">${g}</svg>`;
+  })();
+  (function renderP4Tree() {
+    const T = P4.tree;
+    if (!T || !T.steps) return;
+    const el = (id) => document.getElementById(id);
+    const n = T.steps.length, slider = el("p4-tree-step"), playBtn = el("p4-tree-play");
+    const whiteFirst = parseFen(T.fen).white;
+    slider.max = n;
+    const signed = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2);
+    const firstTry = new Map();
+    T.steps.forEach((s, i) => { if (!firstTry.has(s[0])) firstTry.set(s[0], i + 1); });
+    function show(k) {
+      k = Math.max(1, Math.min(n, k));
+      slider.value = k;
+      const visits = T.moves.map(() => 0), q = T.moves.map(() => 0);
+      for (let i = 0; i < k; i++) { const s = T.steps[i]; visits[s[0]]++; q[s[0]] = s[1]; }
+      const [mi, , lineValue, rootValue, below, line, fen, last] = T.steps[k - 1];
+      el("p4-tree-count").textContent = `Look-ahead ${k} of ${n} · White's overall estimate ${signed(rootValue)}`;
+      el("p4-tree-board").innerHTML = miniBoard(fen, last, [], `Position at the end of look-ahead ${k}: ${line}`);
+      const sans = line.split(" ");
+      const numbered = sans.map((m, i) => {
+        const ply = i + (whiteFirst ? 0 : 1);
+        return ply % 2 === 0 ? `${ply / 2 + 1}. ${m}` : i === 0 ? `1… ${m}` : m;
+      }).join(" ");
+      const mate = sans[sans.length - 1].endsWith("#");
+      el("p4-tree-line").innerHTML = `<b>${numbered}</b> → ${mate ? "checkmate: a win, +1" : `material count ${signed(lineValue)} for White`}.` +
+        (below ? " The look-ahead went one move below the mate, where nothing counts." : "") +
+        (firstTry.get(mi) === k ? ` First try of ${T.moves[mi]}.` : "");
+      const order = T.moves.map((_, i) => i).filter((i) => visits[i] > 0)
+        .sort((a, b) => visits[b] - visits[a] || firstTry.get(a) - firstTry.get(b));
+      const top = order.slice(0, 6), rest = order.slice(6), max = Math.max(...visits);
+      let rows = `<tr><th>White's move</th><th>Look-aheads</th><th class="num">Average value</th></tr>` +
+        top.map((i) => `<tr class="${i === mi ? "now" : ""}"><td>${T.moves[i]}</td>` +
+          `<td><span class="tree-bar" style="width:${(70 * visits[i] / max).toFixed(1)}%"></span>${visits[i]}</td>` +
+          `<td class="num">${signed(q[i])}</td></tr>`).join("");
+      if (rest.length) {
+        const rv = rest.map((i) => visits[i]), same = rv.every((v) => v === rv[0]), now = rest.includes(mi);
+        rows += `<tr class="more${now ? " now" : ""}"><td colspan="3">${rest.length} more move${rest.length > 1 ? "s" : ""}: ` +
+          (same ? `${rv[0]} look-ahead${rv[0] > 1 ? "s" : ""} each` : `${rv.reduce((a, b) => a + b, 0)} look-aheads between them`) +
+          (now ? `; this one was ${T.moves[mi]}` : "") + `</td></tr>`;
+      }
+      const untried = T.moves.length - order.length;
+      if (untried) rows += `<tr class="more"><td colspan="3">${untried} not tried yet</td></tr>`;
+      el("p4-tree-table").innerHTML = rows;
+    }
+    let timer = null;
+    function stop() { clearInterval(timer); timer = null; playBtn.textContent = "Play"; }
+    playBtn.onclick = () => {
+      if (timer) return stop();
+      if (+slider.value >= n) show(1);
+      playBtn.textContent = "Pause";
+      timer = setInterval(() => {
+        const k = +slider.value;
+        if (k >= n) return stop();
+        show(k + Math.max(1, Math.round(k / 30)));  // speeds up as the visits pile onto one move
+      }, 60);
+    };
+    el("p4-tree-prev").onclick = () => { stop(); show(+slider.value - 1); };
+    el("p4-tree-next").onclick = () => { stop(); show(+slider.value + 1); };
+    slider.addEventListener("input", () => { stop(); show(+slider.value); });
+    show(1);
   })();
   (function renderP4Scan() {
     const rows = P4.scan || [];

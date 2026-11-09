@@ -7,7 +7,9 @@ the search finds every mate in one in every run and keeps its queen safe in 19 o
 near-tie in the position where a knight attacks the queen. Along the way, the rule for untried moves was revised
 (Justin), the whole project moved from 200 to 800 simulations per move (Justin), and a bug that made the search
 dig a chain below finished games was fixed. The fix cut the 800-simulation gate from 116 minutes to 79 seconds and
-left every result unchanged.
+left every result unchanged. After the gate, measuring real self-play found a second slowdown: every backup step
+copied whole tables of the search tree. Our own backup replaced mctx's, with identical results; the gate now takes
+15 seconds, and on one Modal L4 a move for 100 games at 800 simulations takes 0.92 seconds.
 
 ## What was built
 
@@ -27,6 +29,8 @@ left every result unchanged.
     first 30 plies, then the most-visited move is played. In evaluation the most-visited move is played from the
     first ply. Root noise is used in self-play only.
   - Constants from protocol §3: c(s) = log((N + 19652 + 1) / 19652) + 1.25, and 800 simulations per move.
+  - `backward`: the backup after each simulation, our own, installed in place of mctx's (see "The full-table copy
+    in every backup"). The module refuses to load with any mctx other than 0.0.71.
 - `tests/reference_search.py`: a slow plain-Python AlphaZero search on python-chess positions, written
   independently of mctx, to check the real search against.
 - `scripts/gate_phase4.py`: the gate.
@@ -41,7 +45,7 @@ Differences from the published pseudocode (protocol §3, and the `ws_zero.search
 
 ## Tests
 
-115 unit tests pass, 25 of them for the search:
+123 unit tests pass, 27 of them for the search (115 and 25 when the gate passed):
 - **Root and recurrent function:** delivering mate rewards the mover +1 and ends the line; stalemate scores 0;
   stepping past the end of a game changes nothing; everything runs on a batch under jit.
 - **Value term:** a tried move scores its mean value, an untried one the position's value, and an illegal one −∞.
@@ -56,6 +60,10 @@ Differences from the published pseudocode (protocol §3, and the `ws_zero.search
   checked by its spread, and is used in self-play only. A finished game in a batch is harmless.
 - **No chain below a finished game:** the tree never grows more than one move below one. This test failed before
   the fix.
+- **The backup (added after the gate):** the compiled search holds no select over a whole tree table (it found 2
+  before the fix), and 4 games searched together at 100 simulations, with backups of different lengths, build
+  exactly mctx's tree, every number including the stored positions. Broken on purpose (finished games kept
+  writing), the second test failed on 91 numbers.
 
 ## Gate
 
@@ -129,21 +137,74 @@ below it. Nothing there counts (discount 0), so results cannot change. The gate 
 visit counts and values in **79 seconds**. In real self-play the chain would have formed whenever the search saw a
 mate or a draw coming, stalling all games in the batch.
 
+## The full-table copy in every backup
+
+The first real self-play measurement (100 games, 800 simulations, one Modal L4) did not finish a single move in
+its 20-minute limit (about $0.37 spent). On the Mac, one move for every game in the batch took:
+
+| Games × simulations | Simulations per move | Time per move |
+|---|---|---|
+| 100 × 50 | 5,000 | 1.8 s |
+| 100 × 200 | 20,000 | 10.5 s |
+| 25 × 800 | 20,000 | 33.7 s |
+
+The last two do the same number of simulations on trees of the same total size, yet 25 × 800 took over 3 times
+as long: the cost of a simulation grew with the tree.
+
+**Cause.** After each simulation the backup climbs from the new node to the root, updating visit counts and mean
+values. mctx writes this loop for one game and batches it over the games with vmap. The games climb paths of
+different lengths, so the batched loop runs until the longest is done, and at every step chooses between the new
+tree and the old one, game by game, over the whole of two tables: the visit counts and values of all 4,672 moves
+at every node (1.5 GB each at 100 games × 800). A move therefore cost about games × simulations² × 4,672. The
+compiled program showed exactly two such whole-table selects, inside the batched backup loop.
+
+**Fix.** `ws_zero.search.backward` runs one loop until every game reaches its root and writes one entry per game
+per step, with mctx's arithmetic. The tree is identical to mctx's (tested, above). The gate rerun gave identical
+moves, visit counts and values in **15 seconds** (79 before).
+
 ## Throughput
 
-Not yet measured for real self-play. Phase 3's estimate (Modal L4, one run of 100 games per GPU) scales with
-simulations: at 800, about 710–1,070 games per hour and $1.05–1.58 per 1,000 games, against 2,800–4,200 and
-$0.27–0.40 at 200. That estimate leaves out the search's own overhead, which the next step measures. mctx keeps
-statistics for all 4,672 moves at every node, so the search tree for 100 games is 9.9 GB at 800 simulations (2.5
-GB at 200).
+Measured on one Modal L4 after the fix (`phase-4-selfplay-modal.json`): 100 games × 800 simulations from the start
+position with an untrained network, root noise and sampled moves, over 40 moves.
+
+| | |
+|---|---|
+| Compiling | 14 s |
+| One move for all 100 games | 0.92 s (0.90–1.01) |
+| One training step (batch 1,024) | 0.024 s, under 1% of the time |
+| Games per hour | 758 (chunks of 512 plies) to 1,137 (chunks of 340 plies) |
+| Cost per 1,000 games | $1.47 to $0.98 |
+
+Phase 3 measured the network and the chess step alone at 1.23 ms per simulation for 100 games on an L4, or 0.98 s
+for 800: the search's own bookkeeping now costs almost nothing, and the Phase 3 estimate (710–1,070 games per hour,
+$1.05–1.58 per 1,000) holds. mctx still keeps statistics for all 4,672 moves at every node, so the search tree for
+100 games is 9.9 GB at 800 simulations; the L4 has 23 GB.
+
+**This is a best case** (found in the code review of 9 Nov). The measurement used an untrained network, whose
+look-aheads spread evenly, so its trees are only 2–3 moves deep. Every look-ahead walks down its game's tree, and the
+whole batch waits for the deepest line. A trained network concentrates on a few moves and digs deeper. On the Mac
+(32 games × 200 simulations, the real network's cost, move probabilities set by hand to control the depth):
+
+| Deepest line | One move for all 32 games |
+|---|---|
+| 2 moves | 1.5 s |
+| 5 moves | 2.1 s |
+| 12 moves | 3.1 s |
+| 13 moves, more look-aheads going deep | 3.8 s |
+
+How much of this carries over to a GPU is not measured: there the network is a smaller share of the time, so the
+walk down the tree may weigh more or less. Real training games will cost more than the figures above, possibly up
+to about twice as much.
 
 ## Open issues
 
-1. **Real self-play speed** (the next Phase 4 step) sets the game budget (D7). By the Phase 3 estimate, 800
-   simulations give roughly 7,000–10,000 games per run within the $192 cap, under the 15,000 line below which
-   Justin's PC runs seeds 4–5. Even all 11 workspaces ($330) give only about 9,500–14,000.
+1. **Game budget (D7).** The measured cost is about 7% below the Phase 3 estimate, but it is a best case (see
+   Throughput): the speed must be measured again with deep trees or a trained network before the budget is fixed.
+   On the best-case figure (not recomputed): at 800 simulations, roughly 7,000–10,000 games per run within the $192 cap, under the 15,000 line below which Justin's PC runs seeds 4–5. Even all 11 workspaces ($330) give only
+   about 9,500–14,000. A Stanford cluster may become available. To settle before Phase 7.
 2. **Search memory:** 9.9 GB per 100 games limits packing several runs onto one GPU (Phase 3 found packing the
-   cheapest option on large GPUs). The Mac has 26 GB.
+   cheapest option on large GPUs). Keeping statistics for legal moves only (at most 218) would shrink the tree about
+   20 times. The Mac has 24 GB.
 3. **Carried over from Phase 3:** how WSP-written weights meet batch norm (before Phase 6), and whether the Phase
    7 smoke run should come before Phase 6.
 4. Six old lint warnings in Phase 3 files (`check_value_head.py`, `gate_phase3.py`, `test_train.py`).

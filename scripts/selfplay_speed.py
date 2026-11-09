@@ -1,8 +1,11 @@
 """Phase 4: real self-play speed, search included, and the games-per-hour estimate it gives.
 
 Plays games from the start position as self-play does (800 simulations, root noise, moves sampled for the first 30
-plies), with an untrained network: the time per ply does not depend on the weights. Times every ply after the first
-(which compiles), and one training step. The estimate follows the Phase 3 benchmark (protocol D2): games are played
+plies), with an untrained network. That is the cheapest case: an untrained network spreads its look-aheads evenly, so
+its search trees are 2-3 moves deep, and every look-ahead in the batch walks down to the deepest line of any game.
+A trained network makes deeper trees and slower plies (on the Mac, 32 games x 200 simulations: 1.5 s per ply with
+trees 2 deep, 2.1 s at 5 deep, 3.1 s at 12 deep), so measure again with a trained network before fixing a budget.
+Times every ply after the first (which compiles), and one training step. The estimate follows the Phase 3 benchmark (protocol D2): games are played
 in chunks, a chunk lasts as long as its longest game (512 plies if one reaches the cap, 340 if none is longer than
 the average random game), and then training draws each new position 4 times in batches of 1,024.
 

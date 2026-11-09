@@ -15,7 +15,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from ws_zero.game.env import ChessEnv, initial_state, state_from_fen
-from ws_zero.game.moves import move_to_action
+from ws_zero.game.moves import action_to_move, move_to_action
 from ws_zero.game.reference import SCALAR_PLANES, ReferenceGame, observations_match
 from ws_zero.net import apply, blank_params, masked_log_softmax
 
@@ -231,10 +231,87 @@ def phase4_data(gates: Path) -> dict:
         p["passed"] = {"200": len(p["runs"]) - GATE_200["failed"].get(p["name"], 0),
                        str(gate["simulations"]): sum(x["passed"] for x in p["runs"])}
     return {"simulations": gate["simulations"], "seeds": gate["seeds"], "positions": list(positions.values()),
-            "scan": SEARCH_TIMING,
+            "scan": SEARCH_TIMING, "tree": phase4_tree(gates),
             "runs": [{"simulations": 200, "seconds": GATE_200["seconds"], "fixed": False},
                      {"simulations": 800, "seconds": GATE_800_BEFORE_FIX_SECONDS, "fixed": False},
                      {"simulations": gate["simulations"], "seconds": gate["seconds"], "fixed": True}]}
+
+
+TREE_POSITION = "back rank"  # the gate's first mate in one (Ra8#), in its first run
+
+
+def phase4_tree(gates: Path) -> dict:
+    """One search of the back-rank mate in one exactly as the gate ran it (all 10 positions in one batch, seed 0, no
+    noise), unrolled look-ahead by look-ahead for the page to step through.
+
+    mctx creates node k on look-ahead k, so node k's path from the root is look-ahead k's line. Replaying the backups
+    in that order gives the root's numbers after every look-ahead. The replay must end exactly at mctx's final tree,
+    and its root visit counts must match the gate's record.
+
+    Each step: [root move index, that move's mean value after the step, the line's value for the side to move at the
+    root, the root's mean value, 1 if the line ran into a finished game, the line in SAN, FEN at its end, last move].
+    """
+    from gate_phase4 import HANGING_QUEEN, MATE_IN_ONE, material_dummy
+
+    from ws_zero.search import search_moves
+    path = gates / "phase-4-gate.json"
+    if not path.exists():
+        return {}
+    gate = json.loads(path.read_text())
+    record = next(r for r in gate["results"] if r["position"] == TREE_POSITION and r["seed"] == 0)
+    env = ChessEnv()
+    fens = list(MATE_IN_ONE.values()) + list(HANGING_QUEEN.values())
+    batch = jax.tree.map(lambda *xs: jnp.stack(xs), *[state_from_fen(f) for f in fens])
+    search = jax.jit(lambda key: search_moves(env, material_dummy, None, key, batch, gate["simulations"],
+                                              self_play=False))
+    _, out = search(jax.random.key(0))
+    game = list(MATE_IN_ONE).index(TREE_POSITION)
+    tree = jax.tree.map(lambda x: x[game], out.search_tree)
+    parents, moves_in = np.asarray(tree.parents), np.asarray(tree.action_from_parent)
+    rewards, discounts = np.asarray(tree.children_rewards), np.asarray(tree.children_discounts)
+    _, value = material_dummy(None, env.observe(tree.embeddings))  # each node's own rating, as the search got it
+    raw = np.where(np.asarray(env.is_terminal(tree.embeddings)), 0.0, np.asarray(value)).astype(np.float32)
+
+    nodes, one = len(parents), np.float32(1)
+    visits, values = np.ones(nodes, np.int32), raw.copy()  # node k counts once it exists
+    root_moves, steps = [], []
+    for k in range(1, nodes):
+        line, index, leaf_value = [], k, values[k]
+        while index != 0:  # mctx's backup, in float32
+            parent, a = parents[index], moves_in[index]
+            line.append(a)
+            leaf_value = rewards[parent, a] + discounts[parent, a] * leaf_value
+            count = np.float32(visits[parent])
+            values[parent] = (values[parent] * count + leaf_value) / (count + one)
+            visits[parent] += 1
+            first, index = index, parent
+        board, sans, finished, last = chess.Board(record["fen"]), [], False, None
+        node = 0
+        for a in reversed(line):
+            if finished:  # below a finished game: nothing there counts
+                break
+            move = action_to_move(board, int(a))
+            sans.append(board.san(move))
+            board.push(move)
+            last, finished = move.uci(), discounts[node, a] == 0
+            node = int(np.flatnonzero((parents == node) & (moves_in == a))[0])
+        if sans[0] not in root_moves:
+            root_moves.append(sans[0])
+        a0 = line[-1]
+        steps.append([root_moves.index(sans[0]), round(float(rewards[0, a0] + discounts[0, a0] * values[first]), 3),
+                      round(float(leaf_value), 3), round(float(values[0]), 3), int(len(line) > len(sans)),
+                      " ".join(sans), board.fen(), last])
+
+    if not ((visits == np.asarray(tree.node_visits)).all() and np.allclose(values, np.asarray(tree.node_values),
+                                                                          atol=1e-6)):
+        raise SystemExit("replayed backups do not end at mctx's tree")
+    final = {}
+    for s in steps:
+        final[root_moves[s[0]]] = final.get(root_moves[s[0]], 0) + 1
+    if any(final.get(t["move"]) != t["visits"] for t in record["top_moves"]):
+        raise SystemExit(f"the search differs from the gate's record: {record['top_moves']}")
+    return {"position": TREE_POSITION, "fen": record["fen"], "simulations": gate["simulations"],
+            "moves": root_moves, "steps": steps}
 
 
 def commit_label() -> str:
