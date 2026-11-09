@@ -194,6 +194,9 @@ def stability_rows(gates: Path) -> list:
 # The 200-simulation gate run of 8 Nov 2026 (untried moves at the position's value). Its results file was replaced
 # by the 800-simulation run, so its pass counts and time are copied here from its printed summary.
 GATE_200 = {"simulations": 200, "seconds": 138.6, "failed": {"queen attacked by a knight": 5}}
+# The 800-simulation run of 8-9 Nov, before the fix for the chain of nodes below finished games (9 Nov). The fix left
+# every move and visit count unchanged; only the time differs.
+GATE_800_BEFORE_FIX_SECONDS = 6935.3
 
 
 # One search of the 10 gate positions on the Mac (M4 Pro, CPU), measured 9 Nov 2026 while looking for the cause of the
@@ -229,8 +232,9 @@ def phase4_data(gates: Path) -> dict:
                        str(gate["simulations"]): sum(x["passed"] for x in p["runs"])}
     return {"simulations": gate["simulations"], "seeds": gate["seeds"], "positions": list(positions.values()),
             "scan": SEARCH_TIMING,
-            "runs": [{"simulations": 200, "seconds": GATE_200["seconds"]},
-                     {"simulations": gate["simulations"], "seconds": gate["seconds"]}]}
+            "runs": [{"simulations": 200, "seconds": GATE_200["seconds"], "fixed": False},
+                     {"simulations": 800, "seconds": GATE_800_BEFORE_FIX_SECONDS, "fixed": False},
+                     {"simulations": gate["simulations"], "seconds": gate["seconds"], "fixed": True}]}
 
 
 def commit_label() -> str:

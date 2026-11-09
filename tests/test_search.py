@@ -151,6 +151,20 @@ def test_when_ahead_every_root_move_is_still_tried_and_the_mate_is_found():
     assert int(np.argmax(visits)) == int(_action(MATE_IN_ONE, "a1a8")[0])
 
 
+def test_the_tree_never_grows_more_than_one_move_below_a_finished_game():
+    # Nothing below a finished game counts. With every move below one masked as illegal, each return visit to Ra8#
+    # took the same slot one move deeper: in the Phase 4 gate the tree became a chain over 100 moves deep below the
+    # mate, and every simulation walked it. Below a finished game the visits must spread out instead.
+    out = _search(MATE_IN_ONE, _material, 200)
+    tree = out.search_tree
+    parents = np.asarray(tree.parents[0])
+    over = np.asarray(ENV.is_terminal(jax.tree.map(lambda x: x[0], tree.embeddings)))
+    has_parent = parents >= 0
+    below = has_parent & over[np.where(has_parent, parents, 0)]  # nodes hanging below a finished game
+    assert below.sum() > 50  # the search kept returning to the mate
+    assert not below[parents[has_parent]].any()  # and none of those nodes has a node below it
+
+
 def test_the_search_never_plays_an_illegal_move_below_the_root():
     # Every side to move thinks it is winning (+0.9), so every tried move scores -0.9 for its mover. Once a position's
     # few legal moves are all tried, an illegal move scored like an untried one (0) would beat them; mctx blocks

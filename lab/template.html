@@ -445,14 +445,14 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
     <div class="gate-grid">
       <div class="panel">
-        <h3>Four times the look-aheads, fifty times the wait</h3>
+        <h3>Fifty times the wait, then a fix</h3>
         <div class="chart" id="p4-time"></div>
         <div style="overflow-x: auto"><table class="cov" id="p4-scan"></table></div>
-        <p class="hint" id="p4-time-note">The whole gate (10 positions, 5 runs each) on the Mac. If every look-ahead cost the same, 800 would take about 9 minutes; it took nearly two hours. The table times one search of the 10 positions: each doubling made it 6 to 7 times slower, while mctx on its own, with a do-nothing game of the same size, stays fast. The cause (found 9 Nov): after reaching a finished game, such as a mate, the search kept going below it, one step deeper on every return visit. In the smothered mate at 200 look-aheads, 189 of the 200 positions in the tree were a chain hanging below Nf7#, 190 moves deep. Nothing below a finished game counts, so the results are right, but every look-ahead walked the whole chain. A fix is proposed and waiting on Justin.</p>
+        <p class="hint" id="p4-time-note">The whole gate (10 positions, 5 runs each) on the Mac. If every look-ahead cost the same, 800 would have taken about 9 minutes; it took nearly two hours. The cause: after reaching a finished game, such as a mate, the search kept going below it, one move deeper on every return visit. In the smothered mate at 200 look-aheads, 189 of the 200 positions in the tree were a chain hanging below Nf7#, 190 moves deep, and every look-ahead walked it. The table times one search of the 10 positions before the fix: each doubling made it 6 to 7 times slower, while mctx on its own stayed fast. Fixed 9 Nov: below a finished game the search now spreads its visits out. The gate at 800 then took 79 seconds, with every move and visit count exactly as before.</p>
       </div>
       <div class="panel">
         <h3>What 800 means for the plan</h3>
-        <p class="hint" style="margin-top: 0">A training game at 800 look-aheads costs at least four times as much as at 200. On Modal's L4 that is $1.05–1.58 per 1,000 games instead of $0.27–0.40, before counting the slowdown on the left. A rough count: the money set aside buys about 7,000–10,000 games per training run instead of 27,000–40,000. That is under the plan's 15,000 line, below which Justin's PC runs seeds 4 and 5. The game budget is fixed later, from real self-play speed measured in this phase.</p>
+        <p class="hint" style="margin-top: 0">A training game at 800 look-aheads costs at least four times as much as at 200. On Modal's L4 that is $1.05–1.58 per 1,000 games instead of $0.27–0.40, by the Phase 3 estimate. A rough count: the money set aside buys about 7,000–10,000 games per training run instead of 27,000–40,000. That is under the plan's 15,000 line, below which Justin's PC runs seeds 4 and 5. The game budget is fixed later, from real self-play speed measured in this phase.</p>
       </div>
     </div>
   </section>
@@ -1029,12 +1029,13 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   })();
   (function renderP4Time() {
     const runs = P4.runs || [];
-    if (runs.length < 2) return;
-    const [a, b] = runs, min = (sec) => sec / 60;
+    if (runs.length < 3) return;
+    const [a, b, c] = runs, min = (sec) => sec / 60;
     const rows = [
-      [`${a.simulations}`, min(a.seconds), "bar-lo", ""],
-      [`${b.simulations}, if in step`, min(a.seconds) * b.simulations / a.simulations, "bar-plan", "expected"],
-      [`${b.simulations}, measured`, min(b.seconds), "bar-bad", ""],
+      [`${a.simulations}, before fix`, min(a.seconds), "bar-lo"],
+      [`${b.simulations}, if in step`, min(a.seconds) * b.simulations / a.simulations, "bar-plan"],
+      [`${b.simulations}, before fix`, min(b.seconds), "bar-bad"],
+      [`${c.simulations}, fixed`, min(c.seconds), "bar-best"],
     ];
     const W = 440, row = 34, L = 118, R = 64, T = 6, H = T + rows.length * row + 26;
     const max = Math.max(120, Math.ceil(min(b.seconds) / 30) * 30);
@@ -1048,9 +1049,8 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
       g += `<rect class="${cls}" x="${L}" y="${yy}" width="${Math.max(2, x(v) - L).toFixed(1)}" height="20" rx="2"/>`;
       g += `<text x="${(Math.max(x(v), L + 2) + 6).toFixed(1)}" y="${yy + 14}">${v < 10 ? v.toFixed(1) : Math.round(v)} min</text>`;
     });
-    document.getElementById("p4-time").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Time for the whole Phase 4 gate: ${min(a.seconds).toFixed(1)} minutes at ${a.simulations} look-aheads, ${Math.round(min(b.seconds))} minutes at ${b.simulations}">${g}</svg>`;
+    document.getElementById("p4-time").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Time for the whole Phase 4 gate: ${min(a.seconds).toFixed(1)} minutes at ${a.simulations} look-aheads and ${Math.round(min(b.seconds))} at ${b.simulations} before the fix; ${min(c.seconds).toFixed(1)} at ${c.simulations} after it">${g}</svg>`;
   })();
-
   (function renderP4Scan() {
     const rows = P4.scan || [];
     if (!rows.length) return;

@@ -8,7 +8,8 @@ mctx needs two things for each batch of games:
 Values are always for the side to move. mctx scores a move as reward + discount x (value of the next position);
 in chess the next position belongs to the opponent, so the discount is -1 (the sign flip: good for them is bad for
 the mover). A move that ends the game gives the mover the result (+1 for checkmate, 0 for a draw) and discount 0,
-so nothing below a finished position counts. Illegal moves get logit ILLEGAL_LOGIT (probability exactly 0).
+so nothing below a finished position counts. Illegal moves get logit ILLEGAL_LOGIT (probability exactly 0); below
+a finished position every move is allowed instead, so that return visits spread out rather than dig a chain.
 
 `evaluate(params, obs) -> (logits (batch, 4672), value (batch,))` is the network: `ws_zero.net.apply`, or a dummy
 network such as the Phase 4 gate's material counter.
@@ -52,10 +53,13 @@ def make_recurrent_fn(env, evaluate):
         logits, value = evaluate(params, env.observe(child))
         # terminal_value is for the side to move in the finished position (-1 if checkmated); the mover gets minus it.
         reward = jnp.where(ends_now, -env.terminal_value(child), 0.0).astype(jnp.float32)
+        # Below a finished game every move is allowed, all equally likely. Nothing there counts (discount 0), and with
+        # every move masked the search took the same slot on each return visit, growing a chain one move deeper
+        # each time (100+ moves below a mate in the Phase 4 gate); spread out, the visits stay one move below.
         out = mctx.RecurrentFnOutput(
             reward=reward,
             discount=jnp.where(over, 0.0, -1.0).astype(jnp.float32),
-            prior_logits=_masked(logits, child),
+            prior_logits=jnp.where(over[:, None], 0.0, _masked(logits, child)),
             value=jnp.where(over, 0.0, value).astype(jnp.float32))
         return out, child
 
