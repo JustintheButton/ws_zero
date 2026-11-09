@@ -203,8 +203,10 @@ run). K *(fixed after Phase 3)* = budget / 20.
 ### 8.2 Opponents (fixed anchors)
 - Uniform random mover.
 - Greedy material-grabber: captures the most valuable piece available, else a random move.
-- Stockfish (one pinned version) at fixed node counts 1, 3, 10, 30, 100, 300, 1,000, 3,000 and 10,000
-  (machine-independent), and strength-limited at its minimum `UCI_Elo`.
+- Stockfish 19 (pinned 2026-11-09) at fixed node counts 1, 100, 300, 1,000, 3,000 and 10,000
+  (machine-independent), and strength-limited at its minimum `UCI_Elo` (1320). The 1-node rung is a one-move-deep
+  search of about 48 nodes, the least Stockfish will do. *(Amended 2026-11-09, before any results: v1.0 also had
+  3, 10 and 30 nodes, which play the same moves as 1 node; see §10.)*
 - The anchor ladder is calibrated (anchors play each other) in Phase 5, before any training run.
 
 ### 8.3 Games
@@ -271,6 +273,12 @@ that channel's activation and the feature on a fixed probe set of positions.
 - **Pre-experiment parameters fixed by rule after Phase 3:** game budget, replay window, K, and LR drop steps
   (from §4, §7, §8.1); and, after the D1 pilot and calibration run, the base LR, warmup and primary threshold
   (§4, §8.4). All are recorded in [decisions.md](decisions.md) before any WSP or distillation training run.
+- **Stockfish ladder (amended 2026-11-09, Justin, before any results).** v1.0's ladder had rungs at 1, 3, 10 and
+  30 nodes. Stockfish 19 never stops before finishing a one-move-deep search, which takes about 48 nodes: on 200
+  positions from random games it played the same move at 1, 3 and 10 nodes in all 200, and at 30 nodes in 199
+  (`docs/gates/phase-5-stockfish-rungs.json`, `scripts/stockfish_rungs.py`). The four rungs are one opponent, so 3,
+  10 and 30 are dropped: the ladder is 1, 100, 300, 1,000, 3,000 and 10,000 nodes. Whether a weaker opponent is
+  needed between the material-grabber and the 1-node rung is left to the ladder calibration.
 - **Value head (amended 2026-11-08, Justin, before any results; superseded the same day by restoring batch
   norm, below).** AlphaZero's value head is 1×1 conv → batch norm
   → ReLU → … With batch norm removed (in every arm), that single ReLU channel died: in a realistic training check

@@ -17,8 +17,8 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-TAG = "sf_19"
+from ws_zero.stockfish import INSTALL_DIR, NAME, TAG, find_engine
+
 RELEASE = f"https://github.com/official-stockfish/Stockfish/releases/download/{TAG}/"
 ASSETS = {  # (system, machine) -> (file, SHA-256)
     ("Darwin", "arm64"): ("stockfish-macos-universal.tar.gz",
@@ -49,17 +49,9 @@ def parse_bench(output: str) -> int:
     return int(match.group(1))
 
 
-def find_engine(folder: Path) -> Path:
-    """The engine binary among the unpacked files: the largest file whose name starts with "stockfish"."""
-    files = [p for p in folder.rglob("stockfish*") if p.is_file() and not p.name.endswith(".tar.gz")]
-    if not files:
-        raise SystemExit(f"no stockfish binary under {folder}")
-    return max(files, key=lambda p: p.stat().st_size)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", type=Path, default=ROOT / "build" / "stockfish" / TAG)
+    parser.add_argument("--out", type=Path, default=INSTALL_DIR)
     args = parser.parse_args()
     key = (platform.system(), platform.machine())
     if key not in ASSETS:
@@ -73,12 +65,16 @@ def main():
     with tarfile.open(archive) as tar:
         tar.extractall(args.out, filter="data")
     engine = find_engine(args.out)
+    if engine is None:
+        raise SystemExit(f"no stockfish binary under {args.out}")
     engine.chmod(0o755)
     run = subprocess.run([str(engine), "bench"], capture_output=True, text=True, timeout=600)
     nodes = parse_bench(run.stdout + run.stderr)
     banner = subprocess.run([str(engine)], input="uci\nquit\n", capture_output=True, text=True, timeout=60).stdout
-    print(next((line for line in banner.splitlines() if line.startswith("id name")), "id name ?"))
-    print(f"bench: {nodes} nodes")
+    name = next((line[8:] for line in banner.splitlines() if line.startswith("id name ")), "?")
+    print(f"{name}; bench: {nodes} nodes")
+    if name != NAME:
+        raise SystemExit(f"the engine calls itself {name!r}, not {NAME!r}")
     if nodes != BENCH_NODES:
         raise SystemExit(f"bench gave {nodes} nodes, not the pinned {BENCH_NODES}: this is not the project's engine")
     print(engine)
