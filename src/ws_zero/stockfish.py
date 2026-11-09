@@ -24,6 +24,8 @@ NAME = "Stockfish 19"  # what the engine must call itself
 INSTALL_DIR = ROOT / "build" / "stockfish" / TAG
 HASH_MB = 16  # Stockfish's default (decision 2026-11-09): searches of 10,000 nodes or fewer cannot fill it
 MIN_ELO = 1320  # the lowest UCI_Elo Stockfish 19 accepts
+LADDER_NODES = (1, 100, 300, 1000, 3000, 10000)  # protocol §8.2 (amended 2026-11-09); 1 = a one-move-deep search
+LIMITED_NODES = 10000  # nodes per move of the strength-limited opponent (decision 2026-11-09)
 
 
 def find_engine(folder: Path) -> Path | None:

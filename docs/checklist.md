@@ -102,7 +102,9 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 
 ## Phase 5: Evaluation harness
 
-- [ ] Stockfish over UCI, both strength-limited and at fixed node counts.
+- [x] Stockfish over UCI, both strength-limited and at fixed node counts. Stockfish 19, pinned and checked by
+  `scripts/install_stockfish.py`; `src/ws_zero/stockfish.py`. Ladder: 1, 100, 300, 1,000, 3,000, 10,000 nodes, and
+  the 1320 setting at 10,000 nodes (protocol §8.2, amended 2026-11-09).
 - [ ] Weaker anchors below Stockfish's minimum strength: random mover and greedy material-grabber.
 - [ ] Syzygy 3–5 piece tablebases (~1 GB); skip 6-piece (~150 GB) for now.
 - [ ] Fixed test suites: middlegame positions labeled by deep Stockfish (best move, eval); endgame positions

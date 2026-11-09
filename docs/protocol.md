@@ -204,7 +204,8 @@ run). K *(fixed after Phase 3)* = budget / 20.
 - Uniform random mover.
 - Greedy material-grabber: captures the most valuable piece available, else a random move.
 - Stockfish 19 (pinned 2026-11-09) at fixed node counts 1, 100, 300, 1,000, 3,000 and 10,000
-  (machine-independent), and strength-limited at its minimum `UCI_Elo` (1320). The 1-node rung is a one-move-deep
+  (machine-independent), and strength-limited at its minimum `UCI_Elo` (1320), searching 10,000 nodes per move
+  (decided 2026-11-09). The 1-node rung is a one-move-deep
   search of about 48 nodes, the least Stockfish will do. *(Amended 2026-11-09, before any results: v1.0 also had
   3, 10 and 30 nodes, which play the same moves as 1 node; see §10.)*
 - The anchor ladder is calibrated (anchors play each other) in Phase 5, before any training run.
