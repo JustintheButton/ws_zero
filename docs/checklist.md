@@ -82,8 +82,8 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 > timeline can be checked.
 >
 > **Passed 2026-11-08** with batch norm restored (Justin's amendment): every seed, both kinds of targets; the value
-> head also stays healthy through 3,000 steps of realistic training at LR 0.003. Open: at LR 0.05 and 0.2 the
-> value map's ReLU died. [Report](gates/phase-3.md)
+> head also stays healthy through 3,000 steps of realistic training at LR 0.003. At LR 0.05 and 0.2 it can shut
+> off (mostly prevented by warmup); a D1 pilot rule excludes any rate that leaves it broken. [Report](gates/phase-3.md)
 
 ## Phase 4: MCTS
 

@@ -392,9 +392,9 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
     <div class="panel" style="margin-top: 2rem">
       <h3>Batch norm at the plan's four learning rates</h3>
-      <p class="hint" style="margin-top: 0">The learning rate sets how big each training step is. The Phase 7 pilot will try these four and keep the one that plays best. Real-style training, one random start, 1,000 steps.</p>
+      <p class="hint" style="margin-top: 0">The learning rate sets how big each training step is. The Phase 7 pilot will try these four and keep the one that plays best. Real-style training, 1,000 steps per run, without and with warmup (starting with tiny steps and growing them, as the plan does).</p>
       <div style="overflow-x: auto"><table class="cov" id="lrs"></table></div>
-      <p class="hint">At the two largest rates the on/off switch in the "who is winning" part shut off for good, as it did without batch norm, so that answer never left "equal" (error 0.52). Moves were learned fastest at those rates. Open question for Justin.</p>
+      <p class="hint">At the two largest rates the on/off switch in the "who is winning" part can shut off. With batch norm it sometimes comes back; when it doesn't, that answer stays at "equal" (error 0.52). Warmup mostly prevents it. Justin's rule (8 Nov): a learning rate that leaves the switch off at the end of its pilot run cannot be chosen.</p>
     </div>
   </section>
 
@@ -855,10 +855,17 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
   })();
   (function renderLrs() {
     const rows = P3.lrs || [];
-    const head = `<tr><th class="num">Learning rate</th><th>"Who is winning" part</th><th class="num">"Who is winning" error</th><th class="num">Move error</th></tr>`;
+    const cell = (c) => {
+      if (!c) return `<span class="hint">not tested</span>`;
+      const runs = c.runs === 1 ? "1 run" : `${c.runs} runs`;
+      if (!c.broke) return `${runs}: healthy`;
+      const back = c.broke - c.stuck;
+      return `${runs}: ` + [c.stuck ? `<b>${c.stuck} stuck off</b>` : "", back ? `${back} shut off and came back` : "",
+        c.runs - c.broke ? `${c.runs - c.broke} healthy` : ""].filter(Boolean).join(", ");
+    };
+    const head = `<tr><th class="num">Learning rate</th><th>Without warmup</th><th>With warmup</th></tr>`;
     document.getElementById("lrs").innerHTML = head + rows.map((r) =>
-      `<tr><td class="num">${r.lr}</td><td>${r.brokeAt === null ? "healthy" : `<b>shut off</b> by step ${r.brokeAt}`}</td>` +
-      `<td class="num">${r.mse.toFixed(2)}</td><td class="num">${r.kl.toFixed(2)}</td></tr>`).join("");
+      `<tr><td class="num">${r.lr}</td><td>${cell(r.cold)}</td><td>${cell(r.warm)}</td></tr>`).join("");
   })();
   function renderValueChart() {
     const W = 440, H = 230, L = 40, R = 24, T = 12, B = 30;

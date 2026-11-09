@@ -5,9 +5,9 @@ throughput is measured on the Mac and on six Modal GPU types. Without batch norm
 failed: first its single ReLU channel died, then, with that ReLU removed, rare explosive training steps pinned the
 value at ±1 (one seed in three, for good, under realistic training). Justin restored batch norm, as in AlphaZero,
 in every arm. With it the overfit gate passes on every seed with both kinds of targets, and the value head stays
-healthy through 3,000 steps of realistic training on every seed, at LR 0.003. **New open issue:** at the two
-largest D1 learning rates (0.05 and 0.2) the value map's single ReLU channel died again within 100 steps, batch
-norm notwithstanding (one seed each so far); at 0.0125 it stayed healthy.
+healthy through 3,000 steps of realistic training on every seed, at LR 0.003. At the two largest D1 learning
+rates (0.05 and 0.2) the value map's single ReLU channel can still shut off, mostly prevented by the protocol's
+warmup; Justin added a pilot rule so that a learning rate that leaves the value head broken cannot be chosen.
 
 ## What was built
 
@@ -147,21 +147,41 @@ folded to identity" (protocol §10). Same tests, same seeds, same LR 0.003, no c
 
 ### The larger D1 learning rates
 
-Realistic check, seed 0, 1,000 steps, no warmup (`phase-3-value-check-lr{0.0125,0.05,0.2}.json`):
+Realistic check, 1,000 steps each (`phase-3-lr-diagnostics.json`; scripts `check_value_head.py --lr`,
+`value_relu_lr_phase3.py`, `warmup_phase3.py`). "Broken" means value map or value layer active on 1% of units or
+fewer, or at least half the values saturated. Value error and move KL on the held-out positions at step 1,000.
 
-| LR | Value head | Held-out value error at 1,000 | Move KL at 1,000 |
-|---|---|---|---|
-| 0.003 | healthy (from the 3,000-step run) | 0.14 | 1.13 |
-| 0.0125 | healthy | 0.13 (best 0.08 at step 800) | 0.51 |
-| 0.05 | **value map dead by step 100** | 0.52 (never learned) | 0.24 |
-| 0.2 | **value map dead by step 100** | 0.52 (never learned) | 0.14 |
+| Value head | LR | Warmup | Seed | Broken? | Value error | Move KL |
+|---|---|---|---|---|---|---|
+| AlphaZero's | 0.003 | none | 0 | never | 0.14 | 1.13 |
+| AlphaZero's | 0.0125 | none | 0 | never | 0.13 | 0.51 |
+| AlphaZero's | 0.05 | none | 0 | **off from step 25, still off at 1,000** | 0.52 | 0.24 |
+| AlphaZero's | 0.05 | none | 1 | off from step 25, recovered | 0.07 | 0.22 |
+| AlphaZero's | 0.05 | none | 2 | off by step 100, recovered | 0.14 | 0.23 |
+| AlphaZero's | 0.2 | none | 0 | **off by step 100, still off at 1,000** | 0.52 | 0.14 |
+| AlphaZero's | 0.05 | 300 steps | 0 | never | 0.07 | 0.26 |
+| AlphaZero's | 0.2 | 300 steps | 0 | off from step 100, recovered | 0.07 | 0.13 |
+| No ReLU | 0.003 | none | 0 | never | 0.10 | 1.12 |
+| No ReLU | 0.0125 | none | 0 | never | 0.04 | 0.50 |
+| No ReLU | 0.05 | none | 0 | **saturated from step 100** | 1.57 | 0.23 |
+| No ReLU | 0.2 | none | 0 | **saturated from step 100** | 1.57 | 0.13 |
 
-At 0.05 and 0.2 the value map's ReLU was off on every square (value map 0% active) by the first check, the same
-failure as the original no-batch-norm design: with one channel, batch norm's single scale and offset can be pushed
-so that the channel is negative everywhere, after which no gradient reaches it. Moves were learned fast, so the
-network is otherwise stable at these rates. The D1 pilot includes both rates; the protocol's warmup (not used here)
-might or might not prevent this. Further seeds, and the same check with the ReLU after the value batch norm removed,
-are running.
+1. **The shut-off is the original failure, now at large learning rates.** With one channel, a single large step can
+   push batch norm's one scale and offset so that the value map is negative on every square; the ReLU then passes
+   nothing and no gradient reaches it. It is real in training mode, not an artifact of the running statistics
+   used in play (`warmup_phase3.py` measured both).
+2. **With batch norm it can recover.** The rest of the network keeps changing (the trunk is shared with the move
+   head), which can lift some squares above zero again; in three runs the value map came back and the value was
+   then learned normally. Without batch norm it never recovered in these tests.
+3. **Warmup mostly prevents it.** Without warmup, 2 of 4 runs at the two largest rates ended broken; with a
+   300-step linear warmup (the protocol uses 1% or 3% of the budget), 0 of 2 did.
+4. **Removing the ReLU does not help** at these rates: the value saturates at ±1 instead.
+5. Moves are learned faster the larger the rate, so the network is otherwise stable at these rates.
+
+**Decision (Justin, 2026-11-08):** keep the network and the learning-rate grid, and add a pilot rule to D1: a
+learning rate whose value head is broken at the end of its pilot run counts as diverged and cannot be chosen
+(protocol §10). "At the end" rather than "ever", since a shut-off can recover. Options offered: this rule
+(recommended), no change, drop 0.2 from the grid, remove the ReLU.
 
 ## Throughput
 
@@ -193,13 +213,12 @@ are decisions for when the game budget is fixed.
 
 ## Open issues
 
-1. **The value map dies at LR 0.05 and 0.2** (above): Justin's decision, once the running checks are in.
-2. **Written weights and batch norm** (decisions.md, open question 6): in training mode batch norm rescales each
+1. **Written weights and batch norm** (decisions.md, open question 6): in training mode batch norm rescales each
    channel by the batch's statistics, so a network Claude writes would not compute what Claude wrote once training
    starts. Proposal: Claude writes the network without batch norm, and the harness sets each batch norm to the
    identity on sample positions before training. To be decided before Phase 6.
-3. The game budget: the protocol fixes it from the cost per game measured in Phase 3; real self-play can first be
+2. The game budget: the protocol fixes it from the cost per game measured in Phase 3; real self-play can first be
    measured in Phase 4. Justin's call. Compute available was raised to 11 Modal workspaces of $30 each (2026-11-08);
    a $30 hard limit per workspace is set by Justin in Modal, and the run launcher (to be built) will enforce it again.
-4. Phase order: the Phase 7 smoke run is the real test of value-head health, and it currently comes after Claude
+3. Phase order: the Phase 7 smoke run is the real test of value-head health, and it currently comes after Claude
    writes weights (Phase 6). Running it first would avoid wasting Claude sessions if the network must change.

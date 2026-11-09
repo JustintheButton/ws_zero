@@ -66,7 +66,10 @@ The value is from the side to move's perspective, in [−1, 1].
   - the warmup length from {1%, 3%} of the game budget,
 
   by the highest Elo at the end of a pilot budget of 20% of the main budget. Pilot runs follow the full-budget
-  schedule and stop at 20%, so the winning pilot can be continued as the D8 calibration run. If every pilot setting diverges,
+  schedule and stop at 20%, so the winning pilot can be continued as the D8 calibration run. A pilot setting whose
+  value head is broken at the end of its pilot run (`ws_zero.net.value_head_health`: value map or value layer active
+  on 1% of units or fewer, or at least half the values saturated) counts as diverged and cannot be chosen
+  *(added 2026-11-08, §10)*. If every pilot setting diverges,
   gradient-norm clipping (threshold 1.0) is added, for every arm, and the pilot is repeated. Tuning on the random
   arm only biases the comparison *against* WSP, which makes a positive result more convincing.
 - **[D2] Loop shape and data reuse.** **Decided (Justin, 2026-11-08):** **synchronous chunks**: play 100 self-play games with the
@@ -279,6 +282,13 @@ that channel's activation and the feature on a fixed probe set of positions.
   batch norm removes the reason it was dropped). This departs from the checklist's "batch norm removed or folded to
   identity". How the WSP arm's written weights meet batch norm (the network Claude writes is used in training mode,
   where batch statistics replace the stored ones) is decided before Phase 6. Details: Phase 3 gate report.
+
+- **Pilot rule for a broken value head (added 2026-11-08, Justin, before any results).** With batch norm, the value
+  map's single ReLU channel still shut off at the two largest D1 learning rates (0.05, 0.2) in a realistic check
+  without warmup (still off after 1,000 steps in 2 of 4 runs); with the protocol's warmup, neither of 2 runs ended
+  broken (one shut off and recovered). D1 therefore treats a pilot setting whose value head is broken at the end of
+  its pilot run as diverged. "At the end" rather than "ever", because with batch norm a shut-off can recover. The
+  network and the learning-rate grid are unchanged. Details: Phase 3 gate report.
 
 ## 11. Deviations
 

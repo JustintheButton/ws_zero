@@ -128,21 +128,23 @@ def phase3_data(gates: Path) -> dict:
             "gatePassed": bool(gate) and all(gate), "stability": stability_rows(gates), "lrs": lr_rows(gates)}
 
 
-def lr_rows(gates: Path, at: int = 1000) -> list:
-    """Batch norm network at each D1 learning rate (realistic check, seed 0): when the value head broke, if it did,
-    and the held-out value error and move KL at step `at`."""
-    sources = [(0.003, gates / "phase-3-value-check.json")] + [
-        (lr, gates / f"phase-3-value-check-lr{lr}.json") for lr in (0.0125, 0.05, 0.2)]
+def lr_rows(gates: Path) -> list:
+    """AlphaZero's value head at each D1 learning rate (realistic check, 1,000 steps), without and with warmup:
+    for each, the runs and how many shut off at some point and how many were still broken at the end."""
+    path = gates / "phase-3-lr-diagnostics.json"
+    if not path.exists():
+        return []
+    runs = [r for r in json.loads(path.read_text())["results"] if r["value_head"].startswith("alphazero")]
     rows = []
-    for lr, path in sources:
-        if not path.exists():
-            continue
-        curve = next(r for r in json.loads(path.read_text())["results"] if r["seed"] == 0)["curve"]
-        point = next(c for c in curve if c["step"] == at)
-        broke = next((c["step"] for c in curve if c["step"] <= at and (
-            c["conv_active"] <= 0.01 or c["fc1_active"] <= 0.01 or c["saturated"] >= 0.5)), None)
-        rows.append({"lr": lr, "brokeAt": broke, "mse": round(point["value_mse"], 3),
-                     "kl": round(point["policy_kl"], 2)})
+    for lr in sorted({r["lr"] for r in runs}):
+        row = {"lr": lr}
+        for key, warm in (("cold", False), ("warm", True)):
+            group = [r for r in runs if r["lr"] == lr and (r["warmup_steps"] > 0) == warm]
+            row[key] = None if not group else {
+                "runs": len(group), "broke": sum(r["first_broken_step"] is not None for r in group),
+                "stuck": sum(r["broken_at_end"] for r in group),
+                "mse": [r["value_mse_at_1000"] for r in group]}
+        rows.append(row)
     return rows
 
 
