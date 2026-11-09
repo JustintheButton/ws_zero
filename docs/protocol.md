@@ -45,7 +45,13 @@ The value is from the side to move's perspective, in [−1, 1].
 - A new tree for every move (no tree reuse); no resignation; draw adjudicated at 512 plies.
 - Network evaluations are batched across parallel games (one leaf per game per batch), so no virtual loss is needed.
 - First-play urgency (the value of unvisited children) follows the published AlphaZero pseudocode; checked and
-  recorded in Phase 4.
+  recorded in Phase 4. *Recorded 2026-11-08 (Justin):* the pseudocode scores an unvisited child 0, on a scale where
+  its uniform network's value is 0.5 (0 = loss), so read literally an untried move counts as a loss; with a uniform
+  policy the search would then not try a second root move within 200 simulations. Untried moves therefore score
+  **0 on the −1…+1 value scale ("equal")**, the AlphaGo Zero paper's rule (Q(s, a) = 0 initially) and the
+  pseudocode's 0 read on the AlphaZero paper's −1…+1 scale. Two slips in the pseudocode are not copied: its backup
+  credits each node's value to the wrong player for selection (the search uses the sign flip), and it evaluates
+  finished positions with the network (the search uses the game's result).
 
 ## 4. Training (identical in every arm)
 
