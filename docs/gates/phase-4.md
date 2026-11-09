@@ -181,7 +181,7 @@ $1.05–1.58 per 1,000) holds. mctx still keeps statistics for all 4,672 moves a
 100 games is 9.9 GB at 800 simulations; the L4 has 23 GB.
 
 **This is a best case** (found in the code review of 9 Nov). The measurement used an untrained network, whose
-look-aheads spread evenly, so its trees are only 2–3 moves deep. Every look-ahead walks down its game's tree, and the
+look-aheads spread evenly, so its trees are only a few moves deep (deepest line 4). Every look-ahead walks down its game's tree, and the
 whole batch waits for the deepest line. A trained network concentrates on a few moves and digs deeper. On the Mac
 (32 games × 200 simulations, the real network's cost, move probabilities set by hand to control the depth):
 
@@ -192,14 +192,26 @@ whole batch waits for the deepest line. A trained network concentrates on a few 
 | 12 moves | 3.1 s |
 | 13 moves, more look-aheads going deep | 3.8 s |
 
-How much of this carries over to a GPU is not measured: there the network is a smaller share of the time, so the
-walk down the tree may weigh more or less. Real training games will cost more than the figures above, possibly up
-to about twice as much.
+The same on one Modal L4 (`phase-4-selfplay-modal-depth.json`; 100 games × 800 simulations, 20 moves per setting,
+all four settings in one container; `--prior-peak` sets move a's logit to −peak × a while the network still runs):
+
+| Prior peak | Deepest line | Mean node depth | One move for all 100 games | Games per hour | Cost per 1,000 games |
+|---|---|---|---|---|---|
+| 0 (untrained network) | 4 moves | 2.2 | 0.86 s | 813–1,220 | $0.91–1.37 |
+| 0.002 | 8 | 3.3 | 1.08 s | 645–969 | $1.15–1.73 |
+| 0.01 | 19 | 5.7 | 1.54 s | 455–683 | $1.63–2.45 |
+| 0.05 | 25 | 7.7 | 1.87 s | 374–562 | $1.98–2.98 |
+
+(Ranges: chunks of 512 or 340 plies, as above.) The time grows by about 0.05 s for each extra move of depth, so at
+25 moves deep a game costs 2.2 times the best case. How deep a trained network's trees will be is not known until
+one exists; the script reports the depth, so a real run's depth can be read against this table. Each extra level
+costs one more move choice over all 4,672 move slots for every game; keeping only legal moves (at most 218) would
+cut that, and the tree's memory, by about 20 times.
 
 ## Open issues
 
-1. **Game budget (D7).** The measured cost is about 7% below the Phase 3 estimate, but it is a best case (see
-   Throughput): the speed must be measured again with deep trees or a trained network before the budget is fixed.
+1. **Game budget (D7).** The cost per 1,000 games on an L4 runs from $0.91–1.37 (trees 4 moves deep, the untrained
+   network) to $1.98–2.98 (25 deep); see Throughput. Which applies depends on how deep a trained network searches.
    On the best-case figure (not recomputed): at 800 simulations, roughly 7,000–10,000 games per run within the $192 cap, under the 15,000 line below which Justin's PC runs seeds 4–5. Even all 11 workspaces ($330) give only
    about 9,500–14,000. A Stanford cluster may become available. To settle before Phase 7.
 2. **Search memory:** 9.9 GB per 100 games limits packing several runs onto one GPU (Phase 3 found packing the
