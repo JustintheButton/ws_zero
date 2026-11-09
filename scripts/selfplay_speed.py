@@ -50,16 +50,20 @@ def main():
     state = env.init(args.games)
     keys = jax.random.split(jax.random.key(1), args.plies + 1)
     start = time.perf_counter()
-    state = jax.block_until_ready(ply(params, state, keys[0]))
+    compiled = ply.lower(params, state, keys[0]).compile()
     compile_s = time.perf_counter() - start
+    print(f"compiled in {compile_s:.1f} s", flush=True)
     ply_s = []
-    for key in keys[1:]:
+    for i, key in enumerate(keys):
         start = time.perf_counter()
-        state = jax.block_until_ready(ply(params, state, key))
-        ply_s.append(time.perf_counter() - start)
+        state = jax.block_until_ready(compiled(params, state, key))
+        elapsed = time.perf_counter() - start
+        print(f"ply {i + 1}: {elapsed:.3f} s", flush=True)
+        if i:  # the first run after compiling also loads the program onto the device
+            ply_s.append(elapsed)
     per_ply = float(np.median(ply_s))
     finished = int(np.asarray(env.is_terminal(state)).sum())
-    print(f"{args.games} games, {args.simulations} simulations: first ply (compiles) {compile_s:.1f} s, then "
+    print(f"{args.games} games, {args.simulations} simulations: compiled in {compile_s:.1f} s, then "
           f"median {per_ply:.3f} s per ply (min {min(ply_s):.3f}, max {max(ply_s):.3f}) over {len(ply_s)} plies; "
           f"{finished} games finished", flush=True)
 
