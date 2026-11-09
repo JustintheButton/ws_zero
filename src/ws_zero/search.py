@@ -19,10 +19,16 @@ AlphaZero's value term, untried moves scored at the position's own value (`alpha
 mctx's default. One small difference from the
 pseudocode remains: mctx counts the root's own evaluation as a visit, so N(root) is one more than in the
 pseudocode (it only changes sqrt(N) in the exploration bonus at the root).
+
+The backup after each simulation is our own (`backward`), installed in place of mctx's when this module is imported;
+it builds exactly the same tree, only faster (2026-11-09).
 """
+from importlib.metadata import version
+
 import jax
 import jax.numpy as jnp
 import mctx
+from mctx._src import search as _mctx_search
 
 from ws_zero.net import ILLEGAL_LOGIT
 
@@ -31,6 +37,56 @@ PB_C_BASE = 19652
 DIRICHLET_ALPHA = 0.3
 DIRICHLET_FRACTION = 0.25  # self-play only
 SAMPLING_PLIES = 30  # self-play samples its move for the first 30 plies
+
+
+def backward(tree: mctx.Tree, leaf_index) -> mctx.Tree:
+    """The backup after one simulation, for every game in the batch: from each game's new node up to its root, update
+    each parent's visit count and mean value, and the visit count and value of the move that led down. The arithmetic
+    is mctx's, step for step.
+
+    mctx writes this loop for one game and batches it over the games with vmap. Because the games climb paths of
+    different lengths, vmap makes every step choose between the new and the old tree, game by game, over the whole of
+    children_visits and children_values ([games, simulations + 1, 4672]), so a move cost ~ games x simulations^2 x
+    4672 (most of a move's time at 100 games x 800). Here one loop runs until every game has reached its root, and
+    each step writes one entry per game; a game already at its root writes nothing.
+    """
+    games = jnp.arange(leaf_index.shape[0])
+    root = mctx.Tree.ROOT_INDEX
+    nowhere = tree.node_visits.shape[1]  # an index past the last node: writes there are dropped
+
+    def climbing(loop):
+        _, _, index = loop
+        return jnp.any(index != root)
+
+    def step(loop):
+        tree, leaf_value, index = loop
+        active = index != root
+        parent = jnp.where(active, tree.parents[games, index], root)
+        action = jnp.where(active, tree.action_from_parent[games, index], 0)
+        count = tree.node_visits[games, parent]
+        reward = tree.children_rewards[games, parent, action]
+        new_leaf_value = reward + tree.children_discounts[games, parent, action] * leaf_value
+        parent_value = (tree.node_values[games, parent] * count + new_leaf_value) / (count + 1.0)
+        child_value = tree.node_values[games, index]
+        child_visits = tree.children_visits[games, parent, action] + 1
+
+        target = jnp.where(active, parent, nowhere)
+        tree = tree.replace(
+            node_values=tree.node_values.at[games, target].set(parent_value, mode="drop"),
+            node_visits=tree.node_visits.at[games, target].set(count + 1, mode="drop"),
+            children_values=tree.children_values.at[games, target, action].set(child_value, mode="drop"),
+            children_visits=tree.children_visits.at[games, target, action].set(child_visits, mode="drop"))
+        return tree, jnp.where(active, new_leaf_value, leaf_value), jnp.where(active, parent, root)
+
+    leaf_index = jnp.asarray(leaf_index, dtype=jnp.int32)
+    tree, _, _ = jax.lax.while_loop(climbing, step, (tree, tree.node_values[games, leaf_index], leaf_index))
+    return tree
+
+
+if version("mctx") != "0.0.71":  # the replacement below relies on mctx's internals at this version
+    raise ImportError(f"ws_zero.search was written for mctx 0.0.71, found {version('mctx')}: recheck `backward`")
+MCTX_BACKWARD = _mctx_search.backward  # mctx's own, kept for the test that compares the two
+_mctx_search.backward = backward
 
 
 def _masked(logits, state):

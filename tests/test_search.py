@@ -1,3 +1,5 @@
+import re
+
 import chess
 import jax
 import jax.numpy as jnp
@@ -321,3 +323,54 @@ def test_the_search_spends_its_simulations_exactly_like_a_plain_python_search(fe
     reference = reference_search(fen, evaluate_one, simulations)
     np.testing.assert_array_equal(np.asarray(out.search_tree.summary().visit_counts[0]),
                                   root_visits(reference, NUM_ACTIONS))
+
+
+# ---------- The backup (2026-11-09): our own, one entry per game per step ----------
+
+BACKUP_FENS = [chess.STARTING_FEN, ITALIAN, SCHOLARS, PAWN_ENDING]
+
+
+def _batch_of(fens):
+    return jax.tree.map(lambda *xs: jnp.stack(xs), *[state_from_fen(f) for f in fens])
+
+
+def _search_batch(evaluate, simulations, fens=BACKUP_FENS):
+    from ws_zero.search import run_search
+    state = _batch_of(fens)
+    run = jax.jit(lambda key: run_search(ENV, evaluate, None, key, state, simulations, dirichlet_fraction=0.0))
+    return run(jax.random.key(0))
+
+
+def test_a_backup_step_never_copies_a_whole_tree_table():
+    # mctx's backup is one game's loop, batched over the games with vmap. The games climb paths of different lengths,
+    # so vmap turns every step into "keep the new tree or the old one?" over the whole of children_visits and
+    # children_values ([games, simulations + 1, 4672]): cost ~ games x simulations^2 x 4672, most of a move's time
+    # at 100 games x 800. The compiled search must contain no such select.
+    from ws_zero.search import run_search
+    games, simulations = 2, 8
+    state = _batch_of(BACKUP_FENS[:games])
+    run = jax.jit(lambda key: run_search(ENV, _constant(0.0), None, key, state, simulations, dirichlet_fraction=0.0))
+    hlo = run.lower(jax.random.key(0)).compile().as_text()
+    whole_table = re.compile(rf"(?:f32|s32)\[{games},{simulations + 1},{NUM_ACTIONS}\]\S* select\(")
+    assert whole_table.findall(hlo) == []
+
+
+def test_the_backup_builds_exactly_the_tree_mctx_builds(monkeypatch):
+    # Several games at once whose backups climb paths of different lengths: the case where mctx's version and ours
+    # could differ. Every number in the tree, the positions stored in it included, must match exactly.
+    from mctx._src import search as mctx_search
+
+    from ws_zero.search import MCTX_BACKWARD
+    ours = _search_batch(_material, 100).search_tree
+    monkeypatch.setattr(mctx_search, "backward", MCTX_BACKWARD)
+    theirs = _search_batch(_material, 100).search_tree
+
+    parents = np.asarray(ours.parents)
+    depth = np.zeros(parents.shape, dtype=int)
+    for i in range(1, parents.shape[1]):  # a node's parent always has a smaller index
+        depth[:, i] = depth[np.arange(parents.shape[0]), parents[:, i]] + 1
+    assert len(set(depth.max(axis=1))) > 1  # the games' deepest backups really differ in length
+
+    leaves, _ = jax.tree_util.tree_flatten_with_path(ours)
+    for (path, a), b in zip(leaves, jax.tree.leaves(theirs), strict=True):
+        np.testing.assert_array_equal(np.asarray(a), np.asarray(b), err_msg=jax.tree_util.keystr(path))
