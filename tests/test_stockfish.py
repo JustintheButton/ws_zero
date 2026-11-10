@@ -37,13 +37,36 @@ def test_a_whole_game_replays_move_for_move():
         return [m.uci() for m in board.move_stack]
     first = game()
     assert len(first) == 40 and game() == first
+
+
+@needs_engine
+def test_a_pool_of_engines_gives_the_moves_one_engine_gives_from_many_threads_at_once():
+    from concurrent.futures import ThreadPoolExecutor
+    boards = [chess.Board(fen) for fen in POSITIONS] * 6
+    with Stockfish(300) as engine:
+        expected = [engine.move(b).uci() for b in boards]
+    pool = stockfish.EnginePool(300, size=4)
+    try:
+        with ThreadPoolExecutor(8) as threads:
+            assert [m.uci() for m in threads.map(pool.move, boards)] == expected
+    finally:
+        pool.close()
+
+
+@needs_engine
+def test_a_move_depends_only_on_the_game_so_far_not_on_what_the_engine_searched_before():
+    # Midway through a game, the engine that played the whole game and a fresh engine handed the same game must
+    # choose the same move: the hash is cleared before every move.
     board = chess.Board()
-    with Stockfish(100) as engine:  # the same game after the engine has played something else
-        for fen in POSITIONS:
-            engine.move(chess.Board(fen))
-        while len(board.move_stack) < 40:
+    with Stockfish(1000) as engine:
+        for _ in range(12):
             board.push(engine.move(board))
-    assert [m.uci() for m in board.move_stack] == first
+        in_game = [engine.move(board).uci()]
+        engine.move(chess.Board(POSITIONS[1]))  # something unrelated in between
+        in_game.append(engine.move(board).uci())
+    with Stockfish(1000) as fresh:
+        alone = fresh.move(board).uci()
+    assert in_game == [alone, alone]
 
 
 @needs_engine

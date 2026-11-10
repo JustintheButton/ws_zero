@@ -11,6 +11,7 @@ import chess
 import jax.numpy as jnp
 import numpy as np
 
+from ws_zero.game.moves import NUM_ACTIONS
 from ws_zero.game.reference import SCALAR_PLANES, ReferenceGame
 from ws_zero.net import apply, blank_params, init_params
 
@@ -31,6 +32,14 @@ def pawn_pusher():
     params["policy/conv/w"] = params["policy/conv/w"].at[1, 1, 0, 0].set(1.0)
     params["policy/out/w"] = params["policy/out/w"].at[0, 0, 0, 17].set(1.0)
     return params
+
+
+def material_counter(params, obs):
+    """The Phase 4 gate's stand-in for a network: every move equally likely; value tanh((own material - the
+    opponent's) / 4) for the side to move, pawn 1, knight and bishop 3, rook 5, queen 9. `params` is unused."""
+    values = jnp.array([1.0, 3.0, 3.0, 5.0, 9.0, 0.0])
+    mine, theirs = jnp.einsum("bhwp,p->b", obs[..., 0:6], values), jnp.einsum("bhwp,p->b", obs[..., 6:12], values)
+    return jnp.zeros((obs.shape[0], NUM_ACTIONS)), jnp.tanh((mine - theirs) / 4)
 
 
 def untrained():

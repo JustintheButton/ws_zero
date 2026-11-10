@@ -1,10 +1,10 @@
 """Phase 5: anchors of the evaluation ladder play each other (protocol §8.2), every pairing, both colours.
 
-Until the protocol's opening suite exists (§8.3), the openings are random 8-ply sequences (seeded). Each pairing plays
-every opening twice, colours reversed. Reports each pairing's score with a 95% range and the Elo difference it
-implies; a full rating fit (Ordo) comes with the calibration proper.
+Each pairing plays every opening of the checkpoint suite (protocol §8.3) twice, colours reversed. Reports each
+pairing's score with a 95% range and the Elo difference it implies, and one rating per player fitted to all the
+games together. Run it on Modal:
 
-    uv run python scripts/ladder_matches.py --players random,grabber,sf1320,sf1 --openings 10 --out build/ladder.json
+    uv run modal run scripts/modal_stockfish_job.py --script ladder_matches --out docs/gates/phase-5-calibration.json
 """
 import argparse
 import gzip
@@ -18,16 +18,9 @@ from multiprocessing import Pool
 import chess
 import numpy as np
 
-from ws_zero.players import Diluted, MaterialGrabber, RandomMover, play_game
-from ws_zero.stockfish import DILUTED_RANDOM_SHARES, LADDER_NODES, LIMITED_NODES, MIN_ELO, Stockfish
-
-PLAYERS = {"random": lambda: RandomMover(seed=0), "grabber": lambda: MaterialGrabber(seed=1),
-           "sf1320": lambda: Stockfish(LIMITED_NODES, elo=MIN_ELO),
-           **{f"sf{n}": (lambda n=n: Stockfish(n)) for n in LADDER_NODES},
-           # the 1-node Stockfish playing a random move some share of the time: sf1r75 = 75% random moves
-           **{f"sf1r{round(100 * share)}": (lambda share=share: Diluted(Stockfish(1), share, seed=2))
-              for share in DILUTED_RANDOM_SHARES}}
-
+from ws_zero import openings as suites
+from ws_zero.ladder import LADDER, opponent
+from ws_zero.players import play_game
 
 def random_openings(count: int, seed: int, plies: int = 8) -> list[list[str]]:
     rng, out = random.Random(seed), []
@@ -64,7 +57,8 @@ def fit_ratings(names: list[str], pairings: list[dict]) -> dict[str, float]:
 
 def match(job):
     low, high, openings = job
-    a, b = PLAYERS[low](), PLAYERS[high]()
+    (make_a, close_a), (make_b, close_b) = opponent(low), opponent(high)
+    a, b = make_a(0), make_b(0)
     games, points = [], []
     for i, opening in enumerate(openings):
         for high_is_white in (True, False):
@@ -73,9 +67,8 @@ def match(job):
             games.append(asdict(game))
             white_points = {"1-0": 1.0, "0-1": 0.0}.get(game.result, 0.5)
             points.append(white_points if high_is_white else 1 - white_points)
-    for player in (a, b):
-        if hasattr(player, "close"):
-            player.close()
+    close_a()
+    close_b()
     n, score = len(points), sum(points) / len(points)
     half = 1.96 * math.sqrt(sum((p - score) ** 2 for p in points) / (n - 1) / n)
     return {"low": low, "high": high, "games": n, "score": score, "wins": points.count(1.0), "draws": points.count(0.5),
@@ -86,13 +79,16 @@ def match(job):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--players", default="random,grabber,sf1320,sf1", help=f"weakest first, from {', '.join(PLAYERS)}")
-    parser.add_argument("--openings", type=int, default=100)
+    parser.add_argument("--players", default=",".join(LADDER), help=f"weakest first, from {', '.join(LADDER)}")
+    parser.add_argument("--suite", default="checkpoint", choices=["checkpoint", "go_no_go", "random"],
+                        help="the committed opening suite to play (protocol §8.3), or random 8-ply lines")
+    parser.add_argument("--openings", type=int, default=100, help="how many random lines, with --suite random")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
     names = args.players.split(",")
-    openings = random_openings(args.openings, seed=1)
+    openings = (random_openings(args.openings, seed=1) if args.suite == "random"
+                else [o["moves"] for o in suites.load()[args.suite]])
     jobs = [(low, high, openings) for low, high in itertools.combinations(names, 2)]
     with Pool(min(args.workers, len(jobs))) as pool:
         rows = pool.map(match, jobs)
@@ -110,7 +106,8 @@ def main():
         with gzip.open(games_file, "wt") as f:
             json.dump(records, f, separators=(",", ":"))
         with open(args.out, "w") as f:
-            json.dump({"players": names, "ratings": ratings, "openings": openings, "pairings": rows}, f, indent=1)
+            json.dump({"players": names, "suite": args.suite, "ratings": ratings, "openings": openings,
+                       "pairings": rows}, f, indent=1)
 
 
 if __name__ == "__main__":

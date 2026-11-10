@@ -89,6 +89,7 @@ class Game:
     moves: list[str]  # UCI, the opening included
     result: str  # "1-0", "0-1" or "1/2-1/2"
     end: str  # checkmate, stalemate, fifty-move rule, insufficient material, threefold repetition, ply cap
+    values: list | None = None  # per move: the agent's estimate before its own moves (its side's view), else None
 
 
 def play_game(white, black, opening=(), *, game: int = 0, start_fen: str | None = None,

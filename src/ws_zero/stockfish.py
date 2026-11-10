@@ -5,14 +5,14 @@ opponent: full strength at a fixed number of nodes per move, and strength-limite
 also searches a fixed number of nodes per move. The strength-limited engine picks among its best moves with its own
 random numbers, so its games do not repeat; the full-strength engine's do.
 
-The hash table is kept between the moves of one game, as in normal play, and cleared at the start of each game. A
-new game starts by itself whenever the position asked about does not continue the previous one (the same starting
-position with more moves played), so a game replays move for move whatever was played before it, and a single
-position always gives the same move.
+The hash table is cleared before every move (decision 2026-11-09), so a full-strength move depends only on the game
+so far: not on what the engine searched before, and not on how many games one engine process is serving. One engine
+can therefore play many games in turn, and a pool of engines (`EnginePool`) can share them out.
 
 Install the engine with scripts/install_stockfish.py, which checks the release file's checksum and the engine's
 bench number.
 """
+import queue
 from pathlib import Path
 
 import chess
@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TAG = "sf_19"
 NAME = "Stockfish 19"  # what the engine must call itself
 INSTALL_DIR = ROOT / "build" / "stockfish" / TAG
-HASH_MB = 16  # Stockfish's default (decision 2026-11-09): searches of 10,000 nodes or fewer cannot fill it
+HASH_MB = 16  # Stockfish's default (decision 2026-11-09): searches of 10,000 nodes or fewer cannot fill it;
+# cleared before every move
 MIN_ELO = 1320  # the lowest UCI_Elo Stockfish 19 accepts
 LADDER_NODES = (1, 100, 300, 1000, 3000, 10000)  # protocol §8.2 (amended 2026-11-09); 1 = a one-move-deep search
 LIMITED_NODES = 10000  # nodes per move of the strength-limited opponent (decision 2026-11-09)
@@ -58,26 +59,66 @@ class Stockfish:
         if elo is not None:
             options.update(UCI_LimitStrength=True, UCI_Elo=elo)
         self.engine.configure(options)
-        self.new_game()
 
     def new_game(self, game: int | None = None) -> None:
-        """Start a new game: the engine clears its hash table before its next move. (`game`, the game's number, is
-        what the random players are seeded with; Stockfish does not use it.)"""
-        self._game = object()  # python-chess sends `ucinewgame` when this changes
-        self._seen = None
+        """Nothing to do: the engine keeps nothing between moves. (`game` seeds the random players.)"""
 
     def move(self, board: chess.Board) -> chess.Move:
-        """The engine's move in `board` (not finished). The engine is sent the game's moves, so it sees repetitions."""
-        line = (board.root().fen(), tuple(board.move_stack))
-        continues = (self._seen is not None and line[0] == self._seen[0] and len(line[1]) > len(self._seen[1])
-                     and line[1][:len(self._seen[1])] == self._seen[1])
-        if not continues:
-            self.new_game()
-        self._seen = line
-        return self.engine.play(board, self.limit, game=self._game).move
+        """The engine's move in `board` (not finished). The engine is sent the game's moves, so it sees repetitions;
+        `game=object()` makes python-chess send `ucinewgame` first, which clears the hash table."""
+        return self.engine.play(board, self.limit, game=object()).move
 
     def close(self) -> None:
         self.engine.quit()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+class EnginePool:
+    """`size` engines of one kind behind one player: `move` may be called from several threads at once, and each call
+    takes whichever engine is free. Since a move depends only on the game so far, it does not matter which."""
+
+    def __init__(self, nodes: int, *, elo: int | None = None, size: int = 1, path: Path | None = None):
+        self._engines = [Stockfish(nodes, elo=elo, path=path) for _ in range(size)]
+        self.name = self._engines[0].name
+        self._free = queue.SimpleQueue()
+        for engine in self._engines:
+            self._free.put(engine)
+
+    def new_game(self, game: int | None = None) -> None:
+        pass
+
+    def move(self, board: chess.Board) -> chess.Move:
+        engine = self._free.get()
+        try:
+            return engine.move(board)
+        finally:
+            self._free.put(engine)
+
+    def close(self) -> None:
+        for engine in self._engines:
+            engine.close()
+
+
+class Analyst:
+    """The pinned Stockfish as a judge of positions: full strength, one thread, HASH_MB of hash, searching to a fixed
+    depth, each position as a new game. The same position always gets the same answer, on any machine."""
+
+    def __init__(self, depth: int, path: Path | None = None):
+        self._engine = Stockfish(1, path=path)  # opens and checks the engine; its node limit is not used here
+        self.limit = chess.engine.Limit(depth=depth)
+
+    def centipawns(self, board: chess.Board) -> int | None:
+        """Stockfish's evaluation from White's side, in centipawns; None if it sees a forced mate."""
+        info = self._engine.engine.analyse(board, self.limit, game=object())
+        return info["score"].white().score()
+
+    def close(self) -> None:
+        self._engine.close()
 
     def __enter__(self):
         return self
@@ -101,9 +142,9 @@ PINNED_MOVES = {  # nodes -> the move in each of PINNED_POSITIONS
     1000: ["e2e4", "g8f6", "h5f7", "c3c2"],
     10000: ["e2e4", "g8f6", "h5f7", "c3b4"],
 }
-PINNED_GAME = (  # Stockfish against itself at 100 nodes, 40 plies from the start
-    "d2d4 d7d5 g1f3 g8f6 c2c3 c8f5 d1b3 d8c8 c1f4 b8d7 b1d2 a7a5 e2e3 e7e6 a2a4 f6h5 f4e5 f8e7 f1b5 c7c6 "
-    "b5e2 h5f6 e5f4 h7h6 h2h3 e8g8 f3h4 f5h7 h4f3 g8h8 e1g1 f8g8 f3e5 d7e5 f4e5 f6d7 e5g3 g8f8 c3c4 e7b4")
+PINNED_GAME = (  # Stockfish against itself at 100 nodes, 40 plies from the start (hash cleared before every move)
+    "d2d4 d7d5 g1f3 c8f5 f3h4 f5e4 f2f3 e7e5 g2g3 e4g6 d4e5 f8e7 h4g6 h7g6 f3f4 g8h6 f1g2 c7c6 e2e4 d8b6 "
+    "e4d5 c6d5 b1c3 d5d4 c3d5 e7b4 c2c3 d4c3 b2c3 b4c3 d5c3 e8g8 c3e4 b6a5 d1d2 a5d2 c1d2 f8d8 d2a5 d8d5")
 
 
 def check_pinned_moves(path: Path | None = None) -> None:
