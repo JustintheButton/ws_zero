@@ -46,6 +46,7 @@ class Stockfish:
         path = path or installed_engine()
         if path is None:
             raise RuntimeError("Stockfish is not installed: run scripts/install_stockfish.py")
+        self.name = f"Stockfish, {nodes:,} nodes" + (f", limited to {elo}" if elo is not None else "")
         self.limit = chess.engine.Limit(nodes=nodes)
         self.engine = chess.engine.SimpleEngine.popen_uci(str(path))
         name = self.engine.id.get("name")
@@ -58,8 +59,9 @@ class Stockfish:
         self.engine.configure(options)
         self.new_game()
 
-    def new_game(self) -> None:
-        """Start a new game: the engine clears its hash table before its next move."""
+    def new_game(self, game: int | None = None) -> None:
+        """Start a new game: the engine clears its hash table before its next move. (`game`, the game's number, is
+        what the random players are seeded with; Stockfish does not use it.)"""
         self._game = object()  # python-chess sends `ucinewgame` when this changes
         self._seen = None
 

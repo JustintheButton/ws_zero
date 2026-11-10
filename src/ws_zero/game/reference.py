@@ -89,11 +89,22 @@ class ReferenceGame:
         obs[:, :, 118] = b.halfmove_clock / 100.0
         return obs
 
-    def outcome(self) -> tuple[bool, float]:
-        """(game over, value for the side to move): -1 if checkmated, 0 for a draw or a game in progress."""
+    def end_reason(self) -> str | None:
+        """Why the game is over, or None while it is in progress."""
         b = self.board
         if not any(b.legal_moves):
-            return True, -1.0 if b.is_check() else 0.0
-        drawn = (b.halfmove_clock >= 100 or b.is_insufficient_material()
-                 or self._key_counts[self._snapshots[-1][2]] >= 3 or self.plies >= self.max_plies)
-        return (True, 0.0) if drawn else (False, 0.0)
+            return "checkmate" if b.is_check() else "stalemate"
+        if b.halfmove_clock >= 100:
+            return "fifty-move rule"
+        if b.is_insufficient_material():
+            return "insufficient material"
+        if self._key_counts[self._snapshots[-1][2]] >= 3:
+            return "threefold repetition"
+        if self.plies >= self.max_plies:
+            return "ply cap"
+        return None
+
+    def outcome(self) -> tuple[bool, float]:
+        """(game over, value for the side to move): -1 if checkmated, 0 for a draw or a game in progress."""
+        reason = self.end_reason()
+        return reason is not None, -1.0 if reason == "checkmate" else 0.0
