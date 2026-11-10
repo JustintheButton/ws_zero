@@ -102,3 +102,46 @@ def test_the_same_players_and_game_number_replay_the_same_game():
 def test_an_illegal_move_stops_the_game_with_an_error():
     with pytest.raises(ValueError, match="illegal"):
         play_game(Scripted(["e2e5"]), Scripted([]))
+
+
+# ---------- diluted opponents: a base player that plays a random move some share of the time ----------
+
+class Fixed:
+    """Test base player: always plays e2e4 (legal in the start position) and counts its games and moves."""
+    name = "fixed"
+
+    def __init__(self):
+        self.games, self.calls = [], 0
+
+    def new_game(self, game=0):
+        self.games.append(game)
+
+    def move(self, board):
+        self.calls += 1
+        return chess.Move.from_uci("e2e4")
+
+
+def test_a_fully_diluted_player_never_asks_its_base_and_an_undiluted_one_always_does():
+    from ws_zero.players import Diluted
+    base = Fixed()
+    assert len(set(_moves(Diluted(base, 1.0, seed=0), chess.STARTING_FEN, 200))) == 20 and base.calls == 0
+    base = Fixed()
+    assert set(_moves(Diluted(base, 0.0, seed=0), chess.STARTING_FEN, 200)) == {"e2e4"} and base.calls == 200
+
+
+def test_a_half_diluted_player_asks_its_base_about_half_the_time():
+    from ws_zero.players import Diluted
+    base = Fixed()
+    _moves(Diluted(base, 0.5, seed=0), chess.STARTING_FEN, 2000)
+    assert 910 < base.calls < 1090  # 1,000 expected; 4 standard deviations
+
+
+def test_a_diluted_player_replays_given_its_seed_and_tells_its_base_about_each_game():
+    from ws_zero.players import Diluted
+    base = Fixed()
+    player = Diluted(base, 0.5, seed=3)
+    first = _moves(player, chess.STARTING_FEN, 60)
+    assert first == _moves(Diluted(Fixed(), 0.5, seed=3), chess.STARTING_FEN, 60)
+    assert first != _moves(Diluted(Fixed(), 0.5, seed=4), chess.STARTING_FEN, 60)
+    assert base.games == list(range(60))
+    assert player.name == "fixed, 50% random moves"

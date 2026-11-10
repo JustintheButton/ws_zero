@@ -16,13 +16,17 @@ from dataclasses import asdict
 from multiprocessing import Pool
 
 import chess
+import numpy as np
 
-from ws_zero.players import MaterialGrabber, RandomMover, play_game
-from ws_zero.stockfish import LADDER_NODES, LIMITED_NODES, MIN_ELO, Stockfish
+from ws_zero.players import Diluted, MaterialGrabber, RandomMover, play_game
+from ws_zero.stockfish import DILUTED_RANDOM_SHARES, LADDER_NODES, LIMITED_NODES, MIN_ELO, Stockfish
 
 PLAYERS = {"random": lambda: RandomMover(seed=0), "grabber": lambda: MaterialGrabber(seed=1),
            "sf1320": lambda: Stockfish(LIMITED_NODES, elo=MIN_ELO),
-           **{f"sf{n}": (lambda n=n: Stockfish(n)) for n in LADDER_NODES}}
+           **{f"sf{n}": (lambda n=n: Stockfish(n)) for n in LADDER_NODES},
+           # the 1-node Stockfish playing a random move some share of the time: sf1r75 = 75% random moves
+           **{f"sf1r{round(100 * share)}": (lambda share=share: Diluted(Stockfish(1), share, seed=2))
+              for share in DILUTED_RANDOM_SHARES}}
 
 
 def random_openings(count: int, seed: int, plies: int = 8) -> list[list[str]]:
@@ -40,6 +44,22 @@ def random_openings(count: int, seed: int, plies: int = 8) -> list[list[str]]:
 
 def elo(score: float) -> float | None:
     return None if score <= 0 or score >= 1 else 400 * math.log10(score / (1 - score))
+
+
+def fit_ratings(names: list[str], pairings: list[dict]) -> dict[str, float]:
+    """One Elo rating per player from all pairings together (the Bradley-Terry model, a draw counting as half a win
+    and half a loss), with the first player at 0. A stand-in for Ordo until the calibration proper."""
+    index = {name: i for i, name in enumerate(names)}
+    points, games = np.zeros((len(names), len(names))), np.zeros((len(names), len(names)))
+    for p in pairings:
+        low, high = index[p["low"]], index[p["high"]]
+        points[high, low], points[low, high] = p["score"] * p["games"], (1 - p["score"]) * p["games"]
+        games[high, low] = games[low, high] = p["games"]
+    strength = np.ones(len(names))
+    for _ in range(20000):
+        strength = points.sum(axis=1) / (games / (strength[:, None] + strength[None, :])).sum(axis=1)
+        strength /= strength[0]
+    return {name: float(400 * np.log10(max(strength[i], 1e-300))) for name, i in index.items()}
 
 
 def match(job):
@@ -81,6 +101,8 @@ def main():
         print(f"{r['high']:8s} vs {r['low']:8s}: {100 * r['score']:5.1f}%  (+{r['wins']} ={r['draws']} -{r['losses']})  "
               f"Elo {fmt(r['elo'])} [{fmt(r['elo_range'][0])}, {fmt(r['elo_range'][1])}]  "
               f"median {r['median_plies']} plies  {r['ends']}", flush=True)
+    ratings = fit_ratings(names, rows)
+    print("fitted together, " + names[0] + " = 0: " + ", ".join(f"{n} {ratings[n]:+.0f}" for n in names), flush=True)
     if args.out:  # the summary as JSON; the game records beside it, compressed (about 1 MB per 7,000 games)
         games_file = args.out.removesuffix(".json") + "-games.json.gz"
         records = {f"{r['high']} vs {r['low']}": [{**g, "moves": " ".join(g["moves"])} for g in r.pop("records")]
@@ -88,7 +110,7 @@ def main():
         with gzip.open(games_file, "wt") as f:
             json.dump(records, f, separators=(",", ":"))
         with open(args.out, "w") as f:
-            json.dump({"players": names, "openings": openings, "pairings": rows}, f, indent=1)
+            json.dump({"players": names, "ratings": ratings, "openings": openings, "pairings": rows}, f, indent=1)
 
 
 if __name__ == "__main__":

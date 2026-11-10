@@ -11,12 +11,7 @@ from ws_zero.stockfish import Stockfish
 needs_engine = pytest.mark.skipif(stockfish.installed_engine() is None,
                                   reason="Stockfish is not installed (scripts/install_stockfish.py)")
 
-POSITIONS = [
-    chess.STARTING_FEN,
-    "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",  # Italian
-    "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",  # Qxf7# is there
-    "8/5k2/8/3p4/3P4/2K5/8/8 w - - 0 1",  # pawn ending
-]
+POSITIONS = stockfish.PINNED_POSITIONS
 
 
 @needs_engine
@@ -81,27 +76,14 @@ def test_an_engine_that_is_not_the_pinned_stockfish_is_refused(tmp_path):
         Stockfish(100, path=fake)
 
 
-# What the Mac's engine played on 2026-11-09. Stockfish at one thread and a fixed node count is the same on every
-# machine, so Modal and any other machine must reproduce these exactly; a difference means a different engine.
-PINNED_MOVES = {  # nodes -> the move in each of POSITIONS
-    1: ["d2d4", "g8f6", "h5f7", "c3b4"],
-    10: ["d2d4", "g8f6", "h5f7", "c3b4"],
-    100: ["d2d4", "g8f6", "h5f7", "c3d2"],
-    1000: ["e2e4", "g8f6", "h5f7", "c3c2"],
-    10000: ["e2e4", "g8f6", "h5f7", "c3b4"],
-}
-PINNED_GAME = (  # Stockfish against itself at 100 nodes, 40 plies from the start
-    "d2d4 d7d5 g1f3 g8f6 c2c3 c8f5 d1b3 d8c8 c1f4 b8d7 b1d2 a7a5 e2e3 e7e6 a2a4 f6h5 f4e5 f8e7 f1b5 c7c6 "
-    "b5e2 h5f6 e5f4 h7h6 h2h3 e8g8 f3h4 f5h7 h4f3 g8h8 e1g1 f8g8 f3e5 d7e5 f4e5 f6d7 e5g3 g8f8 c3c4 e7b4")
-
-
 @needs_engine
 def test_this_machine_plays_the_pinned_moves():
-    for nodes, expected in PINNED_MOVES.items():
-        with Stockfish(nodes) as engine:
-            assert [engine.move(chess.Board(fen)).uci() for fen in POSITIONS] == expected, nodes
-    board = chess.Board()
-    with Stockfish(100) as engine:
-        while len(board.move_stack) < 40:
-            board.push(engine.move(board))
-    assert " ".join(m.uci() for m in board.move_stack) == PINNED_GAME
+    stockfish.check_pinned_moves()
+
+
+def test_an_engine_that_plays_other_moves_fails_the_pinned_check(monkeypatch):
+    if stockfish.installed_engine() is None:
+        pytest.skip("Stockfish is not installed")
+    monkeypatch.setitem(stockfish.PINNED_MOVES, 1000, ["d2d4", "g8f6", "h5f7", "c3c2"])  # as if pinned elsewhere
+    with pytest.raises(RuntimeError, match="1000 nodes"):
+        stockfish.check_pinned_moves()

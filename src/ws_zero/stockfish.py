@@ -26,6 +26,7 @@ HASH_MB = 16  # Stockfish's default (decision 2026-11-09): searches of 10,000 no
 MIN_ELO = 1320  # the lowest UCI_Elo Stockfish 19 accepts
 LADDER_NODES = (1, 100, 300, 1000, 3000, 10000)  # protocol §8.2 (amended 2026-11-09); 1 = a one-move-deep search
 LIMITED_NODES = 10000  # nodes per move of the strength-limited opponent (decision 2026-11-09)
+DILUTED_RANDOM_SHARES = (0.75, 0.50, 0.25)  # the diluted rungs: the 1-node engine with this share of random moves
 
 
 def find_engine(folder: Path) -> Path | None:
@@ -83,3 +84,39 @@ class Stockfish:
 
     def __exit__(self, *exc):
         self.close()
+
+
+# What the Mac's engine played on 2026-11-09. Stockfish at one thread and a fixed node count is the same on every
+# machine, so every machine must reproduce these exactly; a difference means a different engine.
+PINNED_POSITIONS = [
+    chess.STARTING_FEN,
+    "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",  # Italian
+    "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",  # Qxf7# is there
+    "8/5k2/8/3p4/3P4/2K5/8/8 w - - 0 1",  # pawn ending
+]
+PINNED_MOVES = {  # nodes -> the move in each of PINNED_POSITIONS
+    1: ["d2d4", "g8f6", "h5f7", "c3b4"],
+    10: ["d2d4", "g8f6", "h5f7", "c3b4"],
+    100: ["d2d4", "g8f6", "h5f7", "c3d2"],
+    1000: ["e2e4", "g8f6", "h5f7", "c3c2"],
+    10000: ["e2e4", "g8f6", "h5f7", "c3b4"],
+}
+PINNED_GAME = (  # Stockfish against itself at 100 nodes, 40 plies from the start
+    "d2d4 d7d5 g1f3 g8f6 c2c3 c8f5 d1b3 d8c8 c1f4 b8d7 b1d2 a7a5 e2e3 e7e6 a2a4 f6h5 f4e5 f8e7 f1b5 c7c6 "
+    "b5e2 h5f6 e5f4 h7h6 h2h3 e8g8 f3h4 f5h7 h4f3 g8h8 e1g1 f8g8 f3e5 d7e5 f4e5 f6d7 e5g3 g8f8 c3c4 e7b4")
+
+
+def check_pinned_moves(path: Path | None = None) -> None:
+    """Raise unless this machine's engine plays the pinned moves and the pinned game."""
+    for nodes, expected in PINNED_MOVES.items():
+        with Stockfish(nodes, path=path) as engine:
+            played = [engine.move(chess.Board(fen)).uci() for fen in PINNED_POSITIONS]
+        if played != expected:
+            raise RuntimeError(f"at {nodes} nodes this engine plays {played}, not the pinned {expected}")
+    board = chess.Board()
+    with Stockfish(100, path=path) as engine:
+        while len(board.move_stack) < 40:
+            board.push(engine.move(board))
+    played = " ".join(m.uci() for m in board.move_stack)
+    if played != PINNED_GAME:
+        raise RuntimeError(f"this engine's 100-node game differs from the pinned one: {played}")

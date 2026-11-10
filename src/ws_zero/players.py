@@ -58,6 +58,29 @@ class MaterialGrabber(RandomMover):
         return PIECE_VALUE[piece.piece_type] if piece else 0
 
 
+class Diluted:
+    """A base player that, on each move, plays a random legal move with probability `random_share` and otherwise its
+    own move. The dice are seeded with (seed, game number), like the random players'."""
+
+    def __init__(self, base, random_share: float, seed: int = 0):
+        self.base, self.random_share, self.seed = base, random_share, seed
+        self.name = f"{base.name}, {round(100 * random_share)}% random moves"
+        self.rng = random.Random(f"{seed}:0")
+
+    def new_game(self, game: int = 0) -> None:
+        self.rng = random.Random(f"{self.seed}:{game}")
+        self.base.new_game(game)
+
+    def move(self, board: chess.Board) -> chess.Move:
+        if self.rng.random() < self.random_share:
+            return self.rng.choice(_legal(board))
+        return self.base.move(board)
+
+    def close(self) -> None:
+        if hasattr(self.base, "close"):
+            self.base.close()
+
+
 @dataclass
 class Game:
     white: str

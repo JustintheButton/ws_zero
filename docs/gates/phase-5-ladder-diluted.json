@@ -1,0 +1,1458 @@
+{
+ "players": [
+  "random",
+  "grabber",
+  "sf1r75",
+  "sf1r50",
+  "sf1r25",
+  "sf1320",
+  "sf1"
+ ],
+ "ratings": {
+  "random": 0.0,
+  "grabber": 250.066219682684,
+  "sf1r75": 192.0156133593302,
+  "sf1r50": 359.0406681275306,
+  "sf1r25": 608.1839656769466,
+  "sf1320": 929.8416462070232,
+  "sf1": 1244.976587103573
+ },
+ "openings": [
+  [
+   "b2b3",
+   "h7h5",
+   "b1a3",
+   "d7d5",
+   "a3c4",
+   "d5d4",
+   "h2h4",
+   "d4d3"
+  ],
+  [
+   "g1h3",
+   "f7f5",
+   "c2c3",
+   "b7b6",
+   "g2g3",
+   "a7a5",
+   "e2e4",
+   "e7e6"
+  ],
+  [
+   "h2h4",
+   "a7a5",
+   "g1f3",
+   "c7c6",
+   "c2c4",
+   "g8h6",
+   "b1c3",
+   "d8c7"
+  ],
+  [
+   "a2a3",
+   "a7a5",
+   "a1a2",
+   "h7h6",
+   "h2h3",
+   "a5a4",
+   "g1f3",
+   "b8c6"
+  ],
+  [
+   "f2f4",
+   "a7a5",
+   "g2g3",
+   "c7c5",
+   "f1h3",
+   "f7f6",
+   "h3d7",
+   "c8d7"
+  ],
+  [
+   "e2e4",
+   "c7c6",
+   "f2f3",
+   "d7d6",
+   "h2h3",
+   "d8b6",
+   "d2d3",
+   "a7a6"
+  ],
+  [
+   "f2f4",
+   "g8h6",
+   "b1c3",
+   "b8c6",
+   "h2h3",
+   "c6e5",
+   "b2b3",
+   "h8g8"
+  ],
+  [
+   "e2e3",
+   "g8f6",
+   "h2h4",
+   "f6e4",
+   "f1b5",
+   "h7h5",
+   "b5e2",
+   "d7d6"
+  ],
+  [
+   "d2d4",
+   "h7h5",
+   "d1d3",
+   "g8f6",
+   "d3f5",
+   "g7g6",
+   "b1a3",
+   "f6g8"
+  ],
+  [
+   "c2c4",
+   "f7f5",
+   "e2e4",
+   "b8c6",
+   "d1f3",
+   "g7g5",
+   "f3f5",
+   "a8b8"
+  ],
+  [
+   "g1f3",
+   "g8f6",
+   "b1c3",
+   "b8c6",
+   "f3g1",
+   "e7e5",
+   "d2d4",
+   "e8e7"
+  ],
+  [
+   "a2a3",
+   "g7g6",
+   "a3a4",
+   "d7d6",
+   "h2h3",
+   "e8d7",
+   "h1h2",
+   "d8e8"
+  ],
+  [
+   "b2b4",
+   "b8c6",
+   "g1h3",
+   "c6b8",
+   "a2a3",
+   "c7c5",
+   "h3f4",
+   "g7g5"
+  ],
+  [
+   "c2c4",
+   "f7f5",
+   "g1f3",
+   "e7e6",
+   "f3h4",
+   "d8f6",
+   "f2f3",
+   "f6d4"
+  ],
+  [
+   "g2g4",
+   "h7h6",
+   "a2a3",
+   "f7f5",
+   "g1h3",
+   "b8a6",
+   "h1g1",
+   "g8f6"
+  ],
+  [
+   "c2c3",
+   "f7f6",
+   "a2a4",
+   "g7g6",
+   "e2e3",
+   "h7h5",
+   "f1a6",
+   "c7c6"
+  ],
+  [
+   "g2g3",
+   "f7f6",
+   "f2f4",
+   "e7e6",
+   "f1g2",
+   "e6e5",
+   "a2a3",
+   "f8b4"
+  ],
+  [
+   "g2g4",
+   "h7h6",
+   "h2h3",
+   "e7e5",
+   "f2f4",
+   "f8a3",
+   "b1a3",
+   "h8h7"
+  ],
+  [
+   "c2c4",
+   "b8c6",
+   "g1h3",
+   "g8f6",
+   "b2b4",
+   "a8b8",
+   "g2g3",
+   "c6e5"
+  ],
+  [
+   "a2a4",
+   "b7b5",
+   "a4a5",
+   "a7a6",
+   "f2f4",
+   "a8a7",
+   "c2c4",
+   "c8b7"
+  ],
+  [
+   "d2d3",
+   "b7b6",
+   "h2h3",
+   "h7h5",
+   "b2b3",
+   "e7e5",
+   "c1e3",
+   "b8c6"
+  ],
+  [
+   "b2b4",
+   "b8c6",
+   "c2c4",
+   "g7g5",
+   "c1a3",
+   "h7h5",
+   "d1c2",
+   "g8h6"
+  ],
+  [
+   "d2d4",
+   "g7g5",
+   "g1h3",
+   "e7e5",
+   "d4d5",
+   "f8a3",
+   "b2a3",
+   "a7a5"
+  ],
+  [
+   "d2d4",
+   "f7f5",
+   "c1g5",
+   "f5f4",
+   "g5h6",
+   "c7c5",
+   "c2c4",
+   "b7b6"
+  ],
+  [
+   "d2d3",
+   "g8f6",
+   "b2b4",
+   "h7h5",
+   "c2c3",
+   "a7a5",
+   "c1b2",
+   "a5a4"
+  ],
+  [
+   "f2f3",
+   "b8a6",
+   "a2a4",
+   "b7b6",
+   "f3f4",
+   "g8f6",
+   "e2e4",
+   "g7g5"
+  ],
+  [
+   "c2c4",
+   "g8f6",
+   "f2f3",
+   "c7c6",
+   "g1h3",
+   "h7h5",
+   "a2a3",
+   "e7e6"
+  ],
+  [
+   "h2h3",
+   "e7e5",
+   "f2f4",
+   "a7a6",
+   "d2d4",
+   "b8c6",
+   "b2b4",
+   "b7b5"
+  ],
+  [
+   "d2d4",
+   "b7b5",
+   "h2h4",
+   "b5b4",
+   "c1g5",
+   "d7d5",
+   "g5e7",
+   "b8d7"
+  ],
+  [
+   "f2f4",
+   "h7h5",
+   "d2d3",
+   "b8a6",
+   "a2a3",
+   "g8h6",
+   "a3a4",
+   "h6g4"
+  ],
+  [
+   "c2c3",
+   "h7h5",
+   "f2f4",
+   "b8c6",
+   "h2h3",
+   "g7g5",
+   "a2a4",
+   "e7e5"
+  ],
+  [
+   "c2c3",
+   "e7e6",
+   "b2b3",
+   "c7c5",
+   "h2h3",
+   "f8e7",
+   "f2f4",
+   "e8f8"
+  ],
+  [
+   "c2c3",
+   "g7g6",
+   "b2b3",
+   "f7f5",
+   "d2d4",
+   "g6g5",
+   "d4d5",
+   "a7a5"
+  ],
+  [
+   "e2e3",
+   "h7h6",
+   "g2g4",
+   "f7f5",
+   "h2h3",
+   "d7d6",
+   "a2a3",
+   "b8c6"
+  ],
+  [
+   "c2c3",
+   "e7e5",
+   "g2g4",
+   "g8e7",
+   "b2b4",
+   "e5e4",
+   "f1g2",
+   "c7c5"
+  ],
+  [
+   "d2d3",
+   "b7b6",
+   "h2h4",
+   "e7e6",
+   "e2e3",
+   "d8e7",
+   "h4h5",
+   "g8h6"
+  ],
+  [
+   "g2g4",
+   "g7g6",
+   "g1h3",
+   "c7c6",
+   "b1a3",
+   "a7a6",
+   "a3b5",
+   "c6b5"
+  ],
+  [
+   "b2b4",
+   "b8c6",
+   "g2g3",
+   "c6b4",
+   "d2d3",
+   "h7h6",
+   "c1g5",
+   "g7g6"
+  ],
+  [
+   "g2g3",
+   "d7d5",
+   "e2e4",
+   "c8e6",
+   "f1e2",
+   "b7b6",
+   "d2d4",
+   "c7c6"
+  ],
+  [
+   "h2h4",
+   "g7g6",
+   "b2b3",
+   "g8h6",
+   "g2g3",
+   "b7b6",
+   "d2d4",
+   "a7a6"
+  ],
+  [
+   "f2f4",
+   "b7b5",
+   "e2e4",
+   "b8c6",
+   "g2g4",
+   "c6a5",
+   "d2d3",
+   "a5c6"
+  ],
+  [
+   "h2h4",
+   "h7h5",
+   "f2f3",
+   "b7b5",
+   "h1h3",
+   "g8f6",
+   "c2c4",
+   "f6h7"
+  ],
+  [
+   "b1a3",
+   "d7d5",
+   "e2e4",
+   "h7h6",
+   "d1f3",
+   "e7e5",
+   "g2g3",
+   "c7c5"
+  ],
+  [
+   "g1f3",
+   "d7d5",
+   "b1c3",
+   "g8h6",
+   "a2a3",
+   "h6g8",
+   "c3d5",
+   "a7a5"
+  ],
+  [
+   "h2h4",
+   "a7a5",
+   "b1a3",
+   "f7f5",
+   "a3c4",
+   "a8a6",
+   "c4a3",
+   "a6f6"
+  ],
+  [
+   "h2h3",
+   "f7f6",
+   "b2b4",
+   "b7b6",
+   "f2f4",
+   "c7c5",
+   "c1b2",
+   "c5b4"
+  ],
+  [
+   "b1c3",
+   "f7f6",
+   "e2e3",
+   "h7h5",
+   "e3e4",
+   "h5h4",
+   "c3d5",
+   "g8h6"
+  ],
+  [
+   "e2e3",
+   "b7b6",
+   "c2c3",
+   "h7h6",
+   "d1f3",
+   "a7a6",
+   "a2a4",
+   "a6a5"
+  ],
+  [
+   "d2d4",
+   "h7h6",
+   "c1g5",
+   "g7g6",
+   "g5e7",
+   "d8e7",
+   "d4d5",
+   "b7b5"
+  ],
+  [
+   "b1a3",
+   "e7e5",
+   "h2h4",
+   "e5e4",
+   "a3c4",
+   "d7d5",
+   "c4a3",
+   "g8f6"
+  ],
+  [
+   "g1h3",
+   "e7e6",
+   "d2d3",
+   "b8c6",
+   "e2e3",
+   "d8e7",
+   "c2c4",
+   "c6b4"
+  ],
+  [
+   "c2c4",
+   "e7e6",
+   "b1a3",
+   "g8f6",
+   "d1b3",
+   "b7b5",
+   "g1f3",
+   "e8e7"
+  ],
+  [
+   "b1a3",
+   "h7h5",
+   "e2e3",
+   "c7c6",
+   "d2d3",
+   "d8b6",
+   "a3b1",
+   "b6d4"
+  ],
+  [
+   "b2b4",
+   "e7e5",
+   "g2g4",
+   "h7h6",
+   "d2d3",
+   "c7c6",
+   "c1f4",
+   "b7b6"
+  ],
+  [
+   "g2g4",
+   "h7h6",
+   "g4g5",
+   "b7b5",
+   "c2c4",
+   "c7c6",
+   "a2a3",
+   "c8b7"
+  ],
+  [
+   "f2f3",
+   "b7b5",
+   "d2d3",
+   "g8f6",
+   "b1a3",
+   "b5b4",
+   "a1b1",
+   "g7g6"
+  ],
+  [
+   "a2a3",
+   "d7d6",
+   "f2f3",
+   "d8d7",
+   "g2g4",
+   "b8a6",
+   "b2b3",
+   "e7e5"
+  ],
+  [
+   "e2e3",
+   "b7b5",
+   "f1b5",
+   "c7c6",
+   "b5e2",
+   "c8a6",
+   "b2b3",
+   "d8b6"
+  ],
+  [
+   "d2d4",
+   "b7b6",
+   "g1f3",
+   "g7g6",
+   "g2g4",
+   "g8h6",
+   "c1f4",
+   "b8c6"
+  ],
+  [
+   "c2c3",
+   "b8a6",
+   "g2g3",
+   "a6b8",
+   "d2d4",
+   "h7h6",
+   "g1f3",
+   "h6h5"
+  ],
+  [
+   "c2c3",
+   "b8c6",
+   "d2d3",
+   "e7e6",
+   "e1d2",
+   "c6e7",
+   "a2a4",
+   "h7h6"
+  ],
+  [
+   "c2c4",
+   "d7d5",
+   "b1a3",
+   "f7f5",
+   "e2e4",
+   "g8h6",
+   "g1h3",
+   "e7e6"
+  ],
+  [
+   "d2d3",
+   "g8h6",
+   "d1d2",
+   "h6g4",
+   "d2g5",
+   "a7a5",
+   "g5d2",
+   "d7d6"
+  ],
+  [
+   "b2b4",
+   "d7d5",
+   "g1f3",
+   "a7a5",
+   "g2g4",
+   "c8f5",
+   "f3g1",
+   "a5b4"
+  ],
+  [
+   "a2a4",
+   "e7e6",
+   "g2g4",
+   "b8a6",
+   "g1h3",
+   "b7b5",
+   "b1a3",
+   "c8b7"
+  ],
+  [
+   "d2d3",
+   "f7f5",
+   "e2e4",
+   "e8f7",
+   "c1h6",
+   "g7g5",
+   "b2b3",
+   "c7c6"
+  ],
+  [
+   "g1h3",
+   "a7a5",
+   "b2b4",
+   "g7g5",
+   "d2d3",
+   "f8g7",
+   "f2f3",
+   "h7h6"
+  ],
+  [
+   "g1f3",
+   "c7c6",
+   "c2c4",
+   "d8c7",
+   "f3e5",
+   "h7h5",
+   "e5d3",
+   "c7b6"
+  ],
+  [
+   "f2f4",
+   "e7e5",
+   "g2g3",
+   "f8a3",
+   "h2h4",
+   "d8f6",
+   "h1h3",
+   "d7d5"
+  ],
+  [
+   "a2a4",
+   "b7b5",
+   "g1f3",
+   "h7h5",
+   "d2d4",
+   "b8c6",
+   "c1h6",
+   "c6e5"
+  ],
+  [
+   "d2d4",
+   "d7d6",
+   "h2h4",
+   "e7e6",
+   "c1h6",
+   "b8c6",
+   "h1h2",
+   "f7f6"
+  ],
+  [
+   "g1f3",
+   "h7h6",
+   "b1a3",
+   "b7b6",
+   "h1g1",
+   "g7g6",
+   "g2g4",
+   "e7e6"
+  ],
+  [
+   "b2b4",
+   "b8a6",
+   "c2c4",
+   "f7f6",
+   "c1b2",
+   "h7h6",
+   "g1h3",
+   "a6b8"
+  ],
+  [
+   "g1h3",
+   "f7f5",
+   "e2e4",
+   "e8f7",
+   "e4f5",
+   "b8c6",
+   "f1c4",
+   "d7d5"
+  ],
+  [
+   "g2g3",
+   "b7b5",
+   "d2d3",
+   "h7h6",
+   "b1c3",
+   "c8b7",
+   "f2f4",
+   "b5b4"
+  ],
+  [
+   "b2b3",
+   "h7h6",
+   "b1a3",
+   "g7g5",
+   "c2c4",
+   "f7f5",
+   "f2f4",
+   "e8f7"
+  ],
+  [
+   "b2b4",
+   "e7e5",
+   "f2f4",
+   "b8a6",
+   "g2g4",
+   "h7h6",
+   "f1h3",
+   "c7c5"
+  ],
+  [
+   "b1c3",
+   "f7f6",
+   "g2g4",
+   "h7h5",
+   "e2e4",
+   "b7b6",
+   "f1c4",
+   "c8b7"
+  ],
+  [
+   "c2c4",
+   "f7f5",
+   "g1h3",
+   "a7a5",
+   "c4c5",
+   "g8f6",
+   "f2f3",
+   "f6h5"
+  ],
+  [
+   "a2a3",
+   "a7a5",
+   "d2d3",
+   "c7c6",
+   "c1d2",
+   "b8a6",
+   "d2b4",
+   "a6c5"
+  ],
+  [
+   "g2g4",
+   "c7c5",
+   "d2d3",
+   "d8a5",
+   "c2c3",
+   "g7g6",
+   "c1f4",
+   "g8f6"
+  ],
+  [
+   "g1f3",
+   "b8c6",
+   "g2g3",
+   "d7d6",
+   "f3e5",
+   "c8g4",
+   "b1c3",
+   "d8b8"
+  ],
+  [
+   "h2h3",
+   "f7f5",
+   "c2c3",
+   "d7d6",
+   "b2b3",
+   "a7a5",
+   "b3b4",
+   "e8f7"
+  ],
+  [
+   "a2a3",
+   "g8h6",
+   "e2e3",
+   "b8a6",
+   "b1c3",
+   "h6f5",
+   "f1d3",
+   "f7f6"
+  ],
+  [
+   "d2d4",
+   "f7f6",
+   "d4d5",
+   "e8f7",
+   "g1h3",
+   "g7g6",
+   "c1g5",
+   "a7a5"
+  ],
+  [
+   "b1c3",
+   "g7g5",
+   "f2f3",
+   "e7e6",
+   "c3e4",
+   "f8b4",
+   "e4f6",
+   "e8f8"
+  ],
+  [
+   "h2h3",
+   "g7g6",
+   "b1c3",
+   "h7h6",
+   "e2e3",
+   "f7f5",
+   "d1g4",
+   "g8f6"
+  ],
+  [
+   "a2a3",
+   "d7d5",
+   "g2g4",
+   "b8d7",
+   "f2f4",
+   "g8f6",
+   "g1h3",
+   "e7e6"
+  ],
+  [
+   "d2d4",
+   "b8c6",
+   "d1d2",
+   "g8h6",
+   "f2f3",
+   "g7g5",
+   "c2c3",
+   "d7d6"
+  ],
+  [
+   "g2g3",
+   "a7a5",
+   "f1g2",
+   "g8h6",
+   "f2f3",
+   "e7e6",
+   "e1f1",
+   "h6g4"
+  ],
+  [
+   "h2h4",
+   "h7h5",
+   "b1a3",
+   "g7g6",
+   "c2c4",
+   "h8h7",
+   "h1h2",
+   "d7d6"
+  ],
+  [
+   "a2a3",
+   "f7f6",
+   "b2b4",
+   "e8f7",
+   "d2d4",
+   "b8c6",
+   "g2g4",
+   "a8b8"
+  ],
+  [
+   "h2h4",
+   "a7a5",
+   "e2e4",
+   "c7c6",
+   "g1h3",
+   "f7f5",
+   "f1c4",
+   "b7b6"
+  ],
+  [
+   "g1f3",
+   "d7d5",
+   "f3g5",
+   "b8c6",
+   "g2g3",
+   "d8d6",
+   "a2a4",
+   "d6a3"
+  ],
+  [
+   "g2g3",
+   "b7b6",
+   "g3g4",
+   "f7f5",
+   "b1a3",
+   "e7e5",
+   "a3b5",
+   "f8c5"
+  ],
+  [
+   "g1f3",
+   "a7a5",
+   "b2b4",
+   "g7g5",
+   "h2h3",
+   "b7b6",
+   "h1g1",
+   "a8a6"
+  ],
+  [
+   "f2f3",
+   "d7d5",
+   "d2d4",
+   "b8d7",
+   "e1d2",
+   "c7c6",
+   "c2c4",
+   "d7e5"
+  ],
+  [
+   "d2d3",
+   "b7b5",
+   "b1a3",
+   "g7g6",
+   "g1h3",
+   "e7e5",
+   "d3d4",
+   "h7h6"
+  ],
+  [
+   "g2g4",
+   "a7a6",
+   "b2b4",
+   "e7e5",
+   "h2h3",
+   "g8e7",
+   "g4g5",
+   "d7d6"
+  ],
+  [
+   "e2e4",
+   "h7h6",
+   "g1e2",
+   "c7c6",
+   "e2f4",
+   "g8f6",
+   "f4e6",
+   "c6c5"
+  ]
+ ],
+ "pairings": [
+  {
+   "low": "random",
+   "high": "grabber",
+   "games": 200,
+   "score": 0.6025,
+   "wins": 41,
+   "draws": 159,
+   "losses": 0,
+   "elo": 72.2479673017668,
+   "elo_range": [
+    52.123998165328715,
+    92.8620360547476
+   ],
+   "ends": {
+    "checkmate": 41,
+    "fifty-move rule": 13,
+    "insufficient material": 27,
+    "ply cap": 8,
+    "stalemate": 110,
+    "threefold repetition": 1
+   },
+   "median_plies": 185
+  },
+  {
+   "low": "random",
+   "high": "sf1r75",
+   "games": 200,
+   "score": 0.8675,
+   "wins": 147,
+   "draws": 53,
+   "losses": 0,
+   "elo": 326.42144207603394,
+   "elo_range": [
+    284.01203316874364,
+    378.17332225702455
+   ],
+   "ends": {
+    "checkmate": 147,
+    "fifty-move rule": 14,
+    "insufficient material": 21,
+    "ply cap": 1,
+    "stalemate": 16,
+    "threefold repetition": 1
+   },
+   "median_plies": 137
+  },
+  {
+   "low": "random",
+   "high": "sf1r50",
+   "games": 200,
+   "score": 0.9625,
+   "wins": 185,
+   "draws": 15,
+   "losses": 0,
+   "elo": 563.7477881811278,
+   "elo_range": [
+    491.3788728826608,
+    683.2922368328158
+   ],
+   "ends": {
+    "checkmate": 185,
+    "fifty-move rule": 4,
+    "insufficient material": 3,
+    "stalemate": 8
+   },
+   "median_plies": 82
+  },
+  {
+   "low": "random",
+   "high": "sf1r25",
+   "games": 200,
+   "score": 0.9825,
+   "wins": 194,
+   "draws": 5,
+   "losses": 1,
+   "elo": 699.7178041444683,
+   "elo_range": [
+    592.09442433099,
+    1010.6695207590427
+   ],
+   "ends": {
+    "checkmate": 195,
+    "fifty-move rule": 1,
+    "stalemate": 4
+   },
+   "median_plies": 58
+  },
+  {
+   "low": "random",
+   "high": "sf1320",
+   "games": 200,
+   "score": 1.0,
+   "wins": 200,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 200
+   },
+   "median_plies": 48
+  },
+  {
+   "low": "random",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.9975,
+   "wins": 199,
+   "draws": 1,
+   "losses": 0,
+   "elo": 1040.3891582747028,
+   "elo_range": [
+    851.0170204521323,
+    null
+   ],
+   "ends": {
+    "checkmate": 199,
+    "stalemate": 1
+   },
+   "median_plies": 46
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r75",
+   "games": 200,
+   "score": 0.465,
+   "wins": 10,
+   "draws": 166,
+   "losses": 24,
+   "elo": -24.360331652509768,
+   "elo_range": [
+    -44.17145613230914,
+    -4.706273111747546
+   ],
+   "ends": {
+    "checkmate": 34,
+    "fifty-move rule": 8,
+    "insufficient material": 75,
+    "ply cap": 8,
+    "stalemate": 72,
+    "threefold repetition": 3
+   },
+   "median_plies": 269
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r50",
+   "games": 200,
+   "score": 0.53,
+   "wins": 28,
+   "draws": 156,
+   "losses": 16,
+   "elo": 20.87120466602866,
+   "elo_range": [
+    -1.609879494297897,
+    43.52846303391452
+   ],
+   "ends": {
+    "checkmate": 44,
+    "fifty-move rule": 11,
+    "insufficient material": 93,
+    "stalemate": 43,
+    "threefold repetition": 9
+   },
+   "median_plies": 225
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r25",
+   "games": 200,
+   "score": 0.75,
+   "wins": 103,
+   "draws": 94,
+   "losses": 3,
+   "elo": 190.84850188786498,
+   "elo_range": [
+    158.28662854466566,
+    226.7897064777059
+   ],
+   "ends": {
+    "checkmate": 106,
+    "fifty-move rule": 8,
+    "insufficient material": 60,
+    "stalemate": 15,
+    "threefold repetition": 11
+   },
+   "median_plies": 131
+  },
+  {
+   "low": "grabber",
+   "high": "sf1320",
+   "games": 200,
+   "score": 0.9925,
+   "wins": 197,
+   "draws": 3,
+   "losses": 0,
+   "elo": 848.6677008173821,
+   "elo_range": [
+    716.165769653298,
+    null
+   ],
+   "ends": {
+    "checkmate": 197,
+    "insufficient material": 1,
+    "stalemate": 2
+   },
+   "median_plies": 45
+  },
+  {
+   "low": "grabber",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.99,
+   "wins": 196,
+   "draws": 4,
+   "losses": 0,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    678.5247284257273,
+    1424.7571527687462
+   ],
+   "ends": {
+    "checkmate": 196,
+    "fifty-move rule": 3,
+    "stalemate": 1
+   },
+   "median_plies": 51
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1r50",
+   "games": 200,
+   "score": 0.8175,
+   "wins": 138,
+   "draws": 51,
+   "losses": 11,
+   "elo": 260.4899570159321,
+   "elo_range": [
+    216.73275909879445,
+    312.6413654526232
+   ],
+   "ends": {
+    "checkmate": 149,
+    "fifty-move rule": 4,
+    "insufficient material": 29,
+    "stalemate": 13,
+    "threefold repetition": 5
+   },
+   "median_plies": 120
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1r25",
+   "games": 200,
+   "score": 0.98,
+   "wins": 193,
+   "draws": 6,
+   "losses": 1,
+   "elo": 676.0784320114053,
+   "elo_range": [
+    574.7313272727047,
+    929.7300009386961
+   ],
+   "ends": {
+    "checkmate": 194,
+    "insufficient material": 3,
+    "stalemate": 3
+   },
+   "median_plies": 74
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1320",
+   "games": 200,
+   "score": 0.995,
+   "wins": 199,
+   "draws": 0,
+   "losses": 1,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 200
+   },
+   "median_plies": 53
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.995,
+   "wins": 199,
+   "draws": 0,
+   "losses": 1,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 200
+   },
+   "median_plies": 53
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1r25",
+   "games": 200,
+   "score": 0.8675,
+   "wins": 159,
+   "draws": 29,
+   "losses": 12,
+   "elo": 326.42144207603394,
+   "elo_range": [
+    273.6404376409573,
+    394.5737337623892
+   ],
+   "ends": {
+    "checkmate": 171,
+    "fifty-move rule": 6,
+    "insufficient material": 15,
+    "stalemate": 6,
+    "threefold repetition": 2
+   },
+   "median_plies": 87
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1320",
+   "games": 200,
+   "score": 0.9625,
+   "wins": 192,
+   "draws": 1,
+   "losses": 7,
+   "elo": 563.7477881811278,
+   "elo_range": [
+    467.6825921480101,
+    772.7261871594964
+   ],
+   "ends": {
+    "checkmate": 199,
+    "stalemate": 1
+   },
+   "median_plies": 65
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.9825,
+   "wins": 195,
+   "draws": 3,
+   "losses": 2,
+   "elo": 699.7178041444683,
+   "elo_range": [
+    583.4747153253095,
+    1142.52555101725
+   ],
+   "ends": {
+    "checkmate": 197,
+    "stalemate": 2,
+    "threefold repetition": 1
+   },
+   "median_plies": 62
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf1320",
+   "games": 200,
+   "score": 0.87,
+   "wins": 169,
+   "draws": 10,
+   "losses": 21,
+   "elo": 330.2303601247127,
+   "elo_range": [
+    270.48950590228407,
+    410.73059729489125
+   ],
+   "ends": {
+    "checkmate": 190,
+    "fifty-move rule": 2,
+    "insufficient material": 6,
+    "stalemate": 1,
+    "threefold repetition": 1
+   },
+   "median_plies": 77
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.9675,
+   "wins": 191,
+   "draws": 5,
+   "losses": 4,
+   "elo": 589.50704508483,
+   "elo_range": [
+    495.526006558125,
+    790.5860373443413
+   ],
+   "ends": {
+    "checkmate": 195,
+    "fifty-move rule": 1,
+    "stalemate": 4
+   },
+   "median_plies": 78
+  },
+  {
+   "low": "sf1320",
+   "high": "sf1",
+   "games": 200,
+   "score": 0.89,
+   "wins": 177,
+   "draws": 2,
+   "losses": 21,
+   "elo": 363.1989285946751,
+   "elo_range": [
+    297.3914760815515,
+    457.28518062964235
+   ],
+   "ends": {
+    "checkmate": 198,
+    "threefold repetition": 2
+   },
+   "median_plies": 85
+  }
+ ],
+ "machine": "Modal, downloading https://github.com/official-stockfish/Stockfish/releases/download/sf_19/stockfish-linux-x86-64-universal.tar.gz",
+ "seconds": 142.38033866882324,
+ "note": "The 1-node Stockfish diluted with random moves (sf1r75 = a random move 75% of the time), against its neighbours, 2026-11-09, on Modal: 200 games per pairing (100 random 8-ply openings, both colours). The same run on the Mac gave the same games, move for move, in all 15 pairings without the 1320 opponent, whose move choice is random."
+}

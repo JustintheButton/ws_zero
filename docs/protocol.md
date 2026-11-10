@@ -203,6 +203,9 @@ run). K *(fixed after Phase 3)* = budget / 20.
 ### 8.2 Opponents (fixed anchors)
 - Uniform random mover.
 - Greedy material-grabber: captures the most valuable piece available, else a random move.
+- Diluted Stockfish *(added 2026-11-09, before any results; see §10)*: the 1-node Stockfish below, which on each
+  move plays a uniformly random legal move with probability 75%, 50% or 25% (three rungs; the dice are seeded by
+  game number). They count as Stockfish rungs, the weakest three.
 - Stockfish 19 (pinned 2026-11-09) at fixed node counts 1, 100, 300, 1,000, 3,000 and 10,000
   (machine-independent), and strength-limited at its minimum `UCI_Elo` (1320), searching 10,000 nodes per move
   (decided 2026-11-09). The 1-node rung is a one-move-deep
@@ -225,8 +228,9 @@ run). K *(fixed after Phase 3)* = budget / 20.
   - *Calibration run:* the winning D1 pilot setting, continued to the full game budget on a pilot seed (excluded
     from all analyses), evaluated on the same schedule.
   - *Primary threshold:* a score of at least 50% (full agent) against the strongest Stockfish rung (§8.2) that the
-    calibration run reaches, by the rule below, within 60% of its budget. If it reaches no Stockfish rung, the
-    primary threshold is 50% against the greedy material-grabber.
+    calibration run reaches, by the rule below, within 60% of its budget. The diluted rungs count as Stockfish
+    rungs. If it reaches none, the primary threshold is 50% against the weakest, the 75%-random rung. *(Amended
+    2026-11-09, before any results: v1.0 fell back to the greedy material-grabber; see §10.)*
   - The threshold is fixed and recorded in [decisions.md](decisions.md) before any WSP or distillation training
     run. Only random-arm data chooses it, so it cannot favor WSP.
   - *Time to threshold* = self-play games at the first of two consecutive evaluation points at or above the
@@ -274,6 +278,17 @@ that channel's activation and the feature on a fixed probe set of positions.
 - **Pre-experiment parameters fixed by rule after Phase 3:** game budget, replay window, K, and LR drop steps
   (from §4, §7, §8.1); and, after the D1 pilot and calibration run, the base LR, warmup and primary threshold
   (§4, §8.4). All are recorded in [decisions.md](decisions.md) before any WSP or distillation training run.
+- **Diluted rungs and the fallback threshold (amended 2026-11-09, Justin, before any results).** A round robin of
+  the ladder's opponents (`docs/gates/phase-5-ladder-first-look.json`) found a gap of roughly 700 Elo or more with
+  no opponent in it: the material-grabber is about 75 Elo above the random mover, and the weakest Stockfish
+  opponent wins 99–100% against both. A network in that range would get no usable rating, and the only finish
+  lines near it were the material-grabber and the 1320 opponent. Three rungs are added: the 1-node Stockfish
+  playing a random move 75%, 50% or 25% of the time. Measured (`docs/gates/phase-5-ladder-diluted.json`, 200 games
+  per pairing), each rung from the random mover up to the 1-node Stockfish scores 82–89% against the one below
+  (steps of 260 to 363 Elo). They count as Stockfish rungs in D8. The material-grabber stays an opponent and a
+  secondary threshold but is no longer the fallback: it draws most of its games by stripping the board (it scores
+  60% against the random mover yet about 50% against the 75% and 50% rungs), so 50% against it is not a level of
+  play. The fallback is 50% against the 75%-random rung. The ladder has 12 opponents, as v1.0 had.
 - **Stockfish ladder (amended 2026-11-09, Justin, before any results).** v1.0's ladder had rungs at 1, 3, 10 and
   30 nodes. Stockfish 19 never stops before finishing a one-move-deep search, which takes about 48 nodes: on 200
   positions from random games it played the same move at 1, 3 and 10 nodes in all 200, and at 30 nodes in 199
