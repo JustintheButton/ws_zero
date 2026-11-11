@@ -293,6 +293,31 @@ table.cov td.num, table.cov th.num { text-align: right; }
 table.cov tr.now td { background: var(--signal-soft); }
 table.cov tr.more td { color: var(--muted); }
 .tree-bar { display: inline-block; height: 0.6rem; background: var(--signal); border-radius: 2px; vertical-align: middle; margin-right: 0.45rem; }
+/* Phase 5: the rating ladder. Ladder opponents are neutral circles, our players are blue diamonds. */
+:root { --lad-context: #586661; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lad-context: #6b887f; } }
+:root[data-theme="dark"] { --lad-context: #6b887f; }
+.lad-row { display: grid; grid-template-columns: minmax(0, 15.5rem) minmax(0, 1fr) 9.6rem; gap: 0.8rem; align-items: center; padding: 0.24rem 0; font-size: var(--step--1); }
+.lad-row.ours .lad-name { font-weight: 600; }
+.lad-track { position: relative; height: 1.1rem; background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px); background-size: 31.25% 100%; }
+.lad-range { position: absolute; top: 50%; height: 2px; margin-top: -1px; min-width: 2px; background: var(--lad-context); opacity: 0.6; }
+.lad-dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--lad-context); box-shadow: 0 0 0 2px var(--paper); }
+.lad-row.ours .lad-range { background: var(--signal); }
+.lad-row.ours .lad-dot { background: var(--signal); border-radius: 1px; transform: rotate(45deg); }
+.lad-val { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lad-val small { color: var(--muted); margin-left: 0.5rem; font-size: 0.72rem; }
+.lad-axis .lad-track { background: none; height: 1.2rem; }
+.lad-axis .lad-track span { position: absolute; top: 0; transform: translateX(-50%); font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.lad-axis .lad-track span:first-child { transform: none; }
+.lad-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; font-size: var(--step--1); color: var(--muted); margin: 0; }
+.lad-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 0.45rem; border-radius: 50%; background: var(--lad-context); }
+.lad-legend i.ours { background: var(--signal); border-radius: 1px; transform: rotate(45deg); }
+@media (max-width: 640px) {
+  .lad-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.8rem; padding: 0.35rem 0; }
+  .lad-track { grid-column: 1 / -1; grid-row: 2; }
+  .lad-axis span:not(.lad-track) { display: none; }
+}
+@media (max-width: 720px) { #p5-game-board { max-width: 320px; } }
 footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; display: grid; gap: 0.3rem; }
 @media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.6s ease; } }
 </style>
@@ -490,6 +515,51 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     </div>
   </section>
 
+  <section class="block" id="evaluation" aria-labelledby="eval-h">
+    <div class="block-head">
+      <p class="kicker" id="p5-kicker">Phase 5</p>
+      <h2 id="eval-h">Measuring how strong a player is</h2>
+      <p>To say how strong a network is, it plays a fixed ladder of 12 opponents, from a player that moves at random up to Stockfish 19 searching 10,000 positions per move. Every match starts from the same 50 balanced openings, each played once with White and once with Black, so one evaluation is 1,200 games. All results are fitted to one rating scale, in Elo-style points with the random mover at 0: a player 200 points above another scores about 76% against it. The gate tests the measuring stick itself. The same player, entered twice under two names and differing only in how its search breaks ties, must come out at the same rating within the error bars.</p>
+    </div>
+    <dl class="p4-sum" id="p5-sum"></dl>
+    <div class="panel">
+      <h3>The ladder, with our first two players on it</h3>
+      <p class="hint" style="margin-top: 0">Each mark is a rating and the line through it is its 95% range, from 500 refits on redrawn games. Between the random mover and real Stockfish there was a gap of about 700 points with nothing in it, so three rungs were added: Stockfish looking one move deep, but playing a random move 75%, 50% or 25% of the time. Stockfish limited to 1320 is the engine's own weakest setting: it searches 10,000 positions and then errs on purpose. Our two players so far both use the 800-look-ahead search. The untrained network has learned nothing yet and lands just above the random mover. The material-counting stand-in from the search gate lands near the 25% rung. Rungs far apart never take a point off each other (31 of the 66 pairings ended 100 to 0), so the top of the ladder is held in place only by a chain of neighbours, and its ranges are wider.</p>
+      <p class="lad-legend"><span><i></i>Ladder opponent</span><span><i class="ours"></i>Our player, entered twice</span><span>Rating points, random mover = 0</span></p>
+      <div class="ladder" id="p5-ladder"></div>
+    </div>
+    <div class="gate-grid">
+      <div class="panel">
+        <h3>Two copies, opponent by opponent</h3>
+        <div style="overflow-x: auto"><table class="cov" id="p5-scores"></table></div>
+        <p class="hint">Score: wins plus half the draws, over 100 games. The two copies differ only in their search's tie-breaking, yet they play different games, and that difference is what makes the error bar honest. One copy had to be run again after a lost connection. Against the six opponents it had already finished that do not roll their own dice, the second run repeated the first exactly, win for win. Stockfish limited to 1320 picks its errors at random and never repeats: 13% the first time, 18% the second.</p>
+      </div>
+      <div class="panel">
+        <h3>What a measurement costs, and its limits</h3>
+        <p class="hint" style="margin-top: 0" id="p5-cost"></p>
+      </div>
+    </div>
+    <div class="panel" id="p5-game">
+      <h3>A game from the gate</h3>
+      <p class="hint" style="margin-top: 0" id="p5-game-note"></p>
+      <div class="tree-grid">
+        <div class="tree-col">
+          <div id="p5-game-board"></div>
+        </div>
+        <div class="tree-col">
+          <div class="tree-controls">
+            <button type="button" id="p5-game-prev" aria-label="Previous move">◀</button>
+            <button type="button" id="p5-game-play">Play</button>
+            <button type="button" id="p5-game-next" aria-label="Next move">▶</button>
+            <input type="range" id="p5-game-step" min="0" max="1" value="0" aria-label="Move number">
+          </div>
+          <p class="tree-count" id="p5-game-count"></p>
+          <p class="tree-line" id="p5-game-moves"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="plan" aria-labelledby="plan-h">
     <div class="block-head">
       <p class="kicker">Phase 1 · <b>approved</b> 8 Nov 2026</p>
@@ -541,8 +611,8 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
     ["Chess rules", "done", "This board explorer and the agreement check with python-chess."],
     ["Network", P3.gatePassed ? "done" : "next", "The value-head fix, GPU costs per game, and a network written by hand, shown on the board explorer."],
     ["Search", "done", "A mate in one found by tree search, with the search tree to step through, and a dummy network that refuses to hang its queen."],
-    ["Evaluation", "next","The Stockfish ladder from a one-move search to 10,000 nodes, and test positions labelled with Stockfish's best move."],
-    ["WSP pilot", "", "Claude's hand-written networks: what they play on these positions, their games against practice bots, and the go / no-go result."],
+    ["Evaluation", "done", "The ladder of 12 opponents from the random mover to Stockfish at 10,000 nodes, our first two players placed on it, and a game to replay."],
+    ["WSP pilot", "next", "Claude's hand-written networks: what they play on these positions, their games against practice bots, test positions labelled with Stockfish's best move, and the go / no-go result."],
     ["Training loop", "", "A short training run: the loss falling and a first win over the random mover."],
     ["Controls", "", "Claude's Python heuristic, and how closely the network learns to copy it."],
     ["Main runs", "", "Learning curves for all 15 runs, with games to replay at checkpoints, from random moves to real openings."],
@@ -1158,6 +1228,97 @@ footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid v
         `<td class="num">${(1000 * r.seconds / r.sims).toFixed(0)} ms</td><td class="num">${growth}</td>` +
         (alone ? `<td class="num">${r.alone == null ? "" : t(r.alone)}</td>` : "") + `</tr>`;
     }).join("");
+  })();
+
+  // ---------- Phase 5: the evaluation gate ----------
+  const P5 = DATA.phase5 || {};
+  (function renderPhase5() {
+    if (!P5.players) return;
+    const el = (id) => document.getElementById(id);
+    const signed = (v) => (v < 0 ? "−" : v > 0 ? "+" : "") + fmt(Math.abs(v));
+    const minutes = P5.seconds.map((s) => Math.round(s / 60));
+    el("p5-kicker").innerHTML = `Phase 5 · <b>gate passed</b> 11 Nov 2026`;
+    el("p5-sum").innerHTML = P5.agents.map((a) =>
+      `<div><dt>${a.label}: gap between copies</dt><dd>${signed(a.gap)} <small>95% range ${signed(a.range[0])} to ${signed(a.range[1])}</small></dd></div>`).join("") +
+      `<div><dt>Gate</dt><dd>Passed <small>Both ranges include 0. Justin accepted the gate (11 Nov).</small></dd></div>` +
+      `<div><dt>One evaluation</dt><dd>1,200 games <small>${Math.min(...minutes)}–${Math.max(...minutes)} minutes on one GPU, $0.47–0.72</small></dd></div>`;
+
+    const MAX = 3200, pct = (v) => (100 * Math.max(0, v) / MAX).toFixed(2);
+    const rows = [...P5.players].sort((a, b) => b.rating - a.rating);
+    el("p5-ladder").innerHTML = rows.map((p) => {
+      const [lo, hi] = p.range, fixed = lo === hi;
+      return `<div class="lad-row${p.ours ? " ours" : ""}" title="${p.label}: ${fmt(p.rating)} (${fixed ? "fixed at 0" : `95% range ${fmt(lo)} to ${fmt(hi)}`})">` +
+        `<span class="lad-name">${p.label}</span>` +
+        `<span class="lad-track"><span class="lad-range" style="left:${pct(lo)}%;width:${(100 * (hi - lo) / MAX).toFixed(2)}%"></span>` +
+        `<span class="lad-dot" style="left:${pct(p.rating)}%"></span></span>` +
+        `<span class="lad-val">${fmt(p.rating)}<small>${fixed ? "fixed" : `${fmt(lo)}–${fmt(hi)}`}</small></span></div>`;
+    }).join("") +
+      `<div class="lad-row lad-axis" aria-hidden="true"><span></span><span class="lad-track">` +
+      [0, 1000, 2000, 3000].map((v) => `<span style="left:${pct(v)}%">${fmt(v)}</span>`).join("") + `</span><span></span></div>`;
+
+    const pc = (s) => `${+(100 * s).toFixed(1)}%`;
+    el("p5-scores").innerHTML =
+      `<tr><th rowspan="2">Opponent</th>` + P5.agents.map((a) => `<th class="num" colspan="2">${a.label}</th>`).join("") + `</tr>` +
+      `<tr>` + P5.agents.map(() => `<th class="num">Copy 1</th><th class="num">Copy 2</th>`).join("") + `</tr>` +
+      P5.scores.map((r) => `<tr><td>${r.opponent}</td>` + r.scores.map((s) => `<td class="num">${pc(s)}</td>`).join("") + `</tr>`).join("");
+
+    const rung = P5.players.find((p) => p.name === "sf1r25");
+    el("p5-cost").innerHTML =
+      `One evaluation of 1,200 games took ${Math.min(...minutes)}–${Math.max(...minutes)} minutes on one Modal L4 GPU and cost $0.47–0.72. ` +
+      `Most of that goes to the weakest opponents, where neither side knows how to finish and games run to the 512-ply cap (256 moves each). ` +
+      `The plan has about 375 evaluations, so roughly $190–260 at this price: a budget question to settle before the training runs (Phase 7).<br><br>` +
+      `<b>How fine the stick measures.</b> The gap between two copies of one player is known to within about 30–45 points. ` +
+      `Two checkpoints closer than that look the same after one evaluation each.<br><br>` +
+      `<b>The ladder moves a little.</b> Fitting new players together with the ladder shifts the ladder's own ratings: the 25% rung reads 635 on its own and ${fmt(rung.rating)} here. ` +
+      `Whether to freeze the ladder at its calibration is a decision for Justin before training.<br><br>` +
+      `<b>One player is out of order.</b> The material grabber draws 84 games in 100 against both the 75% and the 50% rung by trading everything off, then scores under 20% against the 25% rung. ` +
+      `No single number describes a player like that, so the finish line no longer falls back on it.`;
+  })();
+  (function renderP5Game() {
+    const G = P5.game;
+    if (!G || !G.plies) return;
+    const el = (id) => document.getElementById(id);
+    const n = G.plies.length, slider = el("p5-game-step"), playBtn = el("p5-game-play");
+    const us = G.agentWhite ? "White" : "Black", them = G.agentWhite ? "Black" : "White";
+    const opening = G.plies.findIndex((p) => p[3] != null) - (G.agentWhite ? 0 : 1);
+    slider.max = n;
+    el("p5-game-note").innerHTML =
+      `The material-counting stand-in (${us}, copy 1) against ${G.opponent} (${them}): one of its ${G.wins} wins in ${G.games} games, and the shortest. ` +
+      `The first ${opening} half-moves are the opening, set in advance. The number beside each of ${us}'s moves is its own estimate of its chances, from −1 (lost) to +1 (won). ` +
+      `By move 26 it reads +1.00, and yet the mate takes until move ${Math.ceil(n / 2)}: from move 35 to 48 ${us}'s rook wanders up and down the a-file. ` +
+      `Counting material gives no reason to prefer one winning position to another, so the search drifts until a mate comes within reach of its look-ahead. ` +
+      `It even finishes by promoting to a rook instead of a queen: both mate, and it has no reason to prefer the queen. A trained network is meant to supply the missing sense of direction.`;
+    const signed = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2);
+    const numbered = (i) => (i % 2 === 0 ? `${i / 2 + 1}. ` : "") + G.plies[i][0];
+    function show(k) {
+      k = Math.max(0, Math.min(n, k));
+      slider.value = k;
+      const fen = k ? G.plies[k - 1][2] : G.start, last = k ? G.plies[k - 1][1] : "";
+      el("p5-game-board").innerHTML = miniBoard(fen, last, [], k ? `Position after ${numbered(k - 1)}` : "Starting position");
+      let estimate = null;
+      for (let i = k - 1; i >= 0 && estimate == null; i--) estimate = G.plies[i][3];
+      el("p5-game-count").textContent = (k ? `Move ${Math.ceil(k / 2)} of ${Math.ceil(n / 2)}` : "Start") +
+        (k === n ? " · checkmate" : k <= opening ? " · opening, set in advance" : estimate == null ? "" : ` · ${us}'s estimate ${signed(estimate)}`);
+      const from = Math.max(0, Math.min(k - 7, n - 12)) & ~1, to = Math.min(n, from + 12);
+      let line = from > 0 ? "… " : "";
+      for (let i = from; i < to; i++) {
+        const text = (i === from && i % 2 ? `${(i + 1) / 2}… ` : "") + numbered(i);
+        line += (i === k - 1 ? `<b>${text}</b>` : text) + " ";
+      }
+      el("p5-game-moves").innerHTML = line + (to < n ? "…" : "");
+    }
+    let timer = null;
+    function stop() { clearInterval(timer); timer = null; playBtn.textContent = "Play"; }
+    playBtn.onclick = () => {
+      if (timer) return stop();
+      if (+slider.value >= n) show(0);
+      playBtn.textContent = "Pause";
+      timer = setInterval(() => { if (+slider.value >= n) return stop(); show(+slider.value + 1); }, 300);
+    };
+    el("p5-game-prev").onclick = () => { stop(); show(+slider.value - 1); };
+    el("p5-game-next").onclick = () => { stop(); show(+slider.value + 1); };
+    slider.addEventListener("input", () => { stop(); show(+slider.value); });
+    show(0);
   })();
 
   // ---------- orchestration ----------

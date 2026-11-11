@@ -16,11 +16,11 @@ from dataclasses import asdict
 from multiprocessing import Pool
 
 import chess
-import numpy as np
 
 from ws_zero import openings as suites
 from ws_zero.ladder import LADDER, opponent
 from ws_zero.players import play_game
+from ws_zero.ratings import fit_ratings
 
 def random_openings(count: int, seed: int, plies: int = 8) -> list[list[str]]:
     rng, out = random.Random(seed), []
@@ -37,22 +37,6 @@ def random_openings(count: int, seed: int, plies: int = 8) -> list[list[str]]:
 
 def elo(score: float) -> float | None:
     return None if score <= 0 or score >= 1 else 400 * math.log10(score / (1 - score))
-
-
-def fit_ratings(names: list[str], pairings: list[dict]) -> dict[str, float]:
-    """One Elo rating per player from all pairings together (the Bradley-Terry model, a draw counting as half a win
-    and half a loss), with the first player at 0. A stand-in for Ordo until the calibration proper."""
-    index = {name: i for i, name in enumerate(names)}
-    points, games = np.zeros((len(names), len(names))), np.zeros((len(names), len(names)))
-    for p in pairings:
-        low, high = index[p["low"]], index[p["high"]]
-        points[high, low], points[low, high] = p["score"] * p["games"], (1 - p["score"]) * p["games"]
-        games[high, low] = games[low, high] = p["games"]
-    strength = np.ones(len(names))
-    for _ in range(20000):
-        strength = points.sum(axis=1) / (games / (strength[:, None] + strength[None, :])).sum(axis=1)
-        strength /= strength[0]
-    return {name: float(400 * np.log10(max(strength[i], 1e-300))) for name, i in index.items()}
 
 
 def match(job):

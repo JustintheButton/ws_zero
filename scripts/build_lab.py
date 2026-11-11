@@ -5,6 +5,7 @@ Every position is checked against the python-chess reference before it goes on t
     uv run python scripts/build_lab.py --out lab/build/lab.html
 """
 import argparse
+import gzip
 import json
 import subprocess
 from pathlib import Path
@@ -314,6 +315,59 @@ def phase4_tree(gates: Path) -> dict:
             "moves": root_moves, "steps": steps}
 
 
+P5_LABELS = {"random": "Random mover", "grabber": "Material grabber", "sf1320": "Stockfish limited to 1320",
+             **{f"sf1r{share}": f"Stockfish 1 node, {share}% random moves" for share in (75, 50, 25)},
+             **{f"sf{nodes}": f"Stockfish, {nodes:,} node{'s' if nodes > 1 else ''}"
+                for nodes in (1, 100, 300, 1000, 3000, 10000)}}
+P5_AGENTS = {"untrained": "Untrained network", "material": "Material stand-in"}
+P5_GAME = ("material-seed0", "sf1320")  # the replayable game: this copy's shortest win against this opponent
+
+
+def phase5_data(gates: Path) -> dict:
+    """The Phase 5 gate: every player's rating and 95% range, the gap between the two copies of each agent, each
+    copy's score against each opponent, the time of each evaluation, and one game to replay."""
+    path = gates / "phase-5-gate.json"
+    if not path.exists():
+        return {}
+    gate = json.loads(path.read_text())
+    copies = {name: f"{P5_AGENTS[a['agent']]}, copy {i + 1}" for a in gate["agents"] for i, name in enumerate(a["copies"])}
+    players = [{"name": n, "label": copies.get(n) or P5_LABELS[n], "ours": n in copies,
+                "rating": round(gate["ratings"][n]), "range": [round(v) for v in gate["ranges"][n]]}
+               for n in gate["players"]]
+    agents = [{"label": P5_AGENTS[a["agent"]], "copies": a["copies"], "gap": round(a["gap"]),
+               "range": [round(v) for v in a["gap_range"]], "passed": a["passed"]} for a in gate["agents"]]
+    opponents = [row["opponent"] for row in gate["agents"][0]["scores"]]
+    scores = [{"opponent": P5_LABELS[o], "scores": [a["scores"][i][c] for a in gate["agents"] for c in a["copies"]]}
+              for i, o in enumerate(opponents)]
+    return {"passed": gate["passed"], "players": players, "agents": agents, "scores": scores,
+            "seconds": [round(gate["evaluation_seconds"][c]) for a in gate["agents"] for c in a["copies"]],
+            "game": phase5_game(gates)}
+
+
+def phase5_game(gates: Path) -> dict:
+    """One game of the gate, position by position: [move in SAN, move in UCI, FEN after it, the agent's own estimate
+    of its chances when it chose the move (None for opening moves and for the opponent's moves)]."""
+    agent, opponent = P5_GAME
+    path = gates / f"phase-5-eval-{agent}-games.json.gz"
+    if not path.exists():
+        return {}
+    with gzip.open(path, "rt") as f:
+        games = json.load(f)[opponent]
+    won = [g for g in games if g["result"] == ("1-0" if g["white"] == agent else "0-1")]
+    game = min(won, key=lambda g: len(g["moves"].split()))
+    board = chess.Board(game["start_fen"]) if game["start_fen"] else chess.Board()
+    start, plies = board.fen(), []
+    for uci, value in zip(game["moves"].split(), game["values"], strict=True):
+        move = chess.Move.from_uci(uci)
+        san = board.san(move)
+        board.push(move)
+        plies.append([san, uci, board.fen(), None if value is None else round(value, 2)])
+    if not board.is_checkmate() and game["end"] == "checkmate":
+        raise SystemExit("the replayed game does not end in the recorded checkmate")
+    return {"agentWhite": game["white"] == agent, "opponent": P5_LABELS[opponent], "wins": len(won),
+            "games": len(games), "end": game["end"], "start": start, "plies": plies}
+
+
 def commit_label() -> str:
     def git(*args):
         return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
@@ -329,7 +383,8 @@ def main():
     env = ChessEnv()
     data = {"planes": [plane_description(p) for p in range(73)],
             "scenes": [build_scene(env, *scene) for scene in SCENES],
-            "phase3": phase3_data(ROOT / "docs" / "gates"), "phase4": phase4_data(ROOT / "docs" / "gates")}
+            "phase3": phase3_data(ROOT / "docs" / "gates"), "phase4": phase4_data(ROOT / "docs" / "gates"),
+            "phase5": phase5_data(ROOT / "docs" / "gates")}
     page = (ROOT / "lab" / "template.html").read_text()
     page = page.replace("__COMMIT__", commit_label()).replace("__DATA__", json.dumps(data, separators=(",", ":")))
     args.out.parent.mkdir(parents=True, exist_ok=True)

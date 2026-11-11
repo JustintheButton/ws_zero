@@ -51,6 +51,9 @@ recorded here as **deviations**, with Justin's approval.
 | 2026-11-09 | **Stockfish ladder: 1, 100, 300, 1,000, 3,000, 10,000 nodes** (protocol §8.2 amended, §10). The 3-, 10- and 30-node rungs are dropped: Stockfish always finishes a one-move-deep search (about 48 nodes), so they play the same moves as the 1-node rung (identical on 200 of 200 positions at 3 and 10 nodes, 199 at 30). Alternatives considered: keep all nine; add a weaker opponent below the 1-node rung (left to the calibration). | Justin |
 | 2026-11-09 | The strength-limited Stockfish opponent (`UCI_Elo` 1320) searches **10,000 nodes per move**, like the top rung. A time limit would play differently on each machine. In a first round robin of all nine opponents under the project's game rules (`docs/gates/phase-5-ladder-first-look.json`: 200 games per pairing, random 8-ply openings) the 1-node rung scored 88% against it, about 320–350 Elo above; a joint fit puts the rungs above the 1-node rung at +97, +272, +540, +814 and +1,044 Elo, and the random mover and the material-grabber roughly 1,100 and 1,040 below it (poorly pinned down: Stockfish wins 99–100% against both). An earlier quick check, which ended games at the first claimable repetition, had given 79% and 230. Its move choice is random, so its games do not replay. Alternatives considered: 1,000 nodes; dropping this opponent. | Justin |
 | 2026-11-09 | **Three diluted rungs added to the ladder** (protocol §8.2, §8.4, §10): the 1-node Stockfish playing a random legal move 75%, 50% or 25% of the time. They fill the gap between the random mover and the 1320 opponent: each rung scores 82–89% against the one below (`docs/gates/phase-5-ladder-diluted.json`, played on Modal; the Mac gave the same games move for move). They count as Stockfish rungs for the finish line (D8), whose fallback is now the 75%-random rung, not the material-grabber, which draws most of its games by stripping the board. Alternatives considered: curves only, D8 unchanged; other levels; checkpoints playing each other as in AlphaZero. | Justin |
+| 2026-11-09 | **Phase 5 gate design** (protocol §10: tested with the opening suite). Each player is entered twice under two names, with the same weights and a different seed for the search's tie-breaking. Two players are tested: the untrained network and the material-count stand-in of the Phase 4 gate, both at 800 simulations. Each copy plays all 12 opponents on the 50 checkpoint openings with both colours (1,200 games), on a Modal L4. All games are fitted together with the ladder's calibration; the gate passes if, for each player, the 95% range of the gap between its two copies includes 0. | Justin |
+| 2026-11-09 | **Phase 5 builds the opening suites, the match runner and the gate. The tablebases, the two test-position sets and the policy and value measures computed on them are postponed to Phase 6**, where they are first used (evaluating the written networks). Postponed, not dropped: the protocol's secondary measures (§8.4) are unchanged. | Justin |
+| 2026-11-11 | **Phase 5 gate passed.** Two copies of the untrained network rate 114 and 117 (gap −3, 95% range −34 to +25); two copies of the material-count stand-in rate 596 and 606 (gap −10, −55 to +35). One evaluation of 1,200 games took 21–33 minutes on one L4 and cost $0.47–0.72. [Report](gates/phase-5.md). | Justin |
 | 2026-11-08 | Lab notebook page: `lab/template.html`, built by `scripts/build_lab.py` from pgx positions checked against the reference; one section added per phase. | Justin |
 
 ## Open questions for the protocol
@@ -85,6 +88,16 @@ Raised while reading the brief and the WSP logs; each needs a decision in `proto
     (or in Docker on the Mac).
 11. **Model difference.** The WSP results were obtained with GPT-6 Astra. Whether Claude Opus 5.5 can write useful
     weights is untested; the protocol and writeup should say so.
+12. **Freeze the ladder or refit it with every checkpoint (before Phase 7).** Protocol §8.4 fits all games
+    jointly. In the Phase 5 gate, adding players to the fit moved the ladder's own ratings by tens of points (the
+    25% rung: 635 alone, 579 with four players added). See the Phase 5 report.
+13. **Evaluation budget (before Phase 7).** One evaluation costs $0.47–0.72; about 375 of them are planned, so
+    roughly $190–260, next to the open training budget (D7).
+14. **The ladder between 1320 and the 1-node Stockfish.** On the checkpoint openings the 1-node rung scores 98%
+    against the 1320 opponent, a hole of about 550 points, and the steps above 300 nodes are 400–450 points each.
+    Whether to add rungs, before the finish line (D8) is set from the calibration run.
+15. **Ordo.** Protocol §8.4 names Ordo; Phase 5 used the project's own fit (`ws_zero.ratings`). Cross-check against
+    Ordo, or amend the protocol.
 
 ## Follow-up ideas
 

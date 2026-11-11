@@ -1,0 +1,272 @@
+{
+ "passed": true,
+ "samples": 500,
+ "players": [
+  "random",
+  "grabber",
+  "sf1r75",
+  "sf1r50",
+  "sf1r25",
+  "sf1320",
+  "sf1",
+  "sf100",
+  "sf300",
+  "sf1000",
+  "sf3000",
+  "sf10000",
+  "untrained-seed0",
+  "untrained-seed1",
+  "material-seed0",
+  "material-seed1"
+ ],
+ "ratings": {
+  "random": 0.0,
+  "grabber": 214.2612952020433,
+  "sf1r75": 214.7927244410949,
+  "sf1r50": 375.0952138499531,
+  "sf1r25": 579.3537751465199,
+  "sf1320": 884.1483525610903,
+  "sf1": 1422.6263168364706,
+  "sf100": 1536.2686867166706,
+  "sf300": 1673.2334904400432,
+  "sf1000": 2069.3605218116336,
+  "sf3000": 2519.8731631564224,
+  "sf10000": 2917.7840017317985,
+  "untrained-seed0": 113.93158906714021,
+  "untrained-seed1": 116.79949814658642,
+  "material-seed0": 596.3707103720251,
+  "material-seed1": 606.456082164292
+ },
+ "ranges": {
+  "random": [
+   0.0,
+   0.0
+  ],
+  "grabber": [
+   194.45786173469997,
+   240.65694084739675
+  ],
+  "sf1r75": [
+   192.46929391246886,
+   239.84725021385992
+  ],
+  "sf1r50": [
+   351.1482073228165,
+   405.613501354836
+  ],
+  "sf1r25": [
+   546.8528486378367,
+   612.790363638478
+  ],
+  "sf1320": [
+   842.8291142467932,
+   929.8492837073231
+  ],
+  "sf1": [
+   1340.4195177985719,
+   1532.4488534412071
+  ],
+  "sf100": [
+   1455.4616709876368,
+   1637.2458842368446
+  ],
+  "sf300": [
+   1587.1212235602993,
+   1775.8111432959834
+  ],
+  "sf1000": [
+   1968.7556530062761,
+   2204.685972925529
+  ],
+  "sf3000": [
+   2387.550098965415,
+   2700.1987272494425
+  ],
+  "sf10000": [
+   2792.268351242641,
+   3112.7291922719887
+  ],
+  "untrained-seed0": [
+   89.56226496019586,
+   137.81064691178463
+  ],
+  "untrained-seed1": [
+   93.86914255889933,
+   143.8032528236975
+  ],
+  "material-seed0": [
+   557.7486508982405,
+   638.7326327129907
+  ],
+  "material-seed1": [
+   565.346534880011,
+   648.9938862049418
+  ]
+ },
+ "agents": [
+  {
+   "agent": "untrained",
+   "copies": [
+    "untrained-seed0",
+    "untrained-seed1"
+   ],
+   "ratings": [
+    113.93158906714021,
+    116.79949814658642
+   ],
+   "gap": -2.867909079446207,
+   "gap_range": [
+    -33.89339004778915,
+    25.057803119371684
+   ],
+   "passed": true,
+   "scores": [
+    {
+     "opponent": "random",
+     "untrained-seed0": 0.745,
+     "untrained-seed1": 0.73
+    },
+    {
+     "opponent": "grabber",
+     "untrained-seed0": 0.48,
+     "untrained-seed1": 0.46
+    },
+    {
+     "opponent": "sf1r75",
+     "untrained-seed0": 0.285,
+     "untrained-seed1": 0.35
+    },
+    {
+     "opponent": "sf1r50",
+     "untrained-seed0": 0.1,
+     "untrained-seed1": 0.07
+    },
+    {
+     "opponent": "sf1r25",
+     "untrained-seed0": 0.02,
+     "untrained-seed1": 0.03
+    },
+    {
+     "opponent": "sf1320",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.01
+    },
+    {
+     "opponent": "sf1",
+     "untrained-seed0": 0.005,
+     "untrained-seed1": 0.0
+    },
+    {
+     "opponent": "sf100",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.0
+    },
+    {
+     "opponent": "sf300",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.0
+    },
+    {
+     "opponent": "sf1000",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.0
+    },
+    {
+     "opponent": "sf3000",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.0
+    },
+    {
+     "opponent": "sf10000",
+     "untrained-seed0": 0.0,
+     "untrained-seed1": 0.0
+    }
+   ]
+  },
+  {
+   "agent": "material",
+   "copies": [
+    "material-seed0",
+    "material-seed1"
+   ],
+   "ratings": [
+    596.3707103720251,
+    606.456082164292
+   ],
+   "gap": -10.08537179226687,
+   "gap_range": [
+    -55.39129692072163,
+    34.97999970822703
+   ],
+   "passed": true,
+   "scores": [
+    {
+     "opponent": "random",
+     "material-seed0": 0.88,
+     "material-seed1": 0.89
+    },
+    {
+     "opponent": "grabber",
+     "material-seed0": 0.885,
+     "material-seed1": 0.855
+    },
+    {
+     "opponent": "sf1r75",
+     "material-seed0": 0.87,
+     "material-seed1": 0.85
+    },
+    {
+     "opponent": "sf1r50",
+     "material-seed0": 0.82,
+     "material-seed1": 0.86
+    },
+    {
+     "opponent": "sf1r25",
+     "material-seed0": 0.64,
+     "material-seed1": 0.645
+    },
+    {
+     "opponent": "sf1320",
+     "material-seed0": 0.14,
+     "material-seed1": 0.18
+    },
+    {
+     "opponent": "sf1",
+     "material-seed0": 0.015,
+     "material-seed1": 0.005
+    },
+    {
+     "opponent": "sf100",
+     "material-seed0": 0.0,
+     "material-seed1": 0.01
+    },
+    {
+     "opponent": "sf300",
+     "material-seed0": 0.0,
+     "material-seed1": 0.0
+    },
+    {
+     "opponent": "sf1000",
+     "material-seed0": 0.0,
+     "material-seed1": 0.0
+    },
+    {
+     "opponent": "sf3000",
+     "material-seed0": 0.0,
+     "material-seed1": 0.0
+    },
+    {
+     "opponent": "sf10000",
+     "material-seed0": 0.0,
+     "material-seed1": 0.0
+    }
+   ]
+  }
+ ],
+ "evaluation_seconds": {
+  "untrained-seed0": 1961.3716418743134,
+  "untrained-seed1": 1842.9435875415802,
+  "material-seed0": 1296.1093559265137,
+  "material-seed1": 1271.4494445323944
+ }
+}

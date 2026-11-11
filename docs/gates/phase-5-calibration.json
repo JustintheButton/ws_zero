@@ -1,0 +1,1800 @@
+{
+ "players": [
+  "random",
+  "grabber",
+  "sf1r75",
+  "sf1r50",
+  "sf1r25",
+  "sf1320",
+  "sf1",
+  "sf100",
+  "sf300",
+  "sf1000",
+  "sf3000",
+  "sf10000"
+ ],
+ "suite": "checkpoint",
+ "ratings": {
+  "random": 0.0,
+  "grabber": 248.1418620980369,
+  "sf1r75": 190.9678160710076,
+  "sf1r50": 371.0297074511965,
+  "sf1r25": 634.5276714187501,
+  "sf1320": 904.7168080362329,
+  "sf1": 1456.3447424609412,
+  "sf100": 1568.6682480943784,
+  "sf300": 1704.5774157223145,
+  "sf1000": 2102.604916327579,
+  "sf3000": 2555.523471307676,
+  "sf10000": 2954.5801269391955
+ },
+ "openings": [
+  [
+   "g1h3",
+   "e7e6",
+   "h3g1",
+   "h7h5",
+   "c2c3",
+   "f7f5",
+   "b2b4",
+   "d7d6"
+  ],
+  [
+   "d2d4",
+   "g8h6",
+   "c1f4",
+   "b7b6",
+   "f4e3",
+   "h6f5",
+   "b2b4",
+   "f7f6"
+  ],
+  [
+   "d2d3",
+   "g7g6",
+   "b1a3",
+   "b7b5",
+   "g1h3",
+   "b8c6",
+   "b2b3",
+   "a7a6"
+  ],
+  [
+   "b1a3",
+   "g8h6",
+   "f2f3",
+   "h6f5",
+   "d2d3",
+   "f5h4",
+   "c1e3",
+   "c7c5"
+  ],
+  [
+   "a2a4",
+   "h7h6",
+   "a1a2",
+   "c7c5",
+   "b2b3",
+   "b7b6",
+   "f2f3",
+   "c8a6"
+  ],
+  [
+   "c2c4",
+   "b7b5",
+   "g2g4",
+   "c8b7",
+   "d2d3",
+   "b8c6",
+   "b2b3",
+   "a7a6"
+  ],
+  [
+   "b1a3",
+   "e7e5",
+   "a3b1",
+   "f7f6",
+   "d2d3",
+   "b8a6",
+   "c1d2",
+   "h7h5"
+  ],
+  [
+   "a2a3",
+   "g8f6",
+   "b2b3",
+   "c7c5",
+   "b3b4",
+   "f6h5",
+   "c2c3",
+   "d7d6"
+  ],
+  [
+   "d2d3",
+   "b8c6",
+   "b1c3",
+   "f7f6",
+   "h2h4",
+   "e7e5",
+   "f2f3",
+   "a8b8"
+  ],
+  [
+   "g2g3",
+   "e7e6",
+   "b1c3",
+   "g8h6",
+   "b2b4",
+   "d7d5",
+   "a1b1",
+   "b7b5"
+  ],
+  [
+   "a2a4",
+   "h7h6",
+   "h2h4",
+   "g7g6",
+   "h1h3",
+   "f8g7",
+   "h3c3",
+   "f7f5"
+  ],
+  [
+   "g1h3",
+   "c7c6",
+   "a2a4",
+   "d8b6",
+   "b2b3",
+   "h7h6",
+   "g2g3",
+   "g7g6"
+  ],
+  [
+   "b1a3",
+   "d7d6",
+   "f2f3",
+   "h7h6",
+   "e1f2",
+   "c8d7",
+   "f2e1",
+   "b7b6"
+  ],
+  [
+   "b1c3",
+   "g8h6",
+   "f2f4",
+   "g7g6",
+   "d2d3",
+   "e7e5",
+   "b2b3",
+   "e5f4"
+  ],
+  [
+   "a2a4",
+   "f7f5",
+   "a1a2",
+   "b7b6",
+   "e2e4",
+   "g7g6",
+   "f1a6",
+   "f8g7"
+  ],
+  [
+   "g1h3",
+   "h7h5",
+   "c2c3",
+   "f7f6",
+   "b1a3",
+   "e7e6",
+   "c3c4",
+   "d7d5"
+  ],
+  [
+   "h2h3",
+   "b8c6",
+   "f2f4",
+   "c6b4",
+   "e2e4",
+   "b4a2",
+   "b1c3",
+   "a2b4"
+  ],
+  [
+   "h2h3",
+   "f7f5",
+   "f2f4",
+   "g8h6",
+   "g2g4",
+   "e7e5",
+   "g1f3",
+   "e5f4"
+  ],
+  [
+   "b2b4",
+   "b8a6",
+   "h2h4",
+   "g7g5",
+   "e2e3",
+   "g5g4",
+   "d2d3",
+   "g4g3"
+  ],
+  [
+   "b2b3",
+   "e7e5",
+   "b1c3",
+   "f8e7",
+   "g1f3",
+   "f7f5",
+   "d2d3",
+   "c7c5"
+  ],
+  [
+   "b1c3",
+   "g8f6",
+   "c3b1",
+   "a7a6",
+   "f2f3",
+   "f6g8",
+   "e2e3",
+   "c7c6"
+  ],
+  [
+   "g1f3",
+   "e7e6",
+   "h2h3",
+   "b7b5",
+   "a2a4",
+   "b5a4",
+   "f3g1",
+   "c8b7"
+  ],
+  [
+   "b2b3",
+   "a7a5",
+   "f2f4",
+   "f7f5",
+   "e2e4",
+   "a5a4",
+   "e1e2",
+   "c7c6"
+  ],
+  [
+   "e2e4",
+   "e7e6",
+   "b2b4",
+   "a7a5",
+   "d2d3",
+   "g8e7",
+   "e1e2",
+   "a8a6"
+  ],
+  [
+   "a2a3",
+   "d7d6",
+   "f2f3",
+   "g7g6",
+   "a1a2",
+   "f7f5",
+   "d2d3",
+   "b8a6"
+  ],
+  [
+   "h2h3",
+   "b7b5",
+   "b1c3",
+   "g8f6",
+   "g2g4",
+   "d7d5",
+   "c3a4",
+   "c8e6"
+  ],
+  [
+   "b2b3",
+   "b8a6",
+   "c2c3",
+   "e7e5",
+   "g2g3",
+   "c7c6",
+   "d1c2",
+   "d8b6"
+  ],
+  [
+   "d2d4",
+   "e7e6",
+   "c2c4",
+   "f8d6",
+   "a2a4",
+   "d6a3",
+   "d4d5",
+   "a3b4"
+  ],
+  [
+   "f2f3",
+   "b7b5",
+   "b1a3",
+   "b8c6",
+   "f3f4",
+   "c8a6",
+   "g2g4",
+   "d8c8"
+  ],
+  [
+   "c2c3",
+   "d7d6",
+   "a2a3",
+   "h7h6",
+   "g1f3",
+   "f7f5",
+   "f3g1",
+   "a7a5"
+  ],
+  [
+   "a2a3",
+   "b7b6",
+   "d2d4",
+   "a7a6",
+   "a1a2",
+   "d7d6",
+   "c2c4",
+   "e7e6"
+  ],
+  [
+   "g2g3",
+   "b8a6",
+   "g3g4",
+   "g8f6",
+   "h2h4",
+   "c7c5",
+   "g1h3",
+   "a8b8"
+  ],
+  [
+   "b2b3",
+   "g8h6",
+   "d2d3",
+   "e7e6",
+   "f2f3",
+   "e8e7",
+   "g2g3",
+   "e7e8"
+  ],
+  [
+   "f2f3",
+   "a7a5",
+   "e2e3",
+   "a8a6",
+   "b1c3",
+   "f7f5",
+   "a1b1",
+   "a6g6"
+  ],
+  [
+   "c2c3",
+   "g7g5",
+   "d1a4",
+   "h7h6",
+   "a4a6",
+   "f7f6",
+   "a6a3",
+   "c7c6"
+  ],
+  [
+   "d2d3",
+   "a7a6",
+   "a2a4",
+   "a8a7",
+   "b1d2",
+   "f7f5",
+   "a1a2",
+   "e7e5"
+  ],
+  [
+   "g2g3",
+   "a7a6",
+   "c2c3",
+   "f7f5",
+   "b1a3",
+   "c7c6",
+   "f1h3",
+   "e7e6"
+  ],
+  [
+   "a2a3",
+   "g7g5",
+   "g2g3",
+   "f8g7",
+   "a3a4",
+   "h7h5",
+   "f1g2",
+   "g5g4"
+  ],
+  [
+   "f2f4",
+   "c7c5",
+   "g1f3",
+   "g8h6",
+   "b1a3",
+   "e7e6",
+   "f3h4",
+   "h6f5"
+  ],
+  [
+   "g2g4",
+   "c7c5",
+   "d2d4",
+   "e7e6",
+   "d4c5",
+   "f8c5",
+   "g4g5",
+   "d7d6"
+  ],
+  [
+   "c2c4",
+   "c7c5",
+   "d2d3",
+   "a7a5",
+   "g1h3",
+   "g8f6",
+   "d3d4",
+   "e7e6"
+  ],
+  [
+   "b1a3",
+   "g8f6",
+   "d2d4",
+   "h8g8",
+   "c1h6",
+   "c7c6",
+   "d1d2",
+   "g8h8"
+  ],
+  [
+   "g1h3",
+   "d7d6",
+   "h3g1",
+   "b8c6",
+   "b2b3",
+   "g8h6",
+   "a2a3",
+   "e7e5"
+  ],
+  [
+   "f2f3",
+   "b8a6",
+   "b2b4",
+   "g8f6",
+   "b1a3",
+   "b7b5",
+   "c2c4",
+   "f6g8"
+  ],
+  [
+   "g1h3",
+   "g7g6",
+   "h3f4",
+   "e7e5",
+   "h2h3",
+   "b8c6",
+   "d2d3",
+   "c6d4"
+  ],
+  [
+   "b1a3",
+   "a7a6",
+   "e2e4",
+   "g7g5",
+   "b2b3",
+   "c7c6",
+   "e1e2",
+   "f7f6"
+  ],
+  [
+   "f2f3",
+   "a7a5",
+   "f3f4",
+   "c7c6",
+   "g2g4",
+   "g8f6",
+   "f1h3",
+   "a8a6"
+  ],
+  [
+   "h2h3",
+   "b7b6",
+   "f2f4",
+   "e7e6",
+   "b2b4",
+   "a7a5",
+   "g1f3",
+   "c7c6"
+  ],
+  [
+   "a2a4",
+   "d7d5",
+   "d2d4",
+   "h7h5",
+   "g1h3",
+   "g8f6",
+   "c1h6",
+   "a7a5"
+  ],
+  [
+   "f2f3",
+   "b7b6",
+   "e2e4",
+   "e7e5",
+   "f1c4",
+   "a7a6",
+   "a2a3",
+   "d7d6"
+  ]
+ ],
+ "pairings": [
+  {
+   "low": "random",
+   "high": "grabber",
+   "games": 100,
+   "score": 0.61,
+   "wins": 22,
+   "draws": 78,
+   "losses": 0,
+   "elo": 77.70609119370712,
+   "elo_range": [
+    48.39521568495076,
+    108.14982329869618
+   ],
+   "ends": {
+    "checkmate": 22,
+    "fifty-move rule": 6,
+    "insufficient material": 22,
+    "ply cap": 4,
+    "stalemate": 45,
+    "threefold repetition": 1
+   },
+   "median_plies": 181
+  },
+  {
+   "low": "random",
+   "high": "sf1r75",
+   "games": 100,
+   "score": 0.845,
+   "wins": 71,
+   "draws": 27,
+   "losses": 2,
+   "elo": 294.61000431176035,
+   "elo_range": [
+    235.84050308131398,
+    371.5696545962316
+   ],
+   "ends": {
+    "checkmate": 73,
+    "fifty-move rule": 6,
+    "insufficient material": 13,
+    "ply cap": 1,
+    "stalemate": 6,
+    "threefold repetition": 1
+   },
+   "median_plies": 180
+  },
+  {
+   "low": "random",
+   "high": "sf1r50",
+   "games": 100,
+   "score": 0.98,
+   "wins": 96,
+   "draws": 4,
+   "losses": 0,
+   "elo": 676.0784320114053,
+   "elo_range": [
+    555.2746647096956,
+    1262.024447584733
+   ],
+   "ends": {
+    "checkmate": 96,
+    "fifty-move rule": 2,
+    "insufficient material": 1,
+    "stalemate": 1
+   },
+   "median_plies": 78
+  },
+  {
+   "low": "random",
+   "high": "sf1r25",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "stalemate": 1
+   },
+   "median_plies": 61
+  },
+  {
+   "low": "random",
+   "high": "sf1320",
+   "games": 100,
+   "score": 0.99,
+   "wins": 98,
+   "draws": 2,
+   "losses": 0,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    645.2661154164164,
+    null
+   ],
+   "ends": {
+    "checkmate": 98,
+    "stalemate": 2
+   },
+   "median_plies": 55
+  },
+  {
+   "low": "random",
+   "high": "sf1",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 46
+  },
+  {
+   "low": "random",
+   "high": "sf100",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 48
+  },
+  {
+   "low": "random",
+   "high": "sf300",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 44
+  },
+  {
+   "low": "random",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 42
+  },
+  {
+   "low": "random",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 36
+  },
+  {
+   "low": "random",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 36
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r75",
+   "games": 100,
+   "score": 0.47,
+   "wins": 5,
+   "draws": 84,
+   "losses": 11,
+   "elo": -20.871204666028646,
+   "elo_range": [
+    -48.21981281673002,
+    6.220970174601053
+   ],
+   "ends": {
+    "checkmate": 16,
+    "fifty-move rule": 2,
+    "insufficient material": 43,
+    "ply cap": 2,
+    "stalemate": 36,
+    "threefold repetition": 1
+   },
+   "median_plies": 250
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r50",
+   "games": 100,
+   "score": 0.53,
+   "wins": 11,
+   "draws": 84,
+   "losses": 5,
+   "elo": 20.87120466602866,
+   "elo_range": [
+    -6.220970174601032,
+    48.21981281673004
+   ],
+   "ends": {
+    "checkmate": 16,
+    "fifty-move rule": 7,
+    "insufficient material": 51,
+    "ply cap": 1,
+    "stalemate": 21,
+    "threefold repetition": 4
+   },
+   "median_plies": 228
+  },
+  {
+   "low": "grabber",
+   "high": "sf1r25",
+   "games": 100,
+   "score": 0.805,
+   "wins": 62,
+   "draws": 37,
+   "losses": 1,
+   "elo": 246.30450760214026,
+   "elo_range": [
+    195.49459619653393,
+    308.26573179497893
+   ],
+   "ends": {
+    "checkmate": 63,
+    "fifty-move rule": 2,
+    "insufficient material": 30,
+    "stalemate": 4,
+    "threefold repetition": 1
+   },
+   "median_plies": 94
+  },
+  {
+   "low": "grabber",
+   "high": "sf1320",
+   "games": 100,
+   "score": 0.97,
+   "wins": 94,
+   "draws": 6,
+   "losses": 0,
+   "elo": 603.8601918186329,
+   "elo_range": [
+    499.48117006848963,
+    870.7927066298734
+   ],
+   "ends": {
+    "checkmate": 94,
+    "fifty-move rule": 5,
+    "stalemate": 1
+   },
+   "median_plies": 59
+  },
+  {
+   "low": "grabber",
+   "high": "sf1",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "stalemate": 1
+   },
+   "median_plies": 53
+  },
+  {
+   "low": "grabber",
+   "high": "sf100",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 47
+  },
+  {
+   "low": "grabber",
+   "high": "sf300",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 43
+  },
+  {
+   "low": "grabber",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 43
+  },
+  {
+   "low": "grabber",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 39
+  },
+  {
+   "low": "grabber",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 40
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1r50",
+   "games": 100,
+   "score": 0.85,
+   "wins": 72,
+   "draws": 26,
+   "losses": 2,
+   "elo": 301.33106666344463,
+   "elo_range": [
+    241.64287344515708,
+    380.24812251211284
+   ],
+   "ends": {
+    "checkmate": 74,
+    "fifty-move rule": 4,
+    "insufficient material": 13,
+    "stalemate": 7,
+    "threefold repetition": 2
+   },
+   "median_plies": 158
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1r25",
+   "games": 100,
+   "score": 0.955,
+   "wins": 92,
+   "draws": 7,
+   "losses": 1,
+   "elo": 530.7163431233608,
+   "elo_range": [
+    432.8554529738585,
+    744.7366480276532
+   ],
+   "ends": {
+    "checkmate": 93,
+    "fifty-move rule": 1,
+    "insufficient material": 1,
+    "stalemate": 5
+   },
+   "median_plies": 78
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1320",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "fifty-move rule": 1
+   },
+   "median_plies": 63
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "stalemate": 1
+   },
+   "median_plies": 57
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf100",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 48
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf300",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 46
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 45
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 39
+  },
+  {
+   "low": "sf1r75",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 37
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1r25",
+   "games": 100,
+   "score": 0.85,
+   "wins": 76,
+   "draws": 18,
+   "losses": 6,
+   "elo": 301.33106666344463,
+   "elo_range": [
+    233.76560231588255,
+    394.78717783211545
+   ],
+   "ends": {
+    "checkmate": 82,
+    "fifty-move rule": 4,
+    "insufficient material": 8,
+    "stalemate": 4,
+    "threefold repetition": 2
+   },
+   "median_plies": 120
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1320",
+   "games": 100,
+   "score": 0.99,
+   "wins": 99,
+   "draws": 0,
+   "losses": 1,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    606.2636307198314,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 71
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1",
+   "games": 100,
+   "score": 0.99,
+   "wins": 98,
+   "draws": 2,
+   "losses": 0,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    645.2661154164164,
+    null
+   ],
+   "ends": {
+    "checkmate": 98,
+    "stalemate": 2
+   },
+   "median_plies": 72
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf100",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 53
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf300",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 51
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 48
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 43
+  },
+  {
+   "low": "sf1r50",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 43
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf1320",
+   "games": 100,
+   "score": 0.825,
+   "wins": 77,
+   "draws": 11,
+   "losses": 12,
+   "elo": 269.3663599454522,
+   "elo_range": [
+    198.0158625979101,
+    367.39773326076573
+   ],
+   "ends": {
+    "checkmate": 89,
+    "fifty-move rule": 4,
+    "insufficient material": 2,
+    "stalemate": 2,
+    "threefold repetition": 3
+   },
+   "median_plies": 99
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf1",
+   "games": 100,
+   "score": 0.985,
+   "wins": 97,
+   "draws": 3,
+   "losses": 0,
+   "elo": 726.937988576772,
+   "elo_range": [
+    593.4052104517207,
+    null
+   ],
+   "ends": {
+    "checkmate": 97,
+    "stalemate": 3
+   },
+   "median_plies": 92
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf100",
+   "games": 100,
+   "score": 0.99,
+   "wins": 99,
+   "draws": 0,
+   "losses": 1,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    606.2636307198314,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 77
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf300",
+   "games": 100,
+   "score": 0.99,
+   "wins": 99,
+   "draws": 0,
+   "losses": 1,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    606.2636307198314,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 65
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 54
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 52
+  },
+  {
+   "low": "sf1r25",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 52
+  },
+  {
+   "low": "sf1320",
+   "high": "sf1",
+   "games": 100,
+   "score": 0.98,
+   "wins": 98,
+   "draws": 0,
+   "losses": 2,
+   "elo": 676.0784320114053,
+   "elo_range": [
+    520.5683835959617,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 76
+  },
+  {
+   "low": "sf1320",
+   "high": "sf100",
+   "games": 100,
+   "score": 0.99,
+   "wins": 99,
+   "draws": 0,
+   "losses": 1,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    606.2636307198314,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 73
+  },
+  {
+   "low": "sf1320",
+   "high": "sf300",
+   "games": 100,
+   "score": 0.99,
+   "wins": 99,
+   "draws": 0,
+   "losses": 1,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    606.2636307198314,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 69
+  },
+  {
+   "low": "sf1320",
+   "high": "sf1000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 65
+  },
+  {
+   "low": "sf1320",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 59
+  },
+  {
+   "low": "sf1320",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 54
+  },
+  {
+   "low": "sf1",
+   "high": "sf100",
+   "games": 100,
+   "score": 0.645,
+   "wins": 55,
+   "draws": 19,
+   "losses": 26,
+   "elo": 103.73254463206949,
+   "elo_range": [
+    42.658302165365626,
+    171.82979632254407
+   ],
+   "ends": {
+    "checkmate": 81,
+    "fifty-move rule": 5,
+    "stalemate": 4,
+    "threefold repetition": 10
+   },
+   "median_plies": 114
+  },
+  {
+   "low": "sf1",
+   "high": "sf300",
+   "games": 100,
+   "score": 0.795,
+   "wins": 75,
+   "draws": 9,
+   "losses": 16,
+   "elo": 235.44530704028642,
+   "elo_range": [
+    165.07850854307665,
+    328.4414442540817
+   ],
+   "ends": {
+    "checkmate": 91,
+    "fifty-move rule": 3,
+    "stalemate": 4,
+    "threefold repetition": 2
+   },
+   "median_plies": 92
+  },
+  {
+   "low": "sf1",
+   "high": "sf1000",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "stalemate": 1
+   },
+   "median_plies": 77
+  },
+  {
+   "low": "sf1",
+   "high": "sf3000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 69
+  },
+  {
+   "low": "sf1",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 65
+  },
+  {
+   "low": "sf100",
+   "high": "sf300",
+   "games": 100,
+   "score": 0.685,
+   "wins": 65,
+   "draws": 7,
+   "losses": 28,
+   "elo": 134.9520070811301,
+   "elo_range": [
+    68.4737271152525,
+    212.5791446812894
+   ],
+   "ends": {
+    "checkmate": 93,
+    "fifty-move rule": 1,
+    "insufficient material": 3,
+    "threefold repetition": 3
+   },
+   "median_plies": 120
+  },
+  {
+   "low": "sf100",
+   "high": "sf1000",
+   "games": 100,
+   "score": 0.955,
+   "wins": 93,
+   "draws": 5,
+   "losses": 2,
+   "elo": 530.7163431233608,
+   "elo_range": [
+    425.72806583025846,
+    787.8322305369073
+   ],
+   "ends": {
+    "checkmate": 95,
+    "fifty-move rule": 2,
+    "insufficient material": 1,
+    "threefold repetition": 2
+   },
+   "median_plies": 86
+  },
+  {
+   "low": "sf100",
+   "high": "sf3000",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "threefold repetition": 1
+   },
+   "median_plies": 70
+  },
+  {
+   "low": "sf100",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 69
+  },
+  {
+   "low": "sf300",
+   "high": "sf1000",
+   "games": 100,
+   "score": 0.89,
+   "wins": 86,
+   "draws": 6,
+   "losses": 8,
+   "elo": 363.1989285946751,
+   "elo_range": [
+    279.5246476709694,
+    499.8537217524205
+   ],
+   "ends": {
+    "checkmate": 94,
+    "fifty-move rule": 2,
+    "insufficient material": 3,
+    "threefold repetition": 1
+   },
+   "median_plies": 103
+  },
+  {
+   "low": "sf300",
+   "high": "sf3000",
+   "games": 100,
+   "score": 0.99,
+   "wins": 98,
+   "draws": 2,
+   "losses": 0,
+   "elo": 798.2540778390198,
+   "elo_range": [
+    645.2661154164164,
+    null
+   ],
+   "ends": {
+    "checkmate": 98,
+    "fifty-move rule": 1,
+    "threefold repetition": 1
+   },
+   "median_plies": 83
+  },
+  {
+   "low": "sf300",
+   "high": "sf10000",
+   "games": 100,
+   "score": 1.0,
+   "wins": 100,
+   "draws": 0,
+   "losses": 0,
+   "elo": null,
+   "elo_range": [
+    null,
+    null
+   ],
+   "ends": {
+    "checkmate": 100
+   },
+   "median_plies": 76
+  },
+  {
+   "low": "sf1000",
+   "high": "sf3000",
+   "games": 100,
+   "score": 0.93,
+   "wins": 90,
+   "draws": 6,
+   "losses": 4,
+   "elo": 449.3539634158714,
+   "elo_range": [
+    356.0538016549715,
+    630.0647148969905
+   ],
+   "ends": {
+    "checkmate": 94,
+    "fifty-move rule": 3,
+    "insufficient material": 2,
+    "threefold repetition": 1
+   },
+   "median_plies": 125
+  },
+  {
+   "low": "sf1000",
+   "high": "sf10000",
+   "games": 100,
+   "score": 0.995,
+   "wins": 99,
+   "draws": 1,
+   "losses": 0,
+   "elo": 919.5412305638826,
+   "elo_range": [
+    729.3050751088429,
+    null
+   ],
+   "ends": {
+    "checkmate": 99,
+    "insufficient material": 1
+   },
+   "median_plies": 90
+  },
+  {
+   "low": "sf3000",
+   "high": "sf10000",
+   "games": 100,
+   "score": 0.905,
+   "wins": 84,
+   "draws": 13,
+   "losses": 3,
+   "elo": 391.5699895665423,
+   "elo_range": [
+    314.55206166556854,
+    513.5333488532548
+   ],
+   "ends": {
+    "checkmate": 87,
+    "fifty-move rule": 3,
+    "insufficient material": 5,
+    "threefold repetition": 5
+   },
+   "median_plies": 124
+  }
+ ]
+}

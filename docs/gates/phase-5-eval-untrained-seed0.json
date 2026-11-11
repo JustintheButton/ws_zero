@@ -1,0 +1,236 @@
+{
+ "agent": "untrained",
+ "name": "untrained-seed0",
+ "simulations": 800,
+ "suite": "checkpoint",
+ "seed": 0,
+ "device": "NVIDIA L4",
+ "seconds": 1961.3716418743134,
+ "opponents": [
+  {
+   "opponent": "random",
+   "games": 100,
+   "score": 0.745,
+   "range": [
+    0.693830647588008,
+    0.7961693524119919
+   ],
+   "wins": 50,
+   "draws": 49,
+   "losses": 1,
+   "seconds": 282.66368770599365,
+   "longest_game_plies": 512,
+   "ends": {
+    "checkmate": 51,
+    "fifty-move rule": 5,
+    "insufficient material": 8,
+    "ply cap": 22,
+    "stalemate": 4,
+    "threefold repetition": 10
+   }
+  },
+  {
+   "opponent": "grabber",
+   "games": 100,
+   "score": 0.48,
+   "range": [
+    0.44335822332391894,
+    0.516641776676081
+   ],
+   "wins": 5,
+   "draws": 86,
+   "losses": 9,
+   "seconds": 277.45044708251953,
+   "longest_game_plies": 512,
+   "ends": {
+    "checkmate": 14,
+    "fifty-move rule": 5,
+    "insufficient material": 8,
+    "ply cap": 12,
+    "stalemate": 60,
+    "threefold repetition": 1
+   }
+  },
+  {
+   "opponent": "sf1r75",
+   "games": 100,
+   "score": 0.285,
+   "range": [
+    0.21782902562877474,
+    0.35217097437122524
+   ],
+   "wins": 11,
+   "draws": 35,
+   "losses": 54,
+   "seconds": 277.9804091453552,
+   "longest_game_plies": 512,
+   "ends": {
+    "checkmate": 65,
+    "fifty-move rule": 5,
+    "insufficient material": 11,
+    "ply cap": 5,
+    "stalemate": 13,
+    "threefold repetition": 1
+   }
+  },
+  {
+   "opponent": "sf1r50",
+   "games": 100,
+   "score": 0.1,
+   "range": [
+    0.04977786716732725,
+    0.15022213283267277
+   ],
+   "wins": 5,
+   "draws": 10,
+   "losses": 85,
+   "seconds": 262.9946472644806,
+   "longest_game_plies": 504,
+   "ends": {
+    "checkmate": 90,
+    "fifty-move rule": 2,
+    "stalemate": 5,
+    "threefold repetition": 3
+   }
+  },
+  {
+   "opponent": "sf1r25",
+   "games": 100,
+   "score": 0.02,
+   "range": [
+    -0.003802079528877088,
+    0.04380207952887709
+   ],
+   "wins": 1,
+   "draws": 2,
+   "losses": 97,
+   "seconds": 142.05094647407532,
+   "longest_game_plies": 271,
+   "ends": {
+    "checkmate": 98,
+    "stalemate": 1,
+    "threefold repetition": 1
+   }
+  },
+  {
+   "opponent": "sf1320",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 126.65717816352844,
+   "longest_game_plies": 229,
+   "ends": {
+    "checkmate": 100
+   }
+  },
+  {
+   "opponent": "sf1",
+   "games": 100,
+   "score": 0.005,
+   "range": [
+    -0.0048,
+    0.0148
+   ],
+   "wins": 0,
+   "draws": 1,
+   "losses": 99,
+   "seconds": 255.70243382453918,
+   "longest_game_plies": 512,
+   "ends": {
+    "checkmate": 99,
+    "ply cap": 1
+   }
+  },
+  {
+   "opponent": "sf100",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 81.55231165885925,
+   "longest_game_plies": 161,
+   "ends": {
+    "checkmate": 100
+   }
+  },
+  {
+   "opponent": "sf300",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 79.87209963798523,
+   "longest_game_plies": 159,
+   "ends": {
+    "checkmate": 100
+   }
+  },
+  {
+   "opponent": "sf1000",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 49.192883014678955,
+   "longest_game_plies": 95,
+   "ends": {
+    "checkmate": 100
+   }
+  },
+  {
+   "opponent": "sf3000",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 48.95612192153931,
+   "longest_game_plies": 97,
+   "ends": {
+    "checkmate": 100
+   }
+  },
+  {
+   "opponent": "sf10000",
+   "games": 100,
+   "score": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "wins": 0,
+   "draws": 0,
+   "losses": 100,
+   "seconds": 46.1991913318634,
+   "longest_game_plies": 84,
+   "ends": {
+    "checkmate": 100
+   }
+  }
+ ]
+}

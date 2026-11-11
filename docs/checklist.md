@@ -108,13 +108,24 @@ python-chess wrapper; python-chess is the reference it is checked against. See [
 - [x] Weaker anchors below Stockfish's minimum strength: random mover and greedy material-grabber
   (`src/ws_zero/players.py`). They left a gap of 700 Elo or more below Stockfish, so three diluted rungs were added:
   the 1-node Stockfish playing a random move 75%, 50% or 25% of the time (protocol §8.2, amended 2026-11-09).
-- [ ] Syzygy 3–5 piece tablebases (~1 GB); skip 6-piece (~150 GB) for now.
+- [x] Opening suites (protocol §8.3): 50 balanced openings for checkpoint evaluation and a separate 100 for the
+  GO / NO-GO test (`data/openings.json`, `scripts/make_openings.py`).
+- [x] Our agent against the ladder: all games of a match searched in one batch (`src/ws_zero/evaluate.py`,
+  `scripts/evaluate_agent.py`); the ladder calibrated on the checkpoint openings (`scripts/ladder_matches.py`).
+- [ ] Syzygy 3–5 piece tablebases (~1 GB); skip 6-piece (~150 GB) for now. *Postponed to Phase 6 (Justin,
+  2026-11-09).*
 - [ ] Fixed test suites: middlegame positions labeled by deep Stockfish (best move, eval); endgame positions
-  labeled by tablebases.
+  labeled by tablebases. *Postponed to Phase 6 (Justin, 2026-11-09).*
 - [ ] Metrics: policy top-1 agreement with Stockfish; value accuracy and calibration; Elo with confidence intervals
   (Ordo or BayesElo) at fixed simulation counts.
+  - [x] Elo with 95% ranges at 800 simulations: the project's own fit (`src/ws_zero/ratings.py`); a cross-check
+    against Ordo is open.
+  - [ ] Policy agreement and value accuracy: with the test suites, in Phase 6.
 
 > **GATE:** two identical checkpoints rate as equal within error bars.
+>
+> **Passed 2026-11-11 (Justin).** Two copies of the untrained network: 3 points apart (95% range −34 to +25). Two
+> copies of the material-count stand-in: 10 apart (−55 to +35). Report: [gates/phase-5.md](gates/phase-5.md).
 
 ## Phase 6: Write-only WSP pilot
 
